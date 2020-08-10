@@ -18,7 +18,7 @@ export default function App() {
         //headerStyle: { backgroundColor: COLORS.blackDark, height: 40},
         //headerTintColor: COLORS.purpleLight,
         //headerTitleAlign: 'left',
-        headerShown: true,
+				headerShown: true,
       }}>
 				
 				<Stack.Screen 

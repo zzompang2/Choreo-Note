@@ -1,7 +1,8 @@
 import React from 'react';
 import {
-	SafeAreaView,StyleSheet,ScrollView,View,Text,StatusBar,FlatList,Image,TouchableOpacity,Dimensions,Alert, ImageBackground
+	SafeAreaView,StyleSheet,ScrollView,View,Text,
 } from 'react-native';
+import Dancer from '../components/Dancer';
 
 import SQLite from "react-native-sqlite-storage";
 import { COLORS } from '../values/Colors';
@@ -18,6 +19,7 @@ export default class FormationScreen extends React.Component {
 			dancerList: [],
 			allPosList: [[]],
 			time: 0,
+			musicLength: 200,
 			animationPlayToggle: false,
 		}
 		this.TAG = "FormationScreen/";
@@ -42,23 +44,28 @@ export default class FormationScreen extends React.Component {
 				'CREATE TABLE IF NOT EXISTS position(' +
 					'nid INTEGER NOT NULL, ' +
 					'did INTEGER NOT NULL, ' +
-					// 'name TEXT NOT NULL, ' +
 					'time INTEGER NOT NULL, ' +
 					'posx INTEGER NOT NULL, ' +
 					'posy INTEGER NOT NULL, ' +
 					'PRIMARY KEY(nid, did, time) );'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 2, 0, 0);'
+				'INSERT INTO position VALUES (0, 0, 0, 10, 10);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 0, 10, 0);'
+				'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 0, 0, 0);'
+				'INSERT INTO position VALUES (0, 0, 2, 30, 30);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 1, 0, 10);'
+				'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 1, 1, -20, -40);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
 			);
 		})
 	}
@@ -73,21 +80,68 @@ export default class FormationScreen extends React.Component {
     //this.setState({pos: {x: Math.round(_x), y: Math.round(_y)}});
   }
 
+	splitIntoTime = () => {
+		if(this.state.allPosList.length == 0) return [];
+		var timeList = [];
+
+	}
+
 	render() {
 		console.log(this.TAG, "render");
 
+		var dancers = [];
+    for(let i=0; i<this.state.dancerList.length; i++){
+      dancers.push(
+				<Dancer 
+				// number={i+1} 
+				// position={this.state.positionList[i]} 
+				// onSearchSubmit={this.onSearchSubmit} 
+				// curTime={this.state.time} 
+				// toggle={this.state.animationPlayToggle}
+				// elevation={100}
+				/>
+      )
+		}
+
+		var musicbox = [];
+		for(let i=0; i<this.state.musicLength; i++){
+			musicbox.push(
+				<View style={{margin: 2, backgroundColor: COLORS.yellow}}>
+					<Text>{Math.round(i/60)}:{i%60}</Text>
+				</View>
+			)
+		}
+		
 		return(
-			<SafeAreaView>
-				<FlatList
+			<SafeAreaView style={{flexDirection: 'column', flex: 1}}>
+				<View style={{flex: 4, backgroundColor: COLORS.blue, alignItems: 'center', justifyContent: 'center'}}>
+					{dancers}
+				</View>
+
+				<ScrollView
+				horizontal={true}>
+					{musicbox}
+				</ScrollView>
+				{/* <FlatList
+				horizontal={true}
 				data={this.state.allPosList[1]}
 				renderItem={({item, index}) => 
-				<View style={{flexDirection: 'row'}}>
+				<View style={{flexDirection: 'row', backgroundColor: COLORS.red}}>
+					{() => {
+						var texts = [];
+						for(let i; i<2; i++){
+							texts.push(
+								<Text numberOfLines={1}>{item.posx}, </Text>
+							)
+						}
+					}}
 					<Text numberOfLines={1}>{item.posx}, </Text>
 					<Text numberOfLines={1}>{item.posy}</Text>
 				</View>
 				}
 				keyExtractor={(item, index) => index.toString()}
-				/>
+				style={{flex: 1, backgroundColor: COLORS.yellow}}
+				/> */}
 			</SafeAreaView>
 		)
 	}
