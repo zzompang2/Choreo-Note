@@ -12,4 +12,11 @@ public class MainActivity extends ReactActivity {
   protected String getMainComponentName() {
     return "ChoreoNote";
   }
+
+  @Override
+  protected List<ReactPackage> getPackages() {
+    return Arrays.<ReactPackage>asList(
+     new SQLitePluginPackage(),
+     new MainReactPackage()
+  }
 }
