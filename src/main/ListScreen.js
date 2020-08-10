@@ -14,7 +14,7 @@ export default class ListScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-      dancers: [],
+      noteList: [],
 		}
 		this.TAG = "ListScreen/";
 
@@ -42,17 +42,17 @@ export default class ListScreen extends React.Component {
 		return(
 			<SafeAreaView>
 				<FlatList
-				data={this.state.dancers}
+				data={this.state.noteList}
 				renderItem={({item, index}) => 
-				<TouchableOpacity onPress={() => this.props.navigation.navigate('FormationScreen', {title: item.id})}>
-				<View style={styles.rowContainer}>
-					<Text numberOfLines={1} style={styles.title}>{item.title}</Text>
-					<View style={styles.columnContainer}>
-						<Text numberOfLines={1} style={styles.music}>{item.music}</Text>
-						<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
+				<TouchableOpacity onPress={() => this.props.navigation.navigate('FormationScreen', {noteId: item.id})}>
+					<View style={styles.rowContainer}>
+						<Text numberOfLines={1} style={styles.title}>{item.title}</Text>
+						<View style={styles.columnContainer}>
+							<Text numberOfLines={1} style={styles.music}>{item.music}</Text>
+							<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
+						</View>
 					</View>
-				</View>
-			</TouchableOpacity>
+				</TouchableOpacity>
 				}
 				keyExtractor={(item, index) => item.id.toString()}
 				style={styles.list}
@@ -75,7 +75,7 @@ export default class ListScreen extends React.Component {
 						console.log("item:", result.rows.item(i));
 						temp.push(result.rows.item(i));
 					}		
-					this.setState({dancers: temp})
+					this.setState({noteList: temp})
 				}
 			);
 		});
