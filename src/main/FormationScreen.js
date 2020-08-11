@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView,StyleSheet,ScrollView,View,Text,Dimensions,
+	SafeAreaView,StyleSheet,ScrollView,View,Text,Dimensions,Image,TouchableOpacity,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import Slider from 'react-native-slider';
@@ -25,6 +25,7 @@ export default class FormationScreen extends React.Component {
 			time: 10,
 			musicLength: 200,
 			animationPlayToggle: false,
+			isPlay: false,
 		}
 		this.dancerList=[];
 		this.scrollView;
@@ -163,7 +164,7 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 			dancerName.push(
-				<Text style={{height: 20, width: 40, fontSize: 11}}>{this.dancerList[i].name}</Text>
+				<Text style={{height: 20, width: 40, fontSize: 11}}>[{i+1}]{this.dancerList[i].name}</Text>
 			)
 		}
 
@@ -194,7 +195,7 @@ export default class FormationScreen extends React.Component {
 
 			musicbox.push(
 				<View style={musicboxStyle}>
-					<Text style={{height: 20, fontSize: 11}}>{Math.round(time/60)}:{time%60}</Text>
+					<Text style={{height: 20, fontSize: 11}}>{Math.floor(time/60)}:{time%60}</Text>
 					{checkPoint}
 				</View>
 			)
@@ -206,6 +207,13 @@ export default class FormationScreen extends React.Component {
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1,}}>
 
+				<View style={{alignItems: 'flex-end'}}>
+					<TouchableOpacity
+					onPress={()=>{this.setState({isPlay: !this.state.isPlay})}}>
+						<Image source={require('../../assets/drawable/btn_play.png')} style={styles.button}/>
+					</TouchableOpacity>
+				</View>
+
 				<View style={{minHeight: height/2, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{dancers}
 				</View>
@@ -215,8 +223,8 @@ export default class FormationScreen extends React.Component {
 					<Slider
 					value={this.state.time}
 					onValueChange={value => {
-						this.setState({ time: value })
-						this.scrollView.scrollTo({x: (value+2)*30 - width/2})
+						this.setState({ time: Math.round(value) })
+						// this.scrollView.scrollTo({x: (value+2)*30 - width/2})
 					}}
 					maximumValue={this.state.musicLength}
 					style={{flex: 1}}
@@ -286,6 +294,24 @@ export default class FormationScreen extends React.Component {
 				}
 			);
 		});
+
+		// 재생 버튼 누르면 ?초마다 실행됨
+		this.interval = setInterval(() => {
+      if(this.state.isPlay == true){
+				this.setState({time: this.state.time+1});
+			}
+		}, 1000);
+	}
+
+	componentDidUpdate() {
+		console.log(this.TAG, "componentDidUpdate");
+		// time에 맞게 scroll view를 강제 scroll하기
+		this.scrollView.scrollTo({x: (this.state.time+2)*30 - width/2})
+	}
+
+	componentWillUnmount() {
+		console.log(this.TAG, "componentWillUnmount");
+		clearInterval(this.interval);
 	}
 }
 
@@ -302,5 +328,11 @@ const styles = StyleSheet.create({
 		//backgroundColor: COLORS.blue,
 		maxHeight: height/2,
 		flex: 1,
-	}
+	},
+	button: {
+    width: 30,
+    height: 30,
+    marginTop: 10,
+    marginRight: 10,
+  },
 })
