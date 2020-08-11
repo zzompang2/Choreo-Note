@@ -1,14 +1,19 @@
 import React from 'react';
 import {
-	SafeAreaView,StyleSheet,ScrollView,View,Text,
+	SafeAreaView,StyleSheet,ScrollView,View,Text,Dimensions,
 } from 'react-native';
-import Dancer from '../components/Dancer';
-
 import SQLite from "react-native-sqlite-storage";
+import Slider from 'react-native-slider';
+
+// custom library
+import Dancer from '../components/Dancer';
 import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
+
+// 화면의 가로, 세로 길이 받아오기
+const {width,height} = Dimensions.get('window');
 
 export default class FormationScreen extends React.Component {
 	constructor(props){
@@ -22,6 +27,8 @@ export default class FormationScreen extends React.Component {
 			animationPlayToggle: false,
 		}
 		this.dancerList=[];
+		this.scrollView;
+		this.scrollViewStyle;
 		this.TAG = "FormationScreen/";
 
 		db.transaction(txn => {
@@ -39,6 +46,12 @@ export default class FormationScreen extends React.Component {
 			);
 			txn.executeSql(
 				'INSERT INTO dancer VALUES (0, 1, "zzom");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 2, "jin");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 3, "gogo");'
 			);
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS position(' +
@@ -66,6 +79,12 @@ export default class FormationScreen extends React.Component {
 			);
 			txn.executeSql(
 				'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 2, 0, 0, 50);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 3, 0, -100, -10);'
 			);
 		})
 	}
@@ -114,62 +133,67 @@ export default class FormationScreen extends React.Component {
 				let j=0;
 				for(; j<this.state.allPosList[i].length; j++){
 					if(this.state.allPosList[i][j].time > time){
-						checkPoint.push( <Text>/</Text> )
+						checkPoint.push( <Text style={{height: 20}}></Text> )
 						break;
 					}
 					if(this.state.allPosList[i][j].time == time){
-						checkPoint.push( <Text>*</Text> )
+						checkPoint.push( <Text style={{height: 20}}>*</Text> )
 						break;
 					}
 				}
 				if(j == this.state.allPosList[i].length)
-					checkPoint.push( <Text>/</Text> )
+					checkPoint.push( <Text style={{height: 20}}></Text> )
 			}
+
+			// 현재 시간에 대응하는 box 색칠하기
+			var musicboxStyle = [styles.musicbox];
+			if(time == Math.round(this.state.time))
+				musicboxStyle = [styles.musicbox,{backgroundColor: COLORS.yellow}];
+
 			musicbox.push(
-				<View style={{margin: 2, backgroundColor: COLORS.yellow}}>
-					<Text>{Math.round(time/60)}:{time%60}</Text>
+				<View style={musicboxStyle}>
+					<Text style={{height: 20, fontSize: 11}}>{Math.round(time/60)}:{time%60}</Text>
 					{checkPoint}
 				</View>
 			)
 		}
-		
+
+		console.log("max H: " + (30 + dancerNum*20))
+		this.scrollViewStyle = [styles.scrollView, {height: (30 + dancerNum*20)}]
+
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1}}>
-				<View style={{flex: 4, backgroundColor: COLORS.blue, alignItems: 'center', justifyContent: 'center'}}>
+
+				<View style={{minHeight: height/2, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{dancers}
 				</View>
 
+				<Slider
+				value={this.state.value}
+				onValueChange={value => {
+					this.setState({ time: value })
+					this.scrollView.scrollTo({x: (value+2)*30 - width/2})
+				}}
+				maximumValue={this.state.musicLength}
+				style={{height: 25}}
+				/>
+
+				<View style={this.scrollViewStyle}>
 				<ScrollView
 				horizontal={true}
-				style={{flex: 1}}>
+				showsHorizontalScrollIndicator={false}
+				ref={ref => (this.scrollView = ref)}>
 					{musicbox}
 				</ScrollView>
-				{/* <FlatList
-				horizontal={true}
-				data={this.state.allPosList[1]}
-				renderItem={({item, index}) => 
-				<View style={{flexDirection: 'row', backgroundColor: COLORS.red}}>
-					{() => {
-						var texts = [];
-						for(let i; i<2; i++){
-							texts.push(
-								<Text numberOfLines={1}>{item.posx}, </Text>
-							)
-						}
-					}}
-					<Text numberOfLines={1}>{item.posx}, </Text>
-					<Text numberOfLines={1}>{item.posy}</Text>
 				</View>
-				}
-				keyExtractor={(item, index) => index.toString()}
-				style={{flex: 1, backgroundColor: COLORS.yellow}}
-				/> */}
+
 			</SafeAreaView>
 		)
 	}
 
 	componentDidMount() {
 		console.log(this.TAG, "componentDidMount");
+
 		var _allPosList = [];
 		var _dancerList = [];
 
@@ -212,3 +236,18 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 }
+
+const styles = StyleSheet.create({
+	musicbox: {
+		width: 28,
+		margin: 1, 
+		padding: 1,
+		borderRightWidth: 1,
+		borderRightColor: COLORS.grayMiddle,
+		alignItems: 'center',
+	},
+	scrollView: {
+		//backgroundColor: COLORS.blue,
+		maxHeight: height/2,
+	}
+})
