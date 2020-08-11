@@ -34,6 +34,82 @@ export default class ListScreen extends React.Component {
 			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.01.01", "사람들이 움직이는 게");', []
 			// );
 		})
+
+		db.transaction(txn => {
+			txn.executeSql('DROP TABLE IF EXISTS dancer', []);
+			txn.executeSql('DROP TABLE IF EXISTS position', []);
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS dancer(' +
+					'nid INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'name	TEXT, ' +
+					'PRIMARY KEY(did, nid) );'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 0, "ham");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 1, "zzom");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 2, "jin");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 3, "gogo");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 4, "gogo");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 5, "gogo");'
+			);
+			txn.executeSql(
+				'INSERT INTO dancer VALUES (0, 6, "gogo");'
+			);
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS position(' +
+					'nid INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'time INTEGER NOT NULL, ' +
+					'posx INTEGER NOT NULL, ' +
+					'posy INTEGER NOT NULL, ' +
+					'PRIMARY KEY(nid, did, time) );'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 0, 0, 10, 10);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 0, 5, 30, 30);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 1, 6, -20, -40);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 2, 0, 0, 50);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 3, 0, -100, -10);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 4, 0, -200, 0);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 5, 0, 300, -100);'
+			);
+			txn.executeSql(
+				'INSERT INTO position VALUES (0, 6, 0, -500, -10);'
+			);
+		})
+		
 	}
 
 	render() {

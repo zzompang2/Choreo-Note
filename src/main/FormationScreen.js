@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView,StyleSheet,ScrollView,View,Text,Dimensions,Image,TouchableOpacity,
+	SafeAreaView, StyleSheet, ScrollView, View, Text, Dimensions, Image, TouchableOpacity, Alert,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import Slider from 'react-native-slider';
@@ -22,7 +22,7 @@ export default class FormationScreen extends React.Component {
       db,
 			noteId: props.route.params.noteId,
 			allPosList: [],
-			time: 10,
+			time: 0,
 			musicLength: 200,
 			animationPlayToggle: false,
 			isPlay: false,
@@ -31,66 +31,10 @@ export default class FormationScreen extends React.Component {
 		this.scrollView;
 		this.scrollViewStyle;
 		this.TAG = "FormationScreen/";
-
-		db.transaction(txn => {
-			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
-			// txn.executeSql('DROP TABLE IF EXISTS position', []);
-			txn.executeSql(
-				'CREATE TABLE IF NOT EXISTS dancer(' +
-					'nid INTEGER NOT NULL, ' +
-					'did INTEGER NOT NULL, ' +
-					'name	TEXT, ' +
-					'PRIMARY KEY(did, nid) );'
-			);
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 0, "ham");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 1, "zzom");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 2, "jin");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 3, "gogo");'
-			// );
-			txn.executeSql(
-				'CREATE TABLE IF NOT EXISTS position(' +
-					'nid INTEGER NOT NULL, ' +
-					'did INTEGER NOT NULL, ' +
-					'time INTEGER NOT NULL, ' +
-					'posx INTEGER NOT NULL, ' +
-					'posy INTEGER NOT NULL, ' +
-					'PRIMARY KEY(nid, did, time) );'
-			);
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 0, 10, 10);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 5, 30, 30);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 1, 6, -20, -40);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 2, 0, 0, 50);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 3, 0, -100, -10);'
-			// );
-		})
 	}
 
-	// 자식 컴포넌트(Draggable)에서 값 받아오기
+	// 자식 컴포넌트(Dancer)에서 값 받아오기
+	// Dancer를 드랍했을 때 저장된 position 좌표를 추가(또는 수정)한다.
   dropedPositionSubmit = (did, _x, _y) => {
     console.log(this.TAG + "dropedPositionSubmit");
     console.log(this.TAG + "놓은 위치: " + Math.round(_x) + ", " + Math.round(_y));
@@ -133,16 +77,38 @@ export default class FormationScreen extends React.Component {
 		}
 		_allPosList[did].splice(_allPosList[did].length, 0, newPos);
 		this.setState({allPosList: _allPosList})
-
-    //this._addPosition(index, _x, _y);
-    //this.setState({pos: {x: Math.round(_x), y: Math.round(_y)}});
   }
 
-	// splitIntoTime = () => {
-	// 	if(this.state.allPosList.length == 0) return [];
-	// 	var timeList = [];
+	deletePosition = (did, time) => {
+		console.log(this.TAG, "deletePosition");
 
-	// }
+		if(time == 0) {
+			Alert.alert("경고", "초기 상태는 지울 수 없어요!");
+			return;
+		}
+		
+		this.state.db.transaction(txn => {
+      txn.executeSql(
+				"DELETE FROM position " +
+				"WHERE nid=? " +
+				"AND did=? " +
+				"AND time=?;",
+				[this.state.noteId, did, time]
+			);
+		});
+
+		// state 업데이트
+		var _allPosList = this.state.allPosList;
+		var posList = _allPosList[did];
+
+		for(let i=0; i<posList.length; i++){
+			if(time == posList[i].time){
+				posList.splice(i, 1);
+				this.setState({allPosList: _allPosList})
+				return;
+			}
+		}
+	}
 
 	render() {
 		console.log(this.TAG, "render");
@@ -159,7 +125,7 @@ export default class FormationScreen extends React.Component {
 				position={this.state.allPosList[i]} 
 				dropedPositionSubmit={this.dropedPositionSubmit} 
 				curTime={this.state.time}
-				// toggle={this.state.animationPlayToggle}
+				// isPlay={this.state.isPlay}
 				// elevation={100}
 				/>
 			)
@@ -180,7 +146,11 @@ export default class FormationScreen extends React.Component {
 						break;
 					}
 					if(this.state.allPosList[i][j].time == time){
-						checkPoint.push( <Text style={{height: 20}}>*</Text> )
+						checkPoint.push( 
+						<TouchableOpacity onLongPress={()=>this.deletePosition(i, time)}>
+							<Text style={{height: 20}}>*</Text> 
+						</TouchableOpacity>
+						)
 						break;
 					}
 				}
