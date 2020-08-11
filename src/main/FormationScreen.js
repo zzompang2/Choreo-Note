@@ -110,6 +110,42 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	addPosition = (did, time) => {
+		console.log(this.TAG, "addPosition");
+
+		// time에 맞는 위치 구하기
+		var _allPosList = this.state.allPosList;
+		var posList = _allPosList[did];
+		var posx;
+		var posy;
+
+		let i=0;
+		for(; i<posList.length; i++){
+			if(time < posList[i].time){
+				const dx = (posList[i].posx - posList[i-1].posx) * (time - posList[i-1].time) / (posList[i].time - posList[i-1].time)
+				const dy = (posList[i].posy - posList[i-1].posy) * (time - posList[i-1].time) / (posList[i].time - posList[i-1].time)
+				posx = posList[i-1].posx + dx;
+				posy = posList[i-1].posy + dy;
+				break;
+			}
+		}
+		if(i == posList.length) {
+			posx = posList[i-1].posx;
+			posy = posList[i-1].posy;
+		}
+
+		this.state.db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
+				[this.state.noteId, did, time, posx, posy]
+			);
+		});
+
+		posList.splice(i, 0, {posx: posx, posy: posy, time: time});
+		_allPosList.splice(did, 1, posList);
+		this.setState({allPosList: _allPosList});
+	}
+
 	render() {
 		console.log(this.TAG, "render");
 
@@ -142,20 +178,28 @@ export default class FormationScreen extends React.Component {
 				let j=0;
 				for(; j<this.state.allPosList[i].length; j++){
 					if(this.state.allPosList[i][j].time > time){
-						checkPoint.push( <Text style={{height: 20}}></Text> )
+						checkPoint.push( 
+							<TouchableOpacity onPressIn={()=>this.addPosition(i, time)}>
+								<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
+							</TouchableOpacity>
+						)
 						break;
 					}
 					if(this.state.allPosList[i][j].time == time){
 						checkPoint.push( 
 						<TouchableOpacity onLongPress={()=>this.deletePosition(i, time)}>
-							<Text style={{height: 20}}>*</Text> 
+							<Text style={{height: 20, color: COLORS.red}}> * </Text> 
 						</TouchableOpacity>
 						)
 						break;
 					}
 				}
 				if(j == this.state.allPosList[i].length)
-					checkPoint.push( <Text style={{height: 20}}></Text> )
+					checkPoint.push( 
+						<TouchableOpacity onPressIn={()=>this.addPosition(i, time)}>
+							<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
+						</TouchableOpacity>
+					)
 			}
 
 			// 현재 시간에 대응하는 box 색칠하기
