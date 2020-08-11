@@ -16,12 +16,12 @@ export default class FormationScreen extends React.Component {
 		this.state = {
       db,
 			noteId: props.route.params.noteId,
-			dancerList: [],
 			allPosList: [[]],
 			time: 0,
 			musicLength: 200,
 			animationPlayToggle: false,
 		}
+		this.dancerList=[];
 		this.TAG = "FormationScreen/";
 
 		db.transaction(txn => {
@@ -89,8 +89,10 @@ export default class FormationScreen extends React.Component {
 	render() {
 		console.log(this.TAG, "render");
 
+		const dancerNum = this.dancerList.length;
+
 		var dancers = [];
-    for(let i=0; i<this.state.dancerList.length; i++){
+    for(let i=0; i<dancerNum; i++){
       dancers.push(
 				<Dancer 
 				// number={i+1} 
@@ -104,10 +106,24 @@ export default class FormationScreen extends React.Component {
 		}
 
 		var musicbox = [];
-		for(let i=0; i<this.state.musicLength; i++){
+		for(let time=0; time<this.state.musicLength; time++){
+			var checkPoint = [];
+			for(var i=0; i<dancerNum; i++){
+				// time에 체크한 포인트가 있는지 확인
+				for(let j=0; j<this.state.allPosList[i].length; j++){
+					if(this.state.allPosList[i][j].time > time) break;
+					if(this.state.allPosList[i][j].time == time){
+						checkPoint.push(
+							<Text>*</Text>
+						)
+						break;
+					}
+				}				
+			}
 			musicbox.push(
 				<View style={{margin: 2, backgroundColor: COLORS.yellow}}>
 					<Text>{Math.round(i/60)}:{i%60}</Text>
+					{checkPoint}
 				</View>
 			)
 		}
@@ -119,7 +135,8 @@ export default class FormationScreen extends React.Component {
 				</View>
 
 				<ScrollView
-				horizontal={true}>
+				horizontal={true}
+				style={{flex: 1}}>
 					{musicbox}
 				</ScrollView>
 				{/* <FlatList
@@ -175,14 +192,16 @@ export default class FormationScreen extends React.Component {
 									posList.push(posResult.rows.item(j));
 								}
 								_allPosList.push(posList);
+								console.log("posList: " + posList);
 								if(i == dancerResult.rows.length-1){
 									this.setState({allPosList: _allPosList})
+									console.log("allPosList: " + _allPosList);
 								}
 							}
 						);
 					}
 					// console.log("dancer list: ", _dancerList);
-					this.setState({dancerList: _dancerList});
+					this.dancerList = _dancerList;
 				}
 			);
 		});
