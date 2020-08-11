@@ -63,40 +63,45 @@ export default class Dancer extends React.Component {
         //this.state.pan.setOffset({x: 0, y: 0});
       }
     });
-    this.TAG = "Draggable/";
+    this.TAG = "Dancer/";
   }
 
-  // getCurPosition() {
-  //   for(var i=0; i<this.props.position.length; i++){
-  //     if(this.props.curTime <= this.props.position[i].time){
-  //       //console.log(this.TAG + "getCurPosition: " + this.props.curTime + " vs. ["+i+"] " + this.props.position[i].time);
-  //       break;
-  //     }
-  //   }
-  //   if(i == this.props.position.length)
-  //     return({x: this.props.position[i-1].posx, y: this.props.position[i-1].posy});
+  // 전달받은 curTime에 어느 위치에 놓여져 있는지 계산한다.
+  getCurPosition = () => {
+    const position = this.props.position;
+    const curTime = this.props.curTime;
 
-  //   if(this.props.curTime == this.props.position[i].time)
-  //     return({x: this.props.position[i].posx, y: this.props.position[i].posy});
+    // 사실 error를 return해야 맞는 것 같다.
+    if(position.length == 0) return({x:0, y:0});
 
-  //   const dx = (this.props.position[i].posx - this.props.position[i-1].posx) * (this.props.curTime - this.props.position[i-1].time) / (this.props.position[i].time - this.props.position[i-1].time);
-  //   const dy = (this.props.position[i].posy - this.props.position[i-1].posy) * (this.props.curTime - this.props.position[i-1].time) / (this.props.position[i].time - this.props.position[i-1].time);    
+    // 몇 번째 index 사이에 있는지 계산.
+    for(var i=0; i<position.length; i++){
+      if(curTime <= position[i].time) break;
+    }
+    // 가장 큰 시간보다 큰 경우.
+    if(i == position.length)
+      return({x: position[i-1].posx, y: position[i-1].posy});
+    // check point와 시간이 같은 경우
+    if(curTime == position[i].time)
+      return({x: position[i].posx, y: position[i].posy});
+
+    const dx = (position[i].posx - position[i-1].posx) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time);
+    const dy = (position[i].posy - position[i-1].posy) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time);    
     
-  //   //console.log(this.TAG + "dx: " + dx +", dy: "+ dy);
-  //   //console.log(this.TAG + "posx: " + this.props.position[i-1].posx + ", posy: " + this.props.position[i-1].posy);
-  //   return({x: this.props.position[i-1].posx + dx, y: this.props.position[i-1].posy + dy})
-  // }
+    return({x: position[i-1].posx + dx, y: position[i-1].posy + dy})
+  }
 
   render() {
     //console.log(this.TAG + "render");
     //console.log(this.TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
 
-    //const curPosition = this.getCurPosition();
-    //console.log(this.TAG + "getCurPosition: " + curPosition.x +", "+curPosition.y);
+    const curPosition = this.getCurPosition();
+    console.log(this.TAG + "getCurPosition: " + curPosition.x +", "+curPosition.y);
     
-    
-    //this.state.pan.setValue(curPosition)
-    //this._val = {x: curPosition.x, y: curPosition.y}
+    // cur position 적용
+    this.state.pan.setValue(curPosition)
+    // setValue하면 _val 값도 적용됨.
+    // this._val = {x: curPosition.x, y: curPosition.y}
     
     // 위치를 지정할 스타일
     const panStyle = { transform: this.state.pan.getTranslateTransform() }

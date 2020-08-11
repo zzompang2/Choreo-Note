@@ -16,7 +16,7 @@ export default class FormationScreen extends React.Component {
 		this.state = {
       db,
 			noteId: props.route.params.noteId,
-			allPosList: [[]],
+			allPosList: [],
 			time: 0,
 			musicLength: 200,
 			animationPlayToggle: false,
@@ -56,13 +56,13 @@ export default class FormationScreen extends React.Component {
 				'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 2, 30, 30);'
+				'INSERT INTO position VALUES (0, 0, 5, 30, 30);'
 			);
 			txn.executeSql(
 				'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 1, -20, -40);'
+				'INSERT INTO position VALUES (0, 1, 6, -20, -40);'
 			);
 			txn.executeSql(
 				'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
@@ -80,25 +80,26 @@ export default class FormationScreen extends React.Component {
     //this.setState({pos: {x: Math.round(_x), y: Math.round(_y)}});
   }
 
-	splitIntoTime = () => {
-		if(this.state.allPosList.length == 0) return [];
-		var timeList = [];
+	// splitIntoTime = () => {
+	// 	if(this.state.allPosList.length == 0) return [];
+	// 	var timeList = [];
 
-	}
+	// }
 
 	render() {
 		console.log(this.TAG, "render");
 
-		const dancerNum = this.dancerList.length;
+		const dancerNum = this.state.allPosList.length;
+		console.log("dancerNum: " + dancerNum);
 
 		var dancers = [];
     for(let i=0; i<dancerNum; i++){
       dancers.push(
 				<Dancer 
-				// number={i+1} 
-				// position={this.state.positionList[i]} 
+				number={i+1} 
+				position={this.state.allPosList[i]} 
 				// onSearchSubmit={this.onSearchSubmit} 
-				// curTime={this.state.time} 
+				curTime={this.state.time} 
 				// toggle={this.state.animationPlayToggle}
 				// elevation={100}
 				/>
@@ -108,21 +109,25 @@ export default class FormationScreen extends React.Component {
 		var musicbox = [];
 		for(let time=0; time<this.state.musicLength; time++){
 			var checkPoint = [];
-			for(var i=0; i<dancerNum; i++){
+			for(let i=0; i<dancerNum; i++){
 				// time에 체크한 포인트가 있는지 확인
-				for(let j=0; j<this.state.allPosList[i].length; j++){
-					if(this.state.allPosList[i][j].time > time) break;
-					if(this.state.allPosList[i][j].time == time){
-						checkPoint.push(
-							<Text>*</Text>
-						)
+				let j=0;
+				for(; j<this.state.allPosList[i].length; j++){
+					if(this.state.allPosList[i][j].time > time){
+						checkPoint.push( <Text>/</Text> )
 						break;
 					}
-				}				
+					if(this.state.allPosList[i][j].time == time){
+						checkPoint.push( <Text>*</Text> )
+						break;
+					}
+				}
+				if(j == this.state.allPosList[i].length)
+					checkPoint.push( <Text>/</Text> )
 			}
 			musicbox.push(
 				<View style={{margin: 2, backgroundColor: COLORS.yellow}}>
-					<Text>{Math.round(i/60)}:{i%60}</Text>
+					<Text>{Math.round(time/60)}:{time%60}</Text>
 					{checkPoint}
 				</View>
 			)
@@ -194,8 +199,8 @@ export default class FormationScreen extends React.Component {
 								_allPosList.push(posList);
 								console.log("posList: " + posList);
 								if(i == dancerResult.rows.length-1){
-									this.setState({allPosList: _allPosList})
-									console.log("allPosList: " + _allPosList);
+									console.log("allPosList: " + _allPosList[0]);
+									this.setState({allPosList: _allPosList});
 								}
 							}
 						);
