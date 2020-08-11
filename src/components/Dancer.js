@@ -28,9 +28,7 @@ export default class Dancer extends React.Component {
 
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
-        //console.log(this.TAG + "onPanResponderGrant/터치이벤트 발생");
-        //console.log(this.TAG + "시작위치(_val): " + Math.round(this._val.x) + ", " + Math.round(this._val.y));
-
+        // drag되기 전 초기 위치 저장
         this._prevVal = {x: this._val.x, y: this._val.y}
 
         this.state.pan.setOffset({
@@ -56,11 +54,11 @@ export default class Dancer extends React.Component {
       onPanResponderRelease: (e, gesture) => {
         //console.log(this.TAG + "onPanResponderRelease/터치 끝");
 
-        this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
+        // this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
 
         // 부모 컴포넌트로 값 보내기
-        //this.props.onSearchSubmit(this.props.number-1, this._val.x, this._val.y);
-        //this.state.pan.setOffset({x: 0, y: 0});
+        this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
+        this.state.pan.setOffset({x: 0, y: 0});
       }
     });
     this.TAG = "Dancer/";
@@ -96,7 +94,6 @@ export default class Dancer extends React.Component {
     //console.log(this.TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
 
     const curPosition = this.getCurPosition();
-    console.log(this.TAG + "getCurPosition: " + curPosition.x +", "+curPosition.y);
     
     // cur position 적용
     this.state.pan.setValue(curPosition)
@@ -109,7 +106,7 @@ export default class Dancer extends React.Component {
       <Animated.View
         {...this.panResponder.panHandlers}
         style={[panStyle, styles.circle]}>
-        <Text style={styles.number}>{this.props.number}</Text>
+        <Text style={styles.number}>{this.props.did+1}</Text>
       </Animated.View>
     );
   }

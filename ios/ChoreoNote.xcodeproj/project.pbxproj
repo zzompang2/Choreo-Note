@@ -16,7 +16,6 @@
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* ChoreoNoteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ChoreoNoteTests.m */; };
-		376BCE2024E05A0B00C3E7CC /* www in Resources */ = {isa = PBXBuildFile; fileRef = 376BCE1F24E05A0B00C3E7CC /* www */; };
 		456DBFD6B4AD87F9E06FEE47 /* libPods-ChoreoNote-ChoreoNoteTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD762218CD3197F29F38C99 /* libPods-ChoreoNote-ChoreoNoteTests.a */; };
 		5B8AA1E1625E969599537A76 /* libPods-ChoreoNote-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CCC80B2A3599E98635692A86 /* libPods-ChoreoNote-tvOSTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -56,7 +55,6 @@
 		2D02E47B1E0B4A5D006451C7 /* ChoreoNote-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ChoreoNote-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* ChoreoNote-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ChoreoNote-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E625A618D99FF5D118B96B /* Pods-ChoreoNote-ChoreoNoteTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChoreoNote-ChoreoNoteTests.release.xcconfig"; path = "Target Support Files/Pods-ChoreoNote-ChoreoNoteTests/Pods-ChoreoNote-ChoreoNoteTests.release.xcconfig"; sourceTree = "<group>"; };
-		376BCE1F24E05A0B00C3E7CC /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ChoreoNote/www; sourceTree = "<group>"; };
 		681AF46187C645402D33D857 /* Pods-ChoreoNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChoreoNote.debug.xcconfig"; path = "Target Support Files/Pods-ChoreoNote/Pods-ChoreoNote.debug.xcconfig"; sourceTree = "<group>"; };
 		6F79FA389A2848715ED54A11 /* Pods-ChoreoNote-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChoreoNote-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-ChoreoNote-tvOSTests/Pods-ChoreoNote-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ChoreoNote/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -142,7 +140,6 @@
 		13B07FAE1A68108700A75B9A /* ChoreoNote */ = {
 			isa = PBXGroup;
 			children = (
-				376BCE1F24E05A0B00C3E7CC /* www */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -343,7 +340,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				376BCE2024E05A0B00C3E7CC /* www in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);

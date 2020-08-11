@@ -22,7 +22,7 @@ export default class FormationScreen extends React.Component {
       db,
 			noteId: props.route.params.noteId,
 			allPosList: [],
-			time: 0,
+			time: 10,
 			musicLength: 200,
 			animationPlayToggle: false,
 		}
@@ -32,8 +32,8 @@ export default class FormationScreen extends React.Component {
 		this.TAG = "FormationScreen/";
 
 		db.transaction(txn => {
-			txn.executeSql('DROP TABLE IF EXISTS dancer', []);
-			txn.executeSql('DROP TABLE IF EXISTS position', []);
+			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
+			// txn.executeSql('DROP TABLE IF EXISTS position', []);
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS dancer(' +
 					'nid INTEGER NOT NULL, ' +
@@ -41,18 +41,18 @@ export default class FormationScreen extends React.Component {
 					'name	TEXT, ' +
 					'PRIMARY KEY(did, nid) );'
 			);
-			txn.executeSql(
-				'INSERT INTO dancer VALUES (0, 0, "ham");'
-			);
-			txn.executeSql(
-				'INSERT INTO dancer VALUES (0, 1, "zzom");'
-			);
-			txn.executeSql(
-				'INSERT INTO dancer VALUES (0, 2, "jin");'
-			);
-			txn.executeSql(
-				'INSERT INTO dancer VALUES (0, 3, "gogo");'
-			);
+			// txn.executeSql(
+			// 	'INSERT INTO dancer VALUES (0, 0, "ham");'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO dancer VALUES (0, 1, "zzom");'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO dancer VALUES (0, 2, "jin");'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO dancer VALUES (0, 3, "gogo");'
+			// );
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS position(' +
 					'nid INTEGER NOT NULL, ' +
@@ -62,40 +62,78 @@ export default class FormationScreen extends React.Component {
 					'posy INTEGER NOT NULL, ' +
 					'PRIMARY KEY(nid, did, time) );'
 			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 0, 10, 10);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 5, 30, 30);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 6, -20, -40);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 2, 0, 0, 50);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 3, 0, -100, -10);'
-			);
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 0, 0, 10, 10);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 0, 5, 30, 30);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 1, 6, -20, -40);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 2, 0, 0, 50);'
+			// );
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 3, 0, -100, -10);'
+			// );
 		})
 	}
 
 	// 자식 컴포넌트(Draggable)에서 값 받아오기
-  onSearchSubmit = (index, _x, _y) => {
-    console.log(this.TAG + "onSearchSubmit");
-
+  dropedPositionSubmit = (did, _x, _y) => {
+    console.log(this.TAG + "dropedPositionSubmit");
     console.log(this.TAG + "놓은 위치: " + Math.round(_x) + ", " + Math.round(_y));
-    this.pos = {x: _x, y: _y};
-    this._addPosition(index, _x, _y);
+		
+		const curTime = Math.round(this.state.time);
+
+		// SQLite DB에서 업데이트
+		this.state.db.transaction(txn => {
+      txn.executeSql(
+				"DELETE FROM position " +
+				"WHERE nid=? " +
+				"AND did=? " +
+				"AND time=?;",
+				[this.state.noteId, did, curTime]
+			);
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
+				[this.state.noteId, did, curTime, _x, _y]
+			);
+		})
+
+		// state 업데이트
+		const newPos = {posx: _x, posy: _y, time: curTime};
+		var _allPosList = this.state.allPosList;
+		var posList = _allPosList[did];
+
+		console.log(this.TAG, "newPos: " + newPos);
+
+		for(let i=0; i<posList.length; i++){
+			if(curTime == posList[i].time){
+				posList.splice(i, 1, newPos);
+				this.setState({allPosList: _allPosList})
+				return;
+			}
+			else if(curTime < posList[i].time){
+				posList.splice(i, 0, newPos);
+				this.setState({allPosList: _allPosList})
+				return;
+			}
+		}
+		_allPosList[did].splice(_allPosList[did].length, 0, newPos);
+		this.setState({allPosList: _allPosList})
+
+    //this._addPosition(index, _x, _y);
     //this.setState({pos: {x: Math.round(_x), y: Math.round(_y)}});
   }
 
@@ -109,24 +147,28 @@ export default class FormationScreen extends React.Component {
 		console.log(this.TAG, "render");
 
 		const dancerNum = this.state.allPosList.length;
-		console.log("dancerNum: " + dancerNum);
+		// console.log("dancerNum: " + dancerNum);
 
 		var dancers = [];
+		var dancerName = [<Text style={{height: 20}}></Text>];
     for(let i=0; i<dancerNum; i++){
       dancers.push(
 				<Dancer 
-				number={i+1} 
+				did={i} 
 				position={this.state.allPosList[i]} 
-				// onSearchSubmit={this.onSearchSubmit} 
-				curTime={this.state.time} 
+				dropedPositionSubmit={this.dropedPositionSubmit} 
+				curTime={this.state.time}
 				// toggle={this.state.animationPlayToggle}
 				// elevation={100}
 				/>
-      )
+			)
+			dancerName.push(
+				<Text style={{height: 20, width: 40, fontSize: 11}}>{this.dancerList[i].name}</Text>
+			)
 		}
 
 		var musicbox = [];
-		for(let time=0; time<this.state.musicLength; time++){
+		for(let time=0; time <= this.state.musicLength; time++){
 			var checkPoint = [];
 			for(let i=0; i<dancerNum; i++){
 				// time에 체크한 포인트가 있는지 확인
@@ -158,33 +200,43 @@ export default class FormationScreen extends React.Component {
 			)
 		}
 
-		console.log("max H: " + (30 + dancerNum*20))
-		this.scrollViewStyle = [styles.scrollView, {height: (30 + dancerNum*20)}]
+		// 인원수에 맞게 music box view의 높이를 정하기 위해서
+		this.scrollViewStyle = [styles.scrollView, {height: (20 + dancerNum*20)}]
 
 		return(
-			<SafeAreaView style={{flexDirection: 'column', flex: 1}}>
+			<SafeAreaView style={{flexDirection: 'column', flex: 1,}}>
 
 				<View style={{minHeight: height/2, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{dancers}
 				</View>
 
-				<Slider
-				value={this.state.value}
-				onValueChange={value => {
-					this.setState({ time: value })
-					this.scrollView.scrollTo({x: (value+2)*30 - width/2})
-				}}
-				maximumValue={this.state.musicLength}
-				style={{height: 25}}
-				/>
+				<View style={{flexDirection: 'row', height: 25, alignItems: 'center',}}>
+					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{Math.round(this.state.time/60)}:{Math.round(this.state.time%60)}</Text>
+					<Slider
+					value={this.state.time}
+					onValueChange={value => {
+						this.setState({ time: value })
+						this.scrollView.scrollTo({x: (value+2)*30 - width/2})
+					}}
+					maximumValue={this.state.musicLength}
+					style={{flex: 1}}
+					/>
+					<Text style={{width: 40, fontSize: 14, textAlign: 'right'}}>{Math.round(this.state.musicLength/60)}:{Math.round(this.state.musicLength%60)}</Text>
+				</View>
 
-				<View style={this.scrollViewStyle}>
-				<ScrollView
-				horizontal={true}
-				showsHorizontalScrollIndicator={false}
-				ref={ref => (this.scrollView = ref)}>
-					{musicbox}
-				</ScrollView>
+				<View style={{flexDirection: 'row'}}>
+					<View style={{flexDirection: 'column'}}>
+						{dancerName}
+					</View>
+					<View style={this.scrollViewStyle}>
+					<ScrollView
+					style={this.scrollViewStyle}
+					horizontal={true}
+					showsHorizontalScrollIndicator={false}
+					ref={ref => (this.scrollView = ref)}>
+						{musicbox}
+					</ScrollView>
+					</View>
 				</View>
 
 			</SafeAreaView>
@@ -221,9 +273,9 @@ export default class FormationScreen extends React.Component {
 									posList.push(posResult.rows.item(j));
 								}
 								_allPosList.push(posList);
-								console.log("posList: " + posList);
+
+								// for문 다 돌았다면 state 업데이트
 								if(i == dancerResult.rows.length-1){
-									console.log("allPosList: " + _allPosList[0]);
 									this.setState({allPosList: _allPosList});
 								}
 							}
@@ -249,5 +301,6 @@ const styles = StyleSheet.create({
 	scrollView: {
 		//backgroundColor: COLORS.blue,
 		maxHeight: height/2,
+		flex: 1,
 	}
 })

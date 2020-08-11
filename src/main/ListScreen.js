@@ -40,7 +40,7 @@ export default class ListScreen extends React.Component {
 		console.log(this.TAG, "render");
 
 		return(
-			<SafeAreaView>
+			<SafeAreaView style={{flex: 1}}>
 				<FlatList
 				data={this.state.noteList}
 				renderItem={({item, index}) => 
