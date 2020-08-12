@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 import ListScreen from './src/main/ListScreen';
 import FormationScreen from './src/main/FormationScreen';
+import DancerScreen from './src/main/DancerScreen';
 import { COLORS } from './src/values/Colors';
 
 const Stack = createStackNavigator();
@@ -34,6 +35,10 @@ export default function App() {
 				<Stack.Screen 
 				name="FormationScreen" 
 				component={FormationScreen} />
+
+				<Stack.Screen 
+				name="DancerScreen" 
+				component={DancerScreen} />
     </Stack.Navigator>
     </NavigationContainer>
   );

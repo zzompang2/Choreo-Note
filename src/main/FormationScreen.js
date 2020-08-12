@@ -24,10 +24,10 @@ export default class FormationScreen extends React.Component {
 			allPosList: [],
 			time: 0,
 			musicLength: 200,
-			animationPlayToggle: false,
+			// animationPlayToggle: false,
 			isPlay: false,
 		}
-		this.dancerList=[];
+		this.dancerList=[];	// nid, did, name
 		this.scrollView;
 		this.scrollViewStyle;
 		this.TAG = "FormationScreen/";
@@ -146,21 +146,13 @@ export default class FormationScreen extends React.Component {
 		this.setState({allPosList: _allPosList});
 	}
 
-	changeName = (text, did) => {
-		console.log(this.TAG, "changeName: ", text + ", " + did)
+	resizeDancer = () => {
 
-		// SQLite DB에서 업데이트
-		this.state.db.transaction(txn => {
-      txn.executeSql(
-				"UPDATE dancer " +
-				"SET name=? " +
-				"WHERE nid=? " +
-				"AND did=?;",
-				[text, this.state.noteId, did]
-			);
-		});
+	}
 
-		this.dancerList[did].name = text;
+	refresh = (_dancerList, _allPosList) => {
+		this.dancerList = _dancerList;
+		this.setState({allPosList: _allPosList});
 	}
 
 	render() {
@@ -183,15 +175,14 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 			dancerName.push(
-				<View style={{height: 20, flexDirection: 'row', alignItems: 'center'}}>
-					<Text style={{fontSize: 11,}}>[{i+1}] </Text>
-					<TextInput 
-					maxLength={10}
-					onEndEditing={(e) => this.changeName(e.nativeEvent.text, i)}
-					style={{width: 60, fontSize: 11,}}>
-						{this.dancerList[i].name}
-					</TextInput>
-				</View>
+				<TouchableOpacity onPress={()=>{
+					if(this.state.isPlay) this.setState({isPlay: false})
+					this.props.navigation.navigate('DancerScreen', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
+					}>
+					<Text maxLength={10} style={{height: 20, width: 60, fontSize: 11,}}>
+						[{i+1}] {this.dancerList[i].name}
+					</Text>
+				</TouchableOpacity>
 			)
 		}
 
@@ -236,7 +227,7 @@ export default class FormationScreen extends React.Component {
 				<View style={musicboxStyle}>
 					<TouchableOpacity
 					onPress={()=>{this.setState({time: time})}}>
-						<Text style={{height: 20, fontSize: 11}}>{Math.floor(time/60)}:{time%60 < 10 ? '0'+time%60 : time%60}</Text>
+						<Text style={{height: 20, fontSize: 11}}>{time%60 == 0 ? Math.floor(time/60)+'분' : time%60+'\"'}</Text>
 					</TouchableOpacity>
 					{checkPoint}
 				</View>
@@ -247,7 +238,14 @@ export default class FormationScreen extends React.Component {
 		this.scrollViewStyle = [styles.scrollView, {height: (20 + dancerNum*20)}]
 
 		return(
-			<SafeAreaView style={{flexDirection: 'column', flex: 1,}}>
+			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
+
+				<View style={{alignItems: 'flex-end'}}>
+					<TouchableOpacity
+					onPress={()=>this.addDancer()}>
+						<Image source={require('../../assets/drawable/btn_pause.png')} style={styles.button}/>
+					</TouchableOpacity>
+				</View>
 
 				<View style={{minHeight: height/2, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{dancers}
@@ -362,8 +360,8 @@ export default class FormationScreen extends React.Component {
 
 const styles = StyleSheet.create({
 	musicbox: {
-		width: 28,
-		margin: 2, 
+		width: 25,
+		//padding: 2, 
 		borderRightWidth: 1,
 		borderRightColor: COLORS.grayMiddle,
 		alignItems: 'center',
