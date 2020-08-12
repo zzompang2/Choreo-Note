@@ -19,7 +19,7 @@ export default function App() {
         //headerStyle: { backgroundColor: COLORS.blackDark, height: 40},
         //headerTintColor: COLORS.purpleLight,
         //headerTitleAlign: 'left',
-				headerShown: true,
+				headerShown: false,
       }}>
 				
 				<Stack.Screen 
@@ -39,6 +39,7 @@ export default function App() {
 				<Stack.Screen 
 				name="DancerScreen" 
 				component={DancerScreen} />
+
     </Stack.Navigator>
     </NavigationContainer>
   );

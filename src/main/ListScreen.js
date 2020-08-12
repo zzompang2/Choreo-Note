@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View,
+  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput,
 } from 'react-native';
 
 import SQLite from "react-native-sqlite-storage";
@@ -14,23 +14,23 @@ export default class ListScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-      noteList: [],
+			noteList: [],
 		}
 		this.TAG = "ListScreen/";
 
 		db.transaction(txn => {
-			txn.executeSql('DROP TABLE IF EXISTS note', []);
+			txn.executeSql('DROP TABLE IF EXISTS note;', []);
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS note(' +
-					'id	INTEGER NOT NULL, ' +
+					'nid INTEGER NOT NULL, ' +
 					'title TEXT NOT NULL, ' +
 					'date TEXT NOT NULL, ' +
 					'music TEXT, ' +
-					'PRIMARY KEY("id") );',
+					'PRIMARY KEY("nid") );',
 				[]
 			);
 			txn.executeSql(
-				'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.01.01", "사람들이 움직이는 게");', []
+				'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.01.01", "사람들이 움직이는 게");', []
 			);
 
 			txn.executeSql('DROP TABLE IF EXISTS dancer', []);
@@ -108,33 +108,86 @@ export default class ListScreen extends React.Component {
 		})
 	}
 
+	addNote = () => {
+		console.log(this.TAG, "addNote");
+
+		const todayDate = new Date();
+		db.transaction(txn => {
+			txn.executeSql(
+				'INSERT INTO note VALUES (?, "title", ?, "music");', 
+				[this.state.noteList.length, todayDate.getFullYear() + "." + (todayDate.getMonth()+1) + "." + todayDate.getDate()],
+				() => { this.updateNoteList(); }
+			);
+		});
+	
+	}
+
+	changeName = (text, nid) => {
+		console.log(this.TAG, "changeName: ", text + ", " + nid)
+
+		// SQLite DB에서 업데이트
+		this.state.db.transaction(txn => {
+      txn.executeSql(
+				"UPDATE note " +
+				"SET title=? " +
+				"WHERE nid=?;",
+				[text, nid],
+			);
+		});
+	}
+
 	render() {
 		console.log(this.TAG, "render");
 
 		return(
+			<View style={{flex: 1}}>
+			
+			<View style={{width:'100%', height:50, flexDirection: 'row', backgroundColor:COLORS.purple, alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, paddingHorizontal: 30}}>
+				<Text></Text>
+				<Text style={{color:COLORS.white, fontSize: 15,}}>Choreo Note</Text>
+				<TouchableOpacity onPress={()=>this.addNote()}>
+					<Text style={{color:COLORS.white, fontSize: 13, padding: 5}}>추가</Text>
+				</TouchableOpacity>
+			</View>
+
 			<SafeAreaView style={{flex: 1}}>
 				<FlatList
 				data={this.state.noteList}
-				renderItem={({item, index}) => 
-				<TouchableOpacity onPress={() => this.props.navigation.navigate('FormationScreen', {noteId: item.id})}>
-					<View style={styles.rowContainer}>
-						<Text numberOfLines={1} style={styles.title}>{item.title}</Text>
-						<View style={styles.columnContainer}>
-							<Text numberOfLines={1} style={styles.music}>{item.music}</Text>
-							<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
-						</View>
-					</View>
-				</TouchableOpacity>
-				}
-				keyExtractor={(item, index) => item.id.toString()}
+				renderItem={({item, index}) => {
+					return(
+						<TouchableOpacity onPress={() => this.props.navigation.navigate('FormationScreen', {noteId: item.nid})}>
+							<View style={styles.rowContainer}>
+								<TextInput 
+								numberOfLines={1} 
+								maxLength={30}
+								style={styles.title}
+								onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.nid)}>
+									{item.title}
+								</TextInput>
+								<View style={styles.columnContainer}>
+									<TextInput numberOfLines={1} style={styles.music}>{item.music}</TextInput>
+									<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
+								</View>
+							</View>
+						</TouchableOpacity>
+					)
+				}}
+				keyExtractor={(item, index) => index.toString()}
 				style={styles.list}
 				/>
 			</SafeAreaView>
+			</View>
 		)
 	}
 
 	componentDidMount() {
 		console.log(this.TAG, "componentDidMount");
+		this.updateNoteList();
+	}
+
+	updateNoteList = () => {
+		console.log(this.TAG, "updateNoteList");
+
 		var temp = [];
 
 		this.state.db.transaction(txn => {
@@ -174,8 +227,8 @@ const styles = StyleSheet.create({
 	},
 	title: {
     color: COLORS.blackDark, 
-    fontSize:18,
-		flex: 1,
+		fontSize:18,
+		paddingRight: 10,
 		// backgroundColor: COLORS.yellow,
     //fontFamily: FONTS.binggrae2,
   },

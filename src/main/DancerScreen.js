@@ -161,10 +161,11 @@ export default class ListScreen extends React.Component {
 					이름을 눌러 수정하거나 여기를 눌러 댄서를 추가하세요.</Text>
 				</TouchableOpacity>
 				<FlatList
-					data={this.state.dancerList}
-					ItemSeparatorComponent={this.listViewItemSeparator}
-					keyExtractor={(item, index) => index.toString()}
-					renderItem={({ item }) => this.listItemView(item)}
+				showsVerticalScrollIndicator={false}
+				data={this.state.dancerList}
+				ItemSeparatorComponent={this.listViewItemSeparator}
+				keyExtractor={(item, index) => index.toString()}
+				renderItem={({ item }) => this.listItemView(item)}
 				/>
 			</SafeAreaView>
 		)

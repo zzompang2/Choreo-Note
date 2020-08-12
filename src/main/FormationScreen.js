@@ -240,7 +240,7 @@ export default class FormationScreen extends React.Component {
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
-				<View style={{minHeight: height/2, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{dancers}
 				</View>
 
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
 	},
 	scrollView: {
 		//backgroundColor: COLORS.blue,
-		maxHeight: height/2,
+		// maxHeight: height/2,
 		flex: 1,
 	},
 	button: {
