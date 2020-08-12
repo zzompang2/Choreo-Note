@@ -34,14 +34,36 @@ export default class ListScreen extends React.Component {
 				[text, this.state.noteId, did],
 			);
 		});
+
 		var _dancerList = this.state.dancerList;
 		_dancerList[did].name = text;
 		this.setState({dancerList: _dancerList});
+
 		this.props.route.params.refresh(_dancerList, this.allPosList);
 	}
 
 	addDancer = () => {
 		console.log(this.TAG, "addDancer");
+
+		const dancerNum = this.state.dancerList.length;
+
+		this.state.db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (?, ?, ?);",
+				[this.state.noteId, dancerNum, " "]
+			);
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
+				[this.state.noteId, dancerNum, 0, 0, 0]
+			);
+		});
+
+		var _dancerList = this.state.dancerList;
+		_dancerList.push({nid: this.state.noteId, did: dancerNum, name: " "});
+		this.setState({dancerList: _dancerList});
+		this.allPosList.push([{time:0, posx:0, posy:0}]);
+
+		this.props.route.params.refresh(_dancerList, this.allPosList);
 	}
 
 	deleteDancer = (did) => {
@@ -114,7 +136,7 @@ export default class ListScreen extends React.Component {
 
 				<TextInput
 				maxLength={10}
-				style={{fontSize: 16, color: COLORS.blackDark, padding: 10,}}
+				style={{fontSize: 16, color: COLORS.blackDark, padding: 10, paddingRight: 50}}
 				onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}>
 					{item.name}
 				</TextInput>
@@ -133,9 +155,11 @@ export default class ListScreen extends React.Component {
 	render(){
 		return(
 			<SafeAreaView style={{flex: 1, width: '80%', alignSelf: 'center'}}>
+				<TouchableOpacity onPress={()=>this.addDancer()}>
 				<Text
 				style={{fontSize: 16, color: COLORS.grayMiddle, paddingTop: 10, paddingBottom: 5, alignSelf: 'center'}}>
-					이름을 눌러 수정하거나 버튼을 눌러 추가/삭제하세요.</Text>
+					이름을 눌러 수정하거나 여기를 눌러 댄서를 추가하세요.</Text>
+				</TouchableOpacity>
 				<FlatList
 					data={this.state.dancerList}
 					ItemSeparatorComponent={this.listViewItemSeparator}

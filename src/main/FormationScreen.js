@@ -179,7 +179,7 @@ export default class FormationScreen extends React.Component {
 					if(this.state.isPlay) this.setState({isPlay: false})
 					this.props.navigation.navigate('DancerScreen', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
 					}>
-					<Text maxLength={10} style={{height: 20, width: 60, fontSize: 11,}}>
+					<Text style={{height: 20, width: 60, fontSize: 11,}}>
 						[{i+1}] {this.dancerList[i].name}
 					</Text>
 				</TouchableOpacity>
@@ -239,13 +239,6 @@ export default class FormationScreen extends React.Component {
 
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
-
-				<View style={{alignItems: 'flex-end'}}>
-					<TouchableOpacity
-					onPress={()=>this.addDancer()}>
-						<Image source={require('../../assets/drawable/btn_pause.png')} style={styles.button}/>
-					</TouchableOpacity>
-				</View>
 
 				<View style={{minHeight: height/2, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{dancers}
