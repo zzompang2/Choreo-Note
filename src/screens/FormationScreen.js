@@ -177,7 +177,7 @@ export default class FormationScreen extends React.Component {
 			dancerName.push(
 				<TouchableOpacity onPress={()=>{
 					if(this.state.isPlay) this.setState({isPlay: false})
-					this.props.navigation.navigate('DancerScreen', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
+					this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
 					}>
 					<Text style={{height: 20, width: 60, fontSize: 11,}}>
 						[{i+1}] {this.dancerList[i].name}

@@ -140,43 +140,43 @@ export default class ListScreen extends React.Component {
 		console.log(this.TAG, "render");
 
 		return(
-			<View style={{flex: 1}}>
-			
-			<View style={{width:'100%', height:50, flexDirection: 'row', backgroundColor:COLORS.purple, alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, paddingHorizontal: 30}}>
-				<Text></Text>
-				<Text style={{color:COLORS.white, fontSize: 15,}}>Choreo Note</Text>
-				<TouchableOpacity onPress={()=>this.addNote()}>
-					<Text style={{color:COLORS.white, fontSize: 13, padding: 5}}>추가</Text>
-				</TouchableOpacity>
-			</View>
-
 			<SafeAreaView style={{flex: 1}}>
-				<FlatList
-				data={this.state.noteList}
-				renderItem={({item, index}) => {
-					return(
-						<TouchableOpacity onPress={() => this.props.navigation.navigate('FormationScreen', {noteId: item.nid})}>
-							<View style={styles.rowContainer}>
-								<TextInput 
-								numberOfLines={1} 
-								maxLength={30}
-								style={styles.title}
-								onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.nid)}>
-									{item.title}
-								</TextInput>
-								<View style={styles.columnContainer}>
-									<TextInput numberOfLines={1} style={styles.music}>{item.music}</TextInput>
-									<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
+			
+				<View style={{width:'100%', height:50, flexDirection: 'row', backgroundColor:COLORS.purple, alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, paddingHorizontal: 30}}>
+					<Text></Text>
+					<Text style={{color:COLORS.white, fontSize: 15,}}>Choreo Note</Text>
+					<TouchableOpacity onPress={()=>this.addNote()}>
+						<Text style={{color:COLORS.white, fontSize: 13, padding: 5}}>추가</Text>
+					</TouchableOpacity>
+				</View>
+
+				<View style={{flex: 1}}>
+					<FlatList
+					data={this.state.noteList}
+					renderItem={({item, index}) => {
+						return(
+							<TouchableOpacity onPress={() => this.props.navigation.navigate('Formation', {noteId: item.nid})}>
+								<View style={styles.rowContainer}>
+									<TextInput 
+									numberOfLines={1} 
+									maxLength={30}
+									style={styles.title}
+									onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.nid)}>
+										{item.title}
+									</TextInput>
+									<View style={styles.columnContainer}>
+										<TextInput numberOfLines={1} style={styles.music}>{item.music}</TextInput>
+										<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
+									</View>
 								</View>
-							</View>
-						</TouchableOpacity>
-					)
-				}}
-				keyExtractor={(item, index) => index.toString()}
-				style={styles.list}
-				/>
+							</TouchableOpacity>
+						)
+					}}
+					keyExtractor={(item, index) => index.toString()}
+					style={styles.list}
+					/>
+				</View>
 			</SafeAreaView>
-			</View>
 		)
 	}
 
