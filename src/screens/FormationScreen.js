@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert,
+	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, FlatList,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 
@@ -11,6 +11,7 @@ import { COLORS } from '../values/Colors'
 import { FONTS } from '../values/Fonts'
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
+const TAG = "FormationScreen/";
 
 // 화면의 가로, 세로 길이 받아오기
 const {width,height} = Dimensions.get('window');
@@ -30,14 +31,13 @@ export default class FormationScreen extends React.Component {
 		this.dancerList=[];	// nid, did, name
 		this.scrollView;
 		this.scrollViewStyle;
-		this.TAG = "FormationScreen/";
 	}
 
 	// 자식 컴포넌트(Dancer)에서 값 받아오기
 	// Dancer를 드랍했을 때 저장된 position 좌표를 추가(또는 수정)한다.
   dropedPositionSubmit = (did, _x, _y) => {
-    console.log(this.TAG + "dropedPositionSubmit");
-    console.log(this.TAG + "놓은 위치: " + Math.round(_x) + ", " + Math.round(_y));
+    console.log(TAG + "dropedPositionSubmit");
+    console.log(TAG + "놓은 위치: " + Math.round(_x) + ", " + Math.round(_y));
 		
 		const curTime = Math.round(this.state.time);
 
@@ -61,7 +61,7 @@ export default class FormationScreen extends React.Component {
 		var _allPosList = this.state.allPosList;
 		var posList = _allPosList[did];
 
-		console.log(this.TAG, "newPos: " + newPos);
+		console.log(TAG, "newPos: " + newPos);
 
 		for(let i=0; i<posList.length; i++){
 			if(curTime == posList[i].time){
@@ -80,7 +80,7 @@ export default class FormationScreen extends React.Component {
   }
 
 	deletePosition = (did, time) => {
-		console.log(this.TAG, "deletePosition");
+		console.log(TAG, "deletePosition");
 
 		if(time == 0) {
 			Alert.alert("경고", "초기 상태는 지울 수 없어요!");
@@ -111,7 +111,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	addPosition = (did, time) => {
-		console.log(this.TAG, "addPosition");
+		console.log(TAG, "addPosition");
 
 		// time에 맞는 위치 구하기
 		var _allPosList = this.state.allPosList;
@@ -155,8 +155,13 @@ export default class FormationScreen extends React.Component {
 		this.setState({allPosList: _allPosList});
 	}
 
+	timeSetState = (time) => {
+		console.log(TAG, "timeSetState: "+time);
+		this.setState({time: time})
+	}
+
 	render() {
-		console.log(this.TAG, "render");
+		console.log(TAG, "render");
 
 		const dancerNum = this.state.allPosList.length;
 		// console.log("dancerNum: " + dancerNum);
@@ -198,7 +203,7 @@ export default class FormationScreen extends React.Component {
 				for(; j<this.state.allPosList[i].length; j++){
 					if(this.state.allPosList[i][j].time > time){
 						checkPoint.push( 
-							<TouchableOpacity onLongPress={()=>this.addPosition(i, time)}>
+							<TouchableOpacity key={checkPoint.length} onLongPress={()=>this.addPosition(i, time)}>
 								<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
 							</TouchableOpacity>
 						)
@@ -206,11 +211,9 @@ export default class FormationScreen extends React.Component {
 					}
 					if(this.state.allPosList[i][j].time == time){
 						checkPoint.push( 
-							<View key={checkPoint.length}>
-								<TouchableOpacity onLongPress={()=>this.deletePosition(i, time)}>
-									<Text style={{height: 20, color: COLORS.red}}> * </Text> 
-								</TouchableOpacity>
-							</View>
+							<TouchableOpacity key={checkPoint.length} onLongPress={()=>this.deletePosition(i, time)}>
+								<Text style={{height: 20, color: COLORS.red}}> * </Text> 
+							</TouchableOpacity>
 						)
 						break;
 					}
@@ -251,7 +254,7 @@ export default class FormationScreen extends React.Component {
 					{ dancers }
 				</View>
 
-				<Player musicLength={this.state.musicLength} time={this.state.time} />
+				<Player musicLength={this.state.musicLength} time={this.state.time} timeSetState={this.timeSetState}/>
 
 				<ScrollView>
 				<View style={{flexDirection: 'row'}}>
@@ -259,13 +262,20 @@ export default class FormationScreen extends React.Component {
 						{ dancerName }
 					</View>
 					<View style={this.scrollViewStyle}>
-					<ScrollView
-					style={this.scrollViewStyle}
-					horizontal={true}
-					showsHorizontalScrollIndicator={false}
-					ref={ref => (this.scrollView = ref)}>
-						{ musicbox }
-					</ScrollView>
+						{/* <ScrollView
+						style={this.scrollViewStyle}
+						horizontal={true}
+						showsHorizontalScrollIndicator={false}
+						ref={ref => (this.scrollView = ref)}>
+							{ musicbox }
+						</ScrollView> */}
+						<FlatList
+						data={musicbox}
+						renderItem={({item})=>item}
+						keyExtractor={(item, index) => index.toString()}
+						horizontal={true}
+						ref={ref => (this.scrollView = ref)}
+						/>
 					</View>
 				</View>
 				</ScrollView>
@@ -275,7 +285,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	componentDidMount() {
-		console.log(this.TAG, "componentDidMount");
+		console.log(TAG, "componentDidMount");
 
 		var _allPosList = [];
 		var _dancerList = [];
@@ -327,13 +337,13 @@ export default class FormationScreen extends React.Component {
 	}
 
 	componentDidUpdate() {
-		console.log(this.TAG, "componentDidUpdate");
+		console.log(TAG, "componentDidUpdate");
 		// time에 맞게 scroll view를 강제 scroll하기
-		this.scrollView.scrollTo({x: (this.state.time+2)*30 - width/2})
+		this.scrollView.scrollToOffset({x: (this.state.time+2)*30 - width/2})
 	}
 
 	componentWillUnmount() {
-		console.log(this.TAG, "componentWillUnmount");
+		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
 	}
 }

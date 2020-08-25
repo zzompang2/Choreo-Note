@@ -71,8 +71,16 @@ export default class Player extends React.Component{
 				<Slider
 				value={this.state.time}
 				onValueChange={value => {
-					if(this.state.time != Math.round(value))
-						this.setState({ time: Math.round(value) })
+					console.log(TAG, "onValueChange:", value);
+					if(this.state.time != Math.round(value)){
+						this.setState({ time: Math.round(value) });
+					}
+				}}
+				on
+				onSlidingComplete={(value)=>{
+					console.log(TAG, "onSlidingComplete:", value);
+					this.setState({ time: Math.round(value) });
+					this.props.timeSetState(Math.round(value));
 				}}
 				maximumValue={this.state.musicLength}
 				style={{flex: 1}}
