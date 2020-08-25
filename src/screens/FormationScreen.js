@@ -3,12 +3,12 @@ import {
 	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
-import Slider from 'react-native-slider';
 
 // custom library
-import Dancer from '../components/Dancer';
-import { COLORS } from '../values/Colors';
-import { FONTS } from '../values/Fonts';
+import Dancer from '../components/Dancer'
+import Player from '../components/Player'
+import { COLORS } from '../values/Colors'
+import { FONTS } from '../values/Fonts'
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 
@@ -244,27 +244,7 @@ export default class FormationScreen extends React.Component {
 					{dancers}
 				</View>
 
-				<View style={{flexDirection: 'row', height: 30, alignItems: 'center',}}>
-					<TouchableOpacity
-					onPress={()=>{this.setState({isPlay: !this.state.isPlay})}}>
-						{ this.state.isPlay ? 
-						<Image source={require('../../assets/drawable/btn_pause.png')} style={styles.button}/> :
-						<Image source={require('../../assets/drawable/btn_play.png')} style={styles.button}/>
-						}
-					</TouchableOpacity>
-					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{Math.round(this.state.time/60)}:{Math.round(this.state.time%60) < 10 ? '0'+Math.round(this.state.time%60) : Math.round(this.state.time%60)}</Text>
-					<Slider
-					value={this.state.time}
-					onValueChange={value => {
-						if(this.state.time != Math.round(value))
-							this.setState({ time: Math.round(value) })
-						// this.scrollView.scrollTo({x: (value+2)*30 - width/2})
-					}}
-					maximumValue={this.state.musicLength}
-					style={{flex: 1}}
-					/>
-					<Text style={{width: 40, fontSize: 14, textAlign: 'right'}}>{Math.round(this.state.musicLength/60)}:{Math.round(this.state.musicLength%60)<10 ? '0'+Math.round(this.state.musicLength%60) : Math.round(this.state.musicLength%60)}</Text>
-				</View>
+				<Player musicLength={this.state.musicLength} time={this.state.time} />
 
 				<ScrollView>
 				<View style={{flexDirection: 'row'}}>

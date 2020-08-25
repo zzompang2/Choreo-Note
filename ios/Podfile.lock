@@ -310,6 +310,11 @@ PODS:
     - React
   - RNScreens (2.10.1):
     - React
+  - RNSound (0.11.0):
+    - React
+    - RNSound/Core (= 0.11.0)
+  - RNSound/Core (0.11.0):
+    - React
   - RNSqlite2 (1.0.0):
     - React
   - Yoga (1.14.0)
@@ -370,6 +375,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNSound (from `../node_modules/react-native-sound`)
   - RNSqlite2 (from `../node_modules/react-native-sqlite-2`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -453,6 +459,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSound:
+    :path: "../node_modules/react-native-sound"
   RNSqlite2:
     :path: "../node_modules/react-native-sqlite-2"
   Yoga:
@@ -502,6 +510,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: b6b359bb800ae399a9c8b27032bdbf7c18f08a08
   RNReanimated: 89f5e0a04d1dd52fbf27e7e7030d8f80a646a3fc
   RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
+  RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNSqlite2: f255020dc5fbfbf7d1943f0cc38550cf6f4e001c
   Yoga: 7740b94929bbacbddda59bf115b5317e9a161598
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a

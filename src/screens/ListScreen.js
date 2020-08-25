@@ -8,15 +8,15 @@ import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
+const TAG = "ListScreen/";
 
-export default class ListScreen extends React.Component {
+class ListScreen extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
       db,
 			noteList: [],
 		}
-		this.TAG = "ListScreen/";
 
 		db.transaction(txn => {
 			txn.executeSql('DROP TABLE IF EXISTS note;', []);
@@ -73,43 +73,31 @@ export default class ListScreen extends React.Component {
 					'PRIMARY KEY(nid, did, time) );'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 0, 10, 10);'
+				'INSERT INTO position VALUES (0, 0, 0, 0, -50);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 1, 20, 20);'
+				'INSERT INTO position VALUES (0, 1, 0, -30, -30);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 0, 5, 30, 30);'
+				'INSERT INTO position VALUES (0, 2, 0, 30, -30);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 0, -30, -50);'
+				'INSERT INTO position VALUES (0, 3, 0, -60, -10);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 6, -20, -40);'
+				'INSERT INTO position VALUES (0, 4, 0, 60, -10);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 1, 2, -10, -10);'
+				'INSERT INTO position VALUES (0, 5, 0, -90, 10);'
 			);
 			txn.executeSql(
-				'INSERT INTO position VALUES (0, 2, 0, 0, 50);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 3, 0, -100, -10);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 4, 0, -200, 0);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 5, 0, 300, -80);'
-			);
-			txn.executeSql(
-				'INSERT INTO position VALUES (0, 6, 0, -250, -10);'
+				'INSERT INTO position VALUES (0, 6, 0, 90, 10);'
 			);
 		})
 	}
 
 	addNote = () => {
-		console.log(this.TAG, "addNote");
+		console.log(TAG, "addNote");
 
 		const todayDate = new Date();
 		db.transaction(txn => {
@@ -123,7 +111,7 @@ export default class ListScreen extends React.Component {
 	}
 
 	changeName = (text, nid) => {
-		console.log(this.TAG, "changeName: ", text + ", " + nid)
+		console.log(TAG, "changeName: ", text + ", " + nid)
 
 		// SQLite DB에서 업데이트
 		this.state.db.transaction(txn => {
@@ -137,7 +125,7 @@ export default class ListScreen extends React.Component {
 	}
 
 	render() {
-		console.log(this.TAG, "render");
+		console.log(TAG, "render");
 
 		return(
 			<SafeAreaView style={{flex: 1}}>
@@ -181,12 +169,12 @@ export default class ListScreen extends React.Component {
 	}
 
 	componentDidMount() {
-		console.log(this.TAG, "componentDidMount");
+		console.log(TAG, "componentDidMount");
 		this.updateNoteList();
 	}
 
 	updateNoteList = () => {
-		console.log(this.TAG, "updateNoteList");
+		console.log(TAG, "updateNoteList");
 
 		var temp = [];
 
@@ -246,3 +234,6 @@ const styles = StyleSheet.create({
     //fontFamily: FONTS.binggrae2,
   },
 })
+
+// connect 이용해서 reducer와 연결해준다.
+export default ListScreen;

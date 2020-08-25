@@ -5,10 +5,6 @@ import FormationScreen from './FormationScreen';
 import DancerScreen from './DancerScreen';
 const Stack = createStackNavigator();
 
-/**
- * react-navigation@5.x 버전의 stackNavigation을 사용합니다
- * header는 커스터마이징해서 사용할 예정이기 때문에 headerMode는 none으로 설정해줍니다
- */
 export default function ScreenStack() {
   return (
 		<Stack.Navigator 
