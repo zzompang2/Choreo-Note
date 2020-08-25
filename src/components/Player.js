@@ -3,7 +3,7 @@ import {
 	View, TouchableOpacity, Image, Text, StyleSheet,
 } from "react-native"
 import Sound from 'react-native-sound'
-import Slider from 'react-native-slider'
+import Slider from '@react-native-community/slider'
 
 import {COLORS} from '../values/Colors'
 import { DebugInstructions } from "react-native/Libraries/NewAppScreen"
