@@ -24,9 +24,11 @@ export default class Player extends React.Component{
 
 	load = () => {
 		console.log(TAG, "load:");
+		// If the audio is a 'require' then the second parameter must be the callback.
 		this.sound = new Sound(require('../../Be Be Your Love.mp3'), (error) => {
 			if (error) {
-				console.log('failed to load the sound', error);
+				// console.log('failed to load the sound', error);
+				console.log('failed to load the sound');
 				return;
 			}
 			// loaded successfully

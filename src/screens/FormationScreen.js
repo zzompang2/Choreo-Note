@@ -162,10 +162,11 @@ export default class FormationScreen extends React.Component {
 		// console.log("dancerNum: " + dancerNum);
 
 		var dancers = [];
-		var dancerName = [<Text style={{height: 20}}></Text>];
+		var dancerName = [ <Text key={0} style={{height: 20}}/> ];
     for(let i=0; i<dancerNum; i++){
       dancers.push(
 				<Dancer 
+				key={dancers.length}
 				did={i} 
 				position={this.state.allPosList[i]} 
 				dropedPositionSubmit={this.dropedPositionSubmit} 
@@ -175,14 +176,16 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 			dancerName.push(
-				<TouchableOpacity onPress={()=>{
-					if(this.state.isPlay) this.setState({isPlay: false})
-					this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
-					}>
-					<Text style={{height: 20, width: 60, fontSize: 11,}}>
-						[{i+1}] {this.dancerList[i].name}
-					</Text>
-				</TouchableOpacity>
+				<View key={dancerName.length}>
+					<TouchableOpacity onPress={()=>{
+						if(this.state.isPlay) this.setState({isPlay: false})
+						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
+						}>
+						<Text style={{height: 20, width: 60, fontSize: 11,}}>
+							[{i+1}] {this.dancerList[i].name}
+						</Text>
+					</TouchableOpacity>
+				</View>
 			)
 		}
 
@@ -203,18 +206,22 @@ export default class FormationScreen extends React.Component {
 					}
 					if(this.state.allPosList[i][j].time == time){
 						checkPoint.push( 
-						<TouchableOpacity onLongPress={()=>this.deletePosition(i, time)}>
-							<Text style={{height: 20, color: COLORS.red}}> * </Text> 
-						</TouchableOpacity>
+							<View key={checkPoint.length}>
+								<TouchableOpacity onLongPress={()=>this.deletePosition(i, time)}>
+									<Text style={{height: 20, color: COLORS.red}}> * </Text> 
+								</TouchableOpacity>
+							</View>
 						)
 						break;
 					}
 				}
 				if(j == this.state.allPosList[i].length)
 					checkPoint.push( 
-						<TouchableOpacity onLongPress={()=>this.addPosition(i, time)}>
-							<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
-						</TouchableOpacity>
+						<View key={checkPoint.length}>
+							<TouchableOpacity onLongPress={()=>this.addPosition(i, time)}>
+								<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
+							</TouchableOpacity>
+						</View>
 					)
 			}
 
@@ -224,7 +231,7 @@ export default class FormationScreen extends React.Component {
 				musicboxStyle = [styles.musicbox,{backgroundColor: COLORS.yellow}];
 
 			musicbox.push(
-				<View style={musicboxStyle}>
+				<View key={musicbox.length} style={musicboxStyle}>
 					<TouchableOpacity
 					onPress={()=>{this.setState({time: time})}}>
 						<Text style={{height: 20, fontSize: 11}}>{time%60 == 0 ? Math.floor(time/60)+'분' : time%60+'\"'}</Text>
@@ -241,7 +248,7 @@ export default class FormationScreen extends React.Component {
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
 				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-					{dancers}
+					{ dancers }
 				</View>
 
 				<Player musicLength={this.state.musicLength} time={this.state.time} />
@@ -249,7 +256,7 @@ export default class FormationScreen extends React.Component {
 				<ScrollView>
 				<View style={{flexDirection: 'row'}}>
 					<View style={{flexDirection: 'column'}}>
-						{dancerName}
+						{ dancerName }
 					</View>
 					<View style={this.scrollViewStyle}>
 					<ScrollView
@@ -257,7 +264,7 @@ export default class FormationScreen extends React.Component {
 					horizontal={true}
 					showsHorizontalScrollIndicator={false}
 					ref={ref => (this.scrollView = ref)}>
-						{musicbox}
+						{ musicbox }
 					</ScrollView>
 					</View>
 				</View>
