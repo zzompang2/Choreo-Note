@@ -76,6 +76,9 @@ class ListScreen extends React.Component {
 				'INSERT INTO position VALUES (0, 0, 0, 0, -50);'
 			);
 			txn.executeSql(
+				'INSERT INTO position VALUES (0, 0, 10, 0, -50);'
+			);
+			txn.executeSql(
 				'INSERT INTO position VALUES (0, 1, 0, -30, -30);'
 			);
 			txn.executeSql(

@@ -27,66 +27,27 @@ export default class FormationScreen extends React.Component {
 			musicLength: 200,
 			// animationPlayToggle: false,
 			isPlay: false,
+			dancers: [],
+			dancerName: [],
+			musicbox: [],
 		}
 		this.dancerList=[];	// nid, did, name
 		this.scrollView;
 		this.scrollViewStyle;
+		this.timeText = [];
 	}
 
-	// 자식 컴포넌트(Dancer)에서 값 받아오기
-	// Dancer를 드랍했을 때 저장된 position 좌표를 추가(또는 수정)한다.
-  dropedPositionSubmit = (did, _x, _y) => {
+	/** 
+	 * 자식 컴포넌트(Dancer)에서 드랍한 위치 정보로 position DB에 추가/수정한다.
+	 * @param did dancer id
+	 * @param _x_y 드랍한 위치 좌표
+	 * @param time 시간
+	 */
+  dropedPositionSubmit = (did, _x, _y, time=this.state.time) => {
     console.log(TAG + "dropedPositionSubmit");
     console.log(TAG + "놓은 위치: " + Math.round(_x) + ", " + Math.round(_y));
 		
-		const curTime = Math.round(this.state.time);
-
 		// SQLite DB에서 업데이트
-		this.state.db.transaction(txn => {
-      txn.executeSql(
-				"DELETE FROM position " +
-				"WHERE nid=? " +
-				"AND did=? " +
-				"AND time=?;",
-				[this.state.noteId, did, curTime]
-			);
-			txn.executeSql(
-				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
-				[this.state.noteId, did, curTime, _x, _y]
-			);
-		})
-
-		// state 업데이트
-		const newPos = {posx: _x, posy: _y, time: curTime};
-		var _allPosList = this.state.allPosList;
-		var posList = _allPosList[did];
-
-		console.log(TAG, "newPos: " + newPos);
-
-		for(let i=0; i<posList.length; i++){
-			if(curTime == posList[i].time){
-				posList.splice(i, 1, newPos);
-				this.setState({allPosList: _allPosList})
-				return;
-			}
-			else if(curTime < posList[i].time){
-				posList.splice(i, 0, newPos);
-				this.setState({allPosList: _allPosList})
-				return;
-			}
-		}
-		_allPosList[did].splice(_allPosList[did].length, 0, newPos);
-		this.setState({allPosList: _allPosList})
-  }
-
-	deletePosition = (did, time) => {
-		console.log(TAG, "deletePosition");
-
-		if(time == 0) {
-			Alert.alert("경고", "초기 상태는 지울 수 없어요!");
-			return;
-		}
-		
 		this.state.db.transaction(txn => {
       txn.executeSql(
 				"DELETE FROM position " +
@@ -95,23 +56,84 @@ export default class FormationScreen extends React.Component {
 				"AND time=?;",
 				[this.state.noteId, did, time]
 			);
-		});
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
+				[this.state.noteId, did, time, _x, _y]
+			);
+		})
 
 		// state 업데이트
-		var _allPosList = this.state.allPosList;
+		const newPos = {posx: _x, posy: _y, time: time};
+		var _allPosList = [...this.state.allPosList];
 		var posList = _allPosList[did];
 
-		for(let i=0; i<posList.length; i++){
+		console.log(TAG, "newPos: " + newPos);
+
+		let i=0;
+		for(; i<posList.length; i++){
 			if(time == posList[i].time){
-				posList.splice(i, 1);
-				this.setState({allPosList: _allPosList})
-				return;
+				posList.splice(i, 1, newPos);
+				break;
+			}
+			else if(time < posList[i].time){
+				posList.splice(i, 0, newPos);
+				break;
 			}
 		}
-	}
+		if(i == posList.length)
+			posList.splice(_allPosList[did].length, 0, newPos);
+		
+		// box 수정
+		var prevTime = 0;
+		var curTime = 0;
+		var rowView = [];
+		for(let j=0; j<_allPosList[did].length; j++){
 
+			curTime = _allPosList[did][j].time;
+
+			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
+			for(let k=prevTime; k<curTime-1; k++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k+1)}>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					 </TouchableOpacity>
+				)
+			}
+
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}></View>
+				</TouchableOpacity>
+			)
+
+			prevTime = curTime;
+		}
+
+		// 마지막 대열~노래 끝부분까지 회색박스 채우기
+		for(let j=curTime+1; j<=this.state.musicLength; j++){
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+				</TouchableOpacity>
+			)
+		}
+		var _musicbox = [...this.state.musicbox];
+		_musicbox.splice(1+did, 1,
+			<View flexDirection='row'>
+					{rowView}
+			</View>
+			)
+
+		this.setState({allPosList: _allPosList, musicbox: _musicbox});
+	}
+	
+	/** 
+	 * 기존 저장되어 있는 값들을 기반으로 position DB에 좌표를 추가한다.
+	 * @param did dancer id
+	 * @param time 추가할 좌표의 time 값
+	 */
 	addPosition = (did, time) => {
-		console.log(TAG, "addPosition");
+		console.log(TAG, "addPosition(",did,time,")");
 
 		// time에 맞는 위치 구하기
 		var _allPosList = this.state.allPosList;
@@ -143,7 +165,85 @@ export default class FormationScreen extends React.Component {
 
 		posList.splice(i, 0, {posx: posx, posy: posy, time: time});
 		_allPosList.splice(did, 1, posList);
-		this.setState({allPosList: _allPosList});
+
+		// box 수정
+		var prevTime = 0;
+		var curTime = 0;
+		var rowView = [];
+		for(let j=0; j<_allPosList[did].length; j++){
+
+			curTime = _allPosList[did][j].time;
+
+			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
+			for(let k=prevTime; k<curTime-1; k++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k+1)}>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					 </TouchableOpacity>
+				)
+			}
+
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}></View>
+				</TouchableOpacity>
+			)
+
+			prevTime = curTime;
+		}
+
+		// 마지막 대열~노래 끝부분까지 회색박스 채우기
+		for(let j=curTime+1; j<=this.state.musicLength; j++){
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+				</TouchableOpacity>
+			)
+		}
+		var _musicbox = [...this.state.musicbox];
+		_musicbox.splice(1+did, 1,
+			<View flexDirection='row'>
+					{rowView}
+			</View>
+			)
+
+		this.setState({allPosList: _allPosList, musicbox: _musicbox});
+	}
+
+	/** 
+	 * position DB에서 선택한 값을 삭제한다.
+	 * @param did dancer id
+	 * @param time 삭제할 좌표의 time 값
+	 */
+	deletePosition = (did, time) => {
+		console.log(TAG, "deletePosition(",did,time,")");
+
+		if(time == 0) {
+			Alert.alert("경고", "초기 상태는 지울 수 없어요!");
+			return;
+		}
+		
+		this.state.db.transaction(txn => {
+      txn.executeSql(
+				"DELETE FROM position " +
+				"WHERE nid=? " +
+				"AND did=? " +
+				"AND time=?;",
+				[this.state.noteId, did, time]
+			);
+		});
+
+		// state 업데이트
+		var _allPosList = this.state.allPosList;
+		var posList = _allPosList[did];
+
+		for(let i=0; i<posList.length; i++){
+			if(time == posList[i].time){
+				posList.splice(i, 1);
+				this.setState({allPosList: _allPosList})
+				return;
+			}
+		}
 	}
 
 	resizeDancer = () => {
@@ -155,23 +255,25 @@ export default class FormationScreen extends React.Component {
 		this.setState({allPosList: _allPosList});
 	}
 
-	timeSetState = (time) => {
-		console.log(TAG, "timeSetState: "+time);
+	setTimeState = (time) => {
+		console.log(TAG, "setTimeState: "+time);
 		this.setState({time: time})
 	}
 
-	render() {
-		console.log(TAG, "render");
-
+	/** 
+	 * 초기 댄서들 이름 리스트와 <Dancer> 컴포넌트들을 설정(?)하고 re-render 한다.
+	 */
+	setDancerInit = () => {
+		console.log(TAG, "setDancerInit");
 		const dancerNum = this.state.allPosList.length;
-		// console.log("dancerNum: " + dancerNum);
 
-		var dancers = [];
-		var dancerName = [ <Text key={0} style={{height: 20}}/> ];
-    for(let i=0; i<dancerNum; i++){
-      dancers.push(
+		var _dancers = [];
+		var _dancerName = [ <Text key={0} style={{height: 20}}/> ];
+
+		for(let i=0; i<dancerNum; i++){
+      _dancers.push(
 				<Dancer 
-				key={dancers.length}
+				key={_dancers.length}
 				did={i} 
 				position={this.state.allPosList[i]} 
 				dropedPositionSubmit={this.dropedPositionSubmit} 
@@ -180,8 +282,8 @@ export default class FormationScreen extends React.Component {
 				// elevation={100}
 				/>
 			)
-			dancerName.push(
-				<View key={dancerName.length}>
+			_dancerName.push(
+				<View key={_dancerName.length}>
 					<TouchableOpacity onPress={()=>{
 						if(this.state.isPlay) this.setState({isPlay: false})
 						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
@@ -193,90 +295,125 @@ export default class FormationScreen extends React.Component {
 				</View>
 			)
 		}
+		this.setState({dancers: _dancers, dancerName: _dancerName})
+	}
 
-		var musicbox = [];
+	setBoxInit = () => {
+
+		const dancerNum = this.state.allPosList.length;
+
+		this.timeText = [];
 		for(let time=0; time <= this.state.musicLength; time++){
-			var checkPoint = [];
-			for(let i=0; i<dancerNum; i++){
-				// time에 체크한 포인트가 있는지 확인
-				let j=0;
-				for(; j<this.state.allPosList[i].length; j++){
-					if(this.state.allPosList[i][j].time > time){
-						checkPoint.push( 
-							<TouchableOpacity key={checkPoint.length} onLongPress={()=>this.addPosition(i, time)}>
-								<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
-							</TouchableOpacity>
-						)
-						break;
-					}
-					if(this.state.allPosList[i][j].time == time){
-						checkPoint.push( 
-							<TouchableOpacity key={checkPoint.length} onLongPress={()=>this.deletePosition(i, time)}>
-								<Text style={{height: 20, color: COLORS.red}}> * </Text> 
-							</TouchableOpacity>
-						)
-						break;
-					}
-				}
-				if(j == this.state.allPosList[i].length)
-					checkPoint.push( 
-						<View key={checkPoint.length}>
-							<TouchableOpacity onLongPress={()=>this.addPosition(i, time)}>
-								<Text style={{height: 20, color: COLORS.grayLight}}> * </Text> 
-							</TouchableOpacity>
-						</View>
-					)
-			}
-
-			// 현재 시간에 대응하는 box 색칠하기
-			var musicboxStyle = [styles.musicbox];
-			if(time == Math.round(this.state.time))
-				musicboxStyle = [styles.musicbox,{backgroundColor: COLORS.yellow}];
-
-			musicbox.push(
-				<View key={musicbox.length} style={musicboxStyle}>
-					<TouchableOpacity
-					onPress={()=>{this.setState({time: time})}}>
-						<Text style={{height: 20, fontSize: 11}}>{time%60 == 0 ? Math.floor(time/60)+'분' : time%60+'\"'}</Text>
-					</TouchableOpacity>
-					{checkPoint}
-				</View>
+			this.timeText.push(
+				<TouchableOpacity onPress={()=>{						
+						this.markCurTime(time)
+					}}>
+					<Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: 'gray', borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
+				</TouchableOpacity>
 			)
 		}
 
+		var _musicbox = [
+			<View key={0} flexDirection='row'>
+				{ this.timeText }
+			</View>,
+		];
+
+		for(let i=0; i<dancerNum; i++){
+			// time에 체크한 포인트가 있는지 확인
+			var prevTime = 0;
+			var curTime = 0;
+			var rowView = [];
+			for(let j=0; j<this.state.allPosList[i].length; j++){
+
+				curTime = this.state.allPosList[i][j].time;
+
+				console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
+				for(let k=prevTime; k<curTime-1; k++){
+					rowView.push(
+						<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, k+1)}>
+							<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+				 		</TouchableOpacity>
+					)
+				}
+
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(i, curTime)}>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}></View>
+					</TouchableOpacity>
+				)
+
+				prevTime = curTime;
+			}
+
+			// 마지막 대열~노래 끝부분까지 회색박스 채우기
+			for(let j=curTime+1; j<=this.state.musicLength; j++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, j)}>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					</TouchableOpacity>
+				)
+			}
+
+			_musicbox.push(
+				<View flexDirection='row'>
+					{rowView}
+				</View>
+			)	
+		}
+
+		this.setState({musicbox: _musicbox});
+	}
+
+	markCurTime = (time) => {
+		var _musicbox = this.state.musicbox;
+		var _timeText = [...this.timeText];
+
+		_timeText[time] = <Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: COLORS.yellow, borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
+		// this.timeText = _timeText;
+
+		_musicbox.splice(0, 1, 
+		<View key={0} flexDirection='row'>
+		{ _timeText }
+		</View>);
+		
+		this.setState({time: time, musicbox: _musicbox});
+	}
+
+	render() {
+		console.log(TAG, "render");
+
 		// 인원수에 맞게 music box view의 높이를 정하기 위해서
+		const dancerNum = this.state.allPosList.length;
 		this.scrollViewStyle = [styles.scrollView, {height: (20 + dancerNum*20)}]
 
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
 				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-					{ dancers }
+					{ this.state.dancers }
 				</View>
 
-				<Player musicLength={this.state.musicLength} time={this.state.time} timeSetState={this.timeSetState}/>
+				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
 
 				<ScrollView>
 				<View style={{flexDirection: 'row'}}>
+
 					<View style={{flexDirection: 'column'}}>
-						{ dancerName }
+						{ this.state.dancerName }
 					</View>
 					<View style={this.scrollViewStyle}>
-						{/* <ScrollView
+						<ScrollView
 						style={this.scrollViewStyle}
 						horizontal={true}
 						showsHorizontalScrollIndicator={false}
 						ref={ref => (this.scrollView = ref)}>
-							{ musicbox }
-						</ScrollView> */}
-						<FlatList
-						data={musicbox}
-						renderItem={({item})=>item}
-						keyExtractor={(item, index) => index.toString()}
-						horizontal={true}
-						ref={ref => (this.scrollView = ref)}
-						/>
+							<View flexDirection='column'>
+								{ this.state.musicbox }
+							</View>
+						</ScrollView>
 					</View>
+
 				</View>
 				</ScrollView>
 
@@ -299,8 +436,6 @@ export default class FormationScreen extends React.Component {
 				"AND p.did=d.did;",
         [this.state.noteId],
         (tx, dancerResult) => {
-					console.log("#dancer:", dancerResult.rows.length);
-
 					for (let i = 0; i < dancerResult.rows.length; i++) {
 						_dancerList.push(dancerResult.rows.item(i));
 						tx.executeSql(
@@ -318,6 +453,8 @@ export default class FormationScreen extends React.Component {
 								// for문 다 돌았다면 state 업데이트
 								if(i == dancerResult.rows.length-1){
 									this.setState({allPosList: _allPosList});
+									this.setDancerInit();
+									this.setBoxInit();
 								}
 							}
 						);
@@ -339,7 +476,7 @@ export default class FormationScreen extends React.Component {
 	componentDidUpdate() {
 		console.log(TAG, "componentDidUpdate");
 		// time에 맞게 scroll view를 강제 scroll하기
-		this.scrollView.scrollToOffset({x: (this.state.time+2)*30 - width/2})
+		// this.scrollView.scrollToOffset({x: (this.state.time+2)*30 - width/2})
 	}
 
 	componentWillUnmount() {

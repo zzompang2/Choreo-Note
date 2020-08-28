@@ -70,17 +70,17 @@ export default class Player extends React.Component{
 				<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{Math.round(this.state.time/60)}:{Math.round(this.state.time%60) < 10 ? '0'+Math.round(this.state.time%60) : Math.round(this.state.time%60)}</Text>
 				<Slider
 				value={this.state.time}
-				onValueChange={value => {
-					console.log(TAG, "onValueChange:", value);
-					if(this.state.time != Math.round(value)){
-						this.setState({ time: Math.round(value) });
-					}
-				}}
-				on
+				// onValueChange={value => {
+				// 	console.log(TAG, "onValueChange:", value);
+				// 	if(this.state.time != Math.round(value)){
+				// 		this.setState({ time: Math.round(value) });
+				// 	}
+				// }}
+				
 				onSlidingComplete={(value)=>{
 					console.log(TAG, "onSlidingComplete:", value);
 					this.setState({ time: Math.round(value) });
-					this.props.timeSetState(Math.round(value));
+					//this.props.setTimeState(Math.round(value));
 				}}
 				maximumValue={this.state.musicLength}
 				style={{flex: 1}}
