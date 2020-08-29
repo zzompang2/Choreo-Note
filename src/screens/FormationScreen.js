@@ -29,12 +29,14 @@ export default class FormationScreen extends React.Component {
 			isPlay: false,
 			dancers: [],
 			dancerName: [],
-			musicbox: [],
+			// musicbox: [],
 		}
 		this.dancerList=[];	// nid, did, name
 		this.scrollView;
 		this.scrollViewStyle;
 		this.timeText = [];
+		this.musicbox = [];
+		this.setCoordinate();
 	}
 
 	/** 
@@ -117,14 +119,15 @@ export default class FormationScreen extends React.Component {
 				</TouchableOpacity>
 			)
 		}
-		let _musicbox = [...this.state.musicbox];
-		_musicbox.splice(1+did, 1,
+		// let _musicbox = [...this.musicbox];
+
+		this.musicbox.splice(1+did, 1,
 			<View flexDirection='row'>
 					{rowView}
 			</View>
 			)
 
-		this.setState({allPosList: _allPosList, musicbox: _musicbox});
+		this.setState({allPosList: _allPosList});
 	}
 	
 	/** 
@@ -200,14 +203,15 @@ export default class FormationScreen extends React.Component {
 				</TouchableOpacity>
 			)
 		}
-		let _musicbox = [...this.state.musicbox];
-		_musicbox.splice(1+did, 1,
+		// let _musicbox = [...this.musicbox];
+
+		this.musicbox.splice(1+did, 1,
 			<View flexDirection='row'>
 					{rowView}
 			</View>
 			)
 
-		this.setState({allPosList: _allPosList, musicbox: _musicbox});
+		this.setState({allPosList: _allPosList});
 	}
 
 	/** 
@@ -278,14 +282,17 @@ export default class FormationScreen extends React.Component {
 				</TouchableOpacity>
 			)
 		}
-		let _musicbox = [...this.state.musicbox];
-		_musicbox.splice(1+did, 1,
+		// let _musicbox = [...this.musicbox];
+
+		this.musicbox.splice(1+did, 1,
 			<View flexDirection='row'>
 					{rowView}
 			</View>
 			)
 
-		this.setState({allPosList: _allPosList, musicbox: _musicbox});
+		this.setState({allPosList: _allPosList}, ()=>{
+			this.setDancerInit();
+		});
 	}
 
 	resizeDancer = () => {
@@ -348,13 +355,16 @@ export default class FormationScreen extends React.Component {
 		this.timeText = [];
 		for(let time=0; time <= this.state.musicLength; time++){
 			this.timeText.push(
-				<TouchableOpacity onPress={()=>{this.markCurTime(time)}}>
+				<TouchableOpacity onPress={()=>{
+					this.markCurTime(time)
+					this.setState({time: time}, ()=>{this.setDancerInit()})
+					}}>
 					<Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: 'gray', borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
 				</TouchableOpacity>
 			)
 		}
 
-		let _musicbox = [
+		this.musicbox = [
 			<View key={0} flexDirection='row'>
 				{ this.timeText }
 			</View>,
@@ -399,30 +409,45 @@ export default class FormationScreen extends React.Component {
 				)
 			}
 
-			_musicbox.push(
+			this.musicbox.push(
 				<View flexDirection='row'>
 					{rowView}
 				</View>
 			)	
 		}
 
-		this.setState({musicbox: _musicbox});
+		// this.setState({musicbox: _musicbox});
+
 		this.markCurTime(0);
 	}
 
 	markCurTime = (time) => {
-		let _musicbox = this.state.musicbox;
+		// let _musicbox = this.musicbox;
 		let _timeText = [...this.timeText];
 
 		_timeText[time] = <Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: COLORS.yellow, borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
 		// this.timeText = _timeText;
 
-		_musicbox.splice(0, 1, 
+		this.musicbox.splice(0, 1, 
 		<View key={0} flexDirection='row'>
 		{ _timeText }
 		</View>);
 		
-		this.setState({time: time, musicbox: _musicbox}, () => {this.setDancerInit()});
+		// this.setState({time: time}, () => {this.setDancerInit()});
+	}
+
+	timeFormat = (sec) => {
+		return Math.floor(sec/60) + ':' + ( Math.floor(sec%60) < 10 ? '0'+Math.floor(sec%60) : Math.floor(sec%60) )
+	}
+
+	setCoordinate = () => {
+		this.coordinate = [];
+		const space = 50;
+		for(let x=Math.round((-width/2)/space)*space; x<width/2; x=x+space){
+			for(let y=Math.round((-height/2)/space)*space; y<height/2; y=y+space){
+				this.coordinate.push(<View style={[styles.circle, {transform: [{translateX: x}, {translateY: y}]}]}/>)
+			}
+		}
 	}
 
 	render() {
@@ -437,16 +462,11 @@ export default class FormationScreen extends React.Component {
 
 				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{ this.state.dancers }
+					{ this.coordinate }
 				</View>
 
 				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
 				<View flexDirection='row'>
-					{/* <TouchableOpacity
-					onPress={()=>{
-						this.playAndPause();
-						this.setState({isPlay: !this.state.isPlay});
-						}}> */}
-
 					{ this.state.isPlay ? 
 					<TouchableOpacity onPress={()=>{this.pause()}}>
 						<Image source={require('../../assets/drawable/btn_pause.png')} style={styles.button}/>
@@ -456,7 +476,7 @@ export default class FormationScreen extends React.Component {
 						<Image source={require('../../assets/drawable/btn_play.png')} style={styles.button}/>
 					</TouchableOpacity>
 					}
-					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{Math.round(this.state.time/60)}:{Math.round(this.state.time%60) < 10 ? '0'+Math.round(this.state.time%60) : Math.round(this.state.time%60)}</Text>
+					{/* <Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text> */}
 					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.state.time}</Text>
 				</View>
 
@@ -473,7 +493,7 @@ export default class FormationScreen extends React.Component {
 						showsHorizontalScrollIndicator={false}
 						ref={ref => (this.scrollView = ref)}>
 							<View flexDirection='column'>
-								{ this.state.musicbox }
+								{ this.musicbox }
 							</View>
 						</ScrollView>
 					</View>
@@ -516,9 +536,10 @@ export default class FormationScreen extends React.Component {
 
 								// for문 다 돌았다면 state 업데이트
 								if(i == dancerResult.rows.length-1){
-									this.setState({allPosList: _allPosList});
-									this.setDancerInit();
-									this.setBoxInit();
+									this.setState({allPosList: _allPosList}, ()=>{
+										this.setDancerInit();
+										this.setBoxInit();
+									});
 								}
 							}
 						);
@@ -533,6 +554,7 @@ export default class FormationScreen extends React.Component {
 	play = async () => {
 		console.log(TAG, "play");
 		this.interval = setInterval(() => {
+			this.markCurTime(this.state.time+1);
 			this.setState({time: this.state.time+1});
 		}, 1000);
 
@@ -579,5 +601,12 @@ const styles = StyleSheet.create({
     height: 30,
     marginTop: 10,
     marginRight: 10,
+	},
+	circle: {
+    backgroundColor: COLORS.red,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    position: 'absolute',
   },
 })

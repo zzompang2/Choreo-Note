@@ -25,7 +25,7 @@ export default class Dancer extends React.Component {
       // 주어진 터치 이벤트에 반응할지를 결정(return T/F)
       // 재생중일땐 움직이지 못하도록 하자.
       onStartShouldSetPanResponder: (e, gesture) => { 
-        return true;
+        return !this.props.isPlay;
       },
 
       // 터치이벤트 발생할 때
@@ -61,6 +61,7 @@ export default class Dancer extends React.Component {
         // 부모 컴포넌트로 값 보내기
         this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
         this.state.pan.setOffset({x: 0, y: 0});
+        this.forceUpdate();
       }
     });
   }
@@ -162,6 +163,7 @@ export default class Dancer extends React.Component {
         {...this.panResponder.panHandlers}
         style={[panStyle, styles.circle]}>
         <Text style={styles.number}>{this.props.did+1}</Text>
+        <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text>
       </Animated.View>
     );
   }
@@ -181,13 +183,14 @@ let styles = StyleSheet.create({
     height: CIRCLE_RADIUS * 2,
     borderRadius: CIRCLE_RADIUS,
     position: 'absolute',
+    alignItems: 'center'
   },
   number: {
     fontSize: 20,
     // justifyContent: 'center',
     // alignItems: 'center',
-    marginLeft: 14,
     marginTop: 5,
+    textAlign: 'center',
     // backgroundColor: 'red'
   }
 });
