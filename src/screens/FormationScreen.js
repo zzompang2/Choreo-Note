@@ -39,7 +39,7 @@ export default class FormationScreen extends React.Component {
 		this.scrollViewStyle;
 		this.timeText = [];
 		this.musicbox = [];	
-		this.space = 50;
+		this.coordinateSpace = 40;
 		this.radius = 20;
 
 		this.setCoordinate();
@@ -306,14 +306,28 @@ export default class FormationScreen extends React.Component {
 
 	sizeupDancer = () => {
 		if(this.radius < 20){
-			this.radius = this.radius+2;
+			this.radius += 2;
 			this.setDancerInit();
 		}
 	}
 	sizedownDancer = () => {
 		if(this.radius > 10){
-			this.radius = this.radius-2;
+			this.radius -= 2;
 			this.setDancerInit();
+		}
+	}
+	sizeupCoordinate = () => {
+		if(this.coordinateSpace < 50){
+			this.coordinateSpace += 5;
+			this.setCoordinate();
+			this.forceUpdate();
+		}
+	}
+	sizedownCoordinate = () => {
+		if(this.coordinateSpace > 20){
+			this.coordinateSpace -= 5;
+			this.setCoordinate();
+			this.forceUpdate();
 		}
 	}
 
@@ -463,10 +477,10 @@ export default class FormationScreen extends React.Component {
 	}
 
 	setCoordinate = () => {
-		console.log(TAG, 'setCoordinate:', this.space);
+		console.log(TAG, 'setCoordinate:', this.coordinateSpace);
 		this.coordinate = [];
-		for(let x=Math.round((-width/2)/this.space)*this.space; x<width/2; x=x+this.space){
-			for(let y=Math.round((-height/2)/this.space)*this.space; y<height/2; y=y+this.space){
+		for(let x=Math.round((-width/2)/this.coordinateSpace)*this.coordinateSpace; x<width/2; x=x+this.coordinateSpace){
+			for(let y=Math.round((-height/2)/this.coordinateSpace)*this.coordinateSpace; y<height/2; y=y+this.coordinateSpace){
 				this.coordinate.push(<View style={[styles.circle, {transform: [{translateX: x}, {translateY: y}]}]}/>)
 			}
 		}
@@ -488,6 +502,13 @@ export default class FormationScreen extends React.Component {
 						<IconIonicons name="expand" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={()=>this.sizedownDancer()}>
+						<IconIonicons name="contract" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<Text>coordinate</Text>
+					<TouchableOpacity onPress={()=>this.sizeupCoordinate()}>
+						<IconIonicons name="expand" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={()=>this.sizedownCoordinate()}>
 						<IconIonicons name="contract" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 				</View>
@@ -634,9 +655,9 @@ const styles = StyleSheet.create({
 		margin: 10,
 	},
 	circle: {
-    backgroundColor: COLORS.red,
-    width: 4,
-    height: 4,
+    backgroundColor: COLORS.grayMiddle,
+    width: 3,
+    height: 3,
     borderRadius: 2,
     position: 'absolute',
   },
