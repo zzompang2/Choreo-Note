@@ -16,6 +16,8 @@ export default class Dancer extends React.Component {
       pan: new Animated.ValueXY(),
     };
     this._val = { x:0, y:0 };
+
+    console.log(TAG, "radius is " + this.radius);
     
     // 최종 좌표의 값(value)을 _val 값에 대입되도록 한다.
 		this.state.pan.addListener((value) => this._val = value);
@@ -149,9 +151,10 @@ export default class Dancer extends React.Component {
   }
 
   render() {
-    //console.log(TAG + "render");
+    console.log(TAG, "render");
     //console.log(TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
 
+    this.radius = this.props.radius;
     const curPosition = this.getCurPosition();
     
     // cur position 적용
@@ -164,8 +167,8 @@ export default class Dancer extends React.Component {
     return (
       <Animated.View
         {...this.panResponder.panHandlers}
-        style={[panStyle, styles.circle]}>
-        <Text style={styles.number}>{this.props.did+1}</Text>
+        style={[panStyle, styles.circle, {width: this.radius*2, height: this.radius*2, borderRadius: this.radius}]}>
+        <Text style={[styles.number, {fontSize: this.radius}]}>{this.props.did+1}</Text>
         <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text>
       </Animated.View>
     );
@@ -182,14 +185,14 @@ let styles = StyleSheet.create({
   // 모양 정의를 위한 스타일
   circle: {
     backgroundColor: COLORS.yellow,
-    width: CIRCLE_RADIUS * 2,
-    height: CIRCLE_RADIUS * 2,
-    borderRadius: CIRCLE_RADIUS,
+    // width: CIRCLE_RADIUS * 2,
+    // height: CIRCLE_RADIUS * 2,
+    // borderRadius: CIRCLE_RADIUS,
     position: 'absolute',
     alignItems: 'center'
   },
   number: {
-    fontSize: 20,
+    // fontSize: 20,
     // justifyContent: 'center',
     // alignItems: 'center',
     marginTop: 5,

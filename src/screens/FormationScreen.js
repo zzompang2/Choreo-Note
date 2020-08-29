@@ -40,6 +40,7 @@ export default class FormationScreen extends React.Component {
 		this.timeText = [];
 		this.musicbox = [];	
 		this.space = 50;
+		this.radius = 20;
 
 		this.setCoordinate();
 	}
@@ -303,8 +304,17 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
-	resizeDancer = () => {
-
+	sizeupDancer = () => {
+		if(this.radius < 20){
+			this.radius = this.radius+2;
+			this.setDancerInit();
+		}
+	}
+	sizedownDancer = () => {
+		if(this.radius > 10){
+			this.radius = this.radius-2;
+			this.setDancerInit();
+		}
 	}
 
 	rerender = (_dancerList, _allPosList) => {
@@ -339,6 +349,7 @@ export default class FormationScreen extends React.Component {
 				dropedPositionSubmit={this.dropedPositionSubmit} 
 				curTime={this.state.time}
 				isPlay={this.state.isPlay}
+				radius={this.radius}
 				// elevation={100}
 				/>
 			)
@@ -471,7 +482,14 @@ export default class FormationScreen extends React.Component {
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
-				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow}}>
+				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow, alignItems: 'center'}}>
+					<Text>size</Text>
+					<TouchableOpacity onPress={()=>this.sizeupDancer()}>
+						<IconIonicons name="expand" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={()=>this.sizedownDancer()}>
+						<IconIonicons name="contract" size={24} color="#ffffff"/>
+					</TouchableOpacity>
 				</View>
 				
 				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
