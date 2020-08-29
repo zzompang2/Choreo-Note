@@ -1,9 +1,11 @@
 import React from "react";
 import { 
-	Text,StyleSheet,PanResponder,Animated,
+	Text, StyleSheet, PanResponder, Animated, Dimensions,
 } from "react-native";
 
 import {COLORS} from '../values/Colors';
+// 화면의 가로, 세로 길이 받아오기
+const {width,height} = Dimensions.get('window');
 
 const TAG = "Dancer/";
 
@@ -31,7 +33,7 @@ export default class Dancer extends React.Component {
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
         // drag되기 전 초기 위치 저장
-        // this._prevVal = {x: this._val.x, y: this._val.y}
+        this._prevVal = {x: this._val.x, y: this._val.y}
 
         this.state.pan.setOffset({
         x: this._val.x,
@@ -58,17 +60,24 @@ export default class Dancer extends React.Component {
 
         // this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
 
-        // alignWithCoordinate = true 라면 좌표축에 맞춘다.
-        if(this.props.alignWithCoordinate){
-          this._val.x = Math.round(this._val.x / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
-          this._val.y = Math.round(this._val.y / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
-        }else{
-          this._val.x = Math.round(this._val.x);
-          this._val.y = Math.round(this._val.y);
+        // 영역 밖으로 나간 경우
+        if(Math.abs(this._val.x) > (width-6)/2-10 || Math.abs(this._val.y) > height/5-10){
+          this._val.x = this._prevVal.x;
+          this._val.y = this._prevVal.y;
         }
+        else{
+          // alignWithCoordinate = true 라면 좌표축에 맞춘다.
+          if(this.props.alignWithCoordinate){
+            this._val.x = Math.round(this._val.x / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
+            this._val.y = Math.round(this._val.y / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
+          }else{
+            this._val.x = Math.round(this._val.x);
+            this._val.y = Math.round(this._val.y);
+          }
 
-        // 부모 컴포넌트로 값 보내기
-        this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
+          // 부모 컴포넌트로 값 보내기
+          this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
+        }
         this.state.pan.setOffset({x: 0, y: 0});
         this.forceUpdate();
       }
@@ -184,7 +193,7 @@ export default class Dancer extends React.Component {
   }
 }
 
-let CIRCLE_RADIUS = 20;
+// let CIRCLE_RADIUS = 20;
 let styles = StyleSheet.create({
   // 모양 정의를 위한 스타일
   circle: {

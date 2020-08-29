@@ -514,8 +514,8 @@ export default class FormationScreen extends React.Component {
 	setCoordinate = () => {
 		console.log(TAG, 'setCoordinate:', this.coordinateSpace);
 		this.coordinate = [];
-		for(let x=Math.round((-width/2)/this.coordinateSpace)*this.coordinateSpace; x<width/2; x=x+this.coordinateSpace){
-			for(let y=Math.round((-height/2)/this.coordinateSpace)*this.coordinateSpace; y<height/2; y=y+this.coordinateSpace){
+		for(let x=Math.round((-(width-6)/2)/this.coordinateSpace)*this.coordinateSpace; x<(width-6)/2; x=x+this.coordinateSpace){
+			for(let y=Math.ceil((-height/5)/this.coordinateSpace)*this.coordinateSpace; y<height/5; y=y+this.coordinateSpace){
 				this.coordinate.push(<View style={[styles.circle, {transform: [{translateX: x}, {translateY: y}]}]}/>)
 			}
 		}
@@ -526,7 +526,8 @@ export default class FormationScreen extends React.Component {
 
 		// 인원수에 맞게 music box view의 높이를 정하기 위해서
 		const dancerNum = this.state.allPosList.length;
-		this.scrollViewStyle = [styles.scrollView, {height: (20 + dancerNum*20)}]
+		console.log(TAG, "dancerNum:", dancerNum);
+		this.scrollViewStyle = {maxHeight: (20 + dancerNum*20)};
 
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
@@ -566,9 +567,10 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 				
-				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-					{ this.state.dancers }
+				<View style={{minHeight: height*2/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{ this.coordinate }
+					<View style={{width: width-6, height: height*2/5, borderColor: COLORS.grayMiddle, borderWidth: 1}}/>
+					{ this.state.dancers }
 				</View>
 
 				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
@@ -582,27 +584,23 @@ export default class FormationScreen extends React.Component {
 						<IconAntDesign name="play" size={25}/>
 					</TouchableOpacity>
 					}
-					{/* <Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text> */}
-					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.state.time}</Text>
+					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
 				</View>
 
-				<ScrollView>
+				<ScrollView style={this.scrollViewStyle}>
 				<View style={{flexDirection: 'row'}}>
 
 					<View style={{flexDirection: 'column'}}>
 						{ this.state.dancerName }
 					</View>
-					<View style={this.scrollViewStyle}>
-						<ScrollView
-						style={this.scrollViewStyle}
-						horizontal={true}
-						showsHorizontalScrollIndicator={false}
-						ref={ref => (this.scrollView = ref)}>
-							<View flexDirection='column'>
-								{ this.musicbox }
-							</View>
-						</ScrollView>
-					</View>
+					<ScrollView
+					horizontal={true}
+					showsHorizontalScrollIndicator={false}
+					ref={ref => (this.scrollView = ref)}>
+						<View flexDirection='column'>
+							{ this.musicbox }
+						</View>
+					</ScrollView>
 
 				</View>
 				</ScrollView>
