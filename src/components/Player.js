@@ -32,10 +32,10 @@ export default class Player extends React.Component{
 				return;
 			}
 			// loaded successfully
-			console.log('duration in seconds: ' + whoosh.getDuration() + 'number of channels: ' + whoosh.getNumberOfChannels());
+			console.log('duration in seconds: ' + this.sound.getDuration() + 'number of channels: ' + this.sound.getNumberOfChannels());
 		
 			// Play the sound with an onEnd callback
-			whoosh.play((success) => {
+			this.sound.play((success) => {
 				if (success) {
 					console.log('successfully finished playing');
 				} else {

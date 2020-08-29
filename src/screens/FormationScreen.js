@@ -10,7 +10,7 @@ import Player from '../components/Player'
 import { COLORS } from '../values/Colors'
 import { FONTS } from '../values/Fonts'
 
-var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
+let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
 
 // 화면의 가로, 세로 길이 받아오기
@@ -64,8 +64,8 @@ export default class FormationScreen extends React.Component {
 
 		// state 업데이트
 		const newPos = {posx: _x, posy: _y, time: time};
-		var _allPosList = [...this.state.allPosList];
-		var posList = _allPosList[did];
+		let _allPosList = [...this.state.allPosList];
+		let posList = _allPosList[did];
 
 		console.log(TAG, "newPos: " + newPos);
 
@@ -84,12 +84,12 @@ export default class FormationScreen extends React.Component {
 			posList.splice(_allPosList[did].length, 0, newPos);
 		
 		// box 수정
-		var prevTime = 0;
-		var curTime = 0;
-		var rowView = [];
+		let prevTime = 0;
+		// let curTime = 0;
+		let rowView = [];
 		for(let j=0; j<_allPosList[did].length; j++){
 
-			curTime = _allPosList[did][j].time;
+			let curTime = _allPosList[did][j].time;
 
 			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
 			for(let k=prevTime; k<curTime-1; k++){
@@ -110,14 +110,14 @@ export default class FormationScreen extends React.Component {
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
-		for(let j=curTime+1; j<=this.state.musicLength; j++){
+		for(let j=prevTime+1; j<=this.state.musicLength; j++){
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
 					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
 				</TouchableOpacity>
 			)
 		}
-		var _musicbox = [...this.state.musicbox];
+		let _musicbox = [...this.state.musicbox];
 		_musicbox.splice(1+did, 1,
 			<View flexDirection='row'>
 					{rowView}
@@ -136,10 +136,10 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "addPosition(",did,time,")");
 
 		// time에 맞는 위치 구하기
-		var _allPosList = this.state.allPosList;
-		var posList = _allPosList[did];
-		var posx;
-		var posy;
+		let _allPosList = this.state.allPosList;
+		let posList = _allPosList[did];
+		let posx;
+		let posy;
 
 		let i=0;
 		for(; i<posList.length; i++){
@@ -167,17 +167,17 @@ export default class FormationScreen extends React.Component {
 		_allPosList.splice(did, 1, posList);
 
 		// box 수정
-		var prevTime = 0;
-		var curTime = 0;
-		var rowView = [];
+		let prevTime = 0;
+		// let curTime = 0;
+		let rowView = [];
 		for(let j=0; j<_allPosList[did].length; j++){
 
-			curTime = _allPosList[did][j].time;
+			let curTime = _allPosList[did][j].time;
 
 			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
-			for(let k=prevTime; k<curTime-1; k++){
+			for(let k=prevTime+1; k<curTime; k++){
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k+1)}>
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
 						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
 					 </TouchableOpacity>
 				)
@@ -185,7 +185,7 @@ export default class FormationScreen extends React.Component {
 
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}></View>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}/>
 				</TouchableOpacity>
 			)
 
@@ -193,14 +193,14 @@ export default class FormationScreen extends React.Component {
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
-		for(let j=curTime+1; j<=this.state.musicLength; j++){
+		for(let j=prevTime+1; j<=this.state.musicLength; j++){
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
 					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
 				</TouchableOpacity>
 			)
 		}
-		var _musicbox = [...this.state.musicbox];
+		let _musicbox = [...this.state.musicbox];
 		_musicbox.splice(1+did, 1,
 			<View flexDirection='row'>
 					{rowView}
@@ -234,16 +234,58 @@ export default class FormationScreen extends React.Component {
 		});
 
 		// state 업데이트
-		var _allPosList = this.state.allPosList;
-		var posList = _allPosList[did];
+		let _allPosList = this.state.allPosList;
+		let posList = _allPosList[did];
 
 		for(let i=0; i<posList.length; i++){
 			if(time == posList[i].time){
 				posList.splice(i, 1);
-				this.setState({allPosList: _allPosList})
-				return;
+				break;
 			}
 		}
+
+		// box 수정
+		let prevTime = 0;
+		// let curTime = 0;
+		let rowView = [];
+		for(let j=0; j<_allPosList[did].length; j++){
+
+			let curTime = _allPosList[did][j].time;
+
+			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
+			for(let k=prevTime+1; k<curTime; k++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					 </TouchableOpacity>
+				)
+			}
+
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}/>
+				</TouchableOpacity>
+			)
+
+			prevTime = curTime;
+		}
+
+		// 마지막 대열~노래 끝부분까지 회색박스 채우기
+		for(let j=prevTime+1; j<=this.state.musicLength; j++){
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
+					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+				</TouchableOpacity>
+			)
+		}
+		let _musicbox = [...this.state.musicbox];
+		_musicbox.splice(1+did, 1,
+			<View flexDirection='row'>
+					{rowView}
+			</View>
+			)
+
+		this.setState({allPosList: _allPosList, musicbox: _musicbox});
 	}
 
 	resizeDancer = () => {
@@ -267,8 +309,8 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "setDancerInit");
 		const dancerNum = this.state.allPosList.length;
 
-		var _dancers = [];
-		var _dancerName = [ <Text key={0} style={{height: 20}}/> ];
+		let _dancers = [];
+		let _dancerName = [ <Text key={0} style={{height: 20}}/> ];
 
 		for(let i=0; i<dancerNum; i++){
       _dancers.push(
@@ -278,7 +320,7 @@ export default class FormationScreen extends React.Component {
 				position={this.state.allPosList[i]} 
 				dropedPositionSubmit={this.dropedPositionSubmit} 
 				curTime={this.state.time}
-				// isPlay={this.state.isPlay}
+				isPlay={this.state.isPlay}
 				// elevation={100}
 				/>
 			)
@@ -299,21 +341,20 @@ export default class FormationScreen extends React.Component {
 	}
 
 	setBoxInit = () => {
+		console.log(TAG, "setBoxInit");
 
 		const dancerNum = this.state.allPosList.length;
 
 		this.timeText = [];
 		for(let time=0; time <= this.state.musicLength; time++){
 			this.timeText.push(
-				<TouchableOpacity onPress={()=>{						
-						this.markCurTime(time)
-					}}>
+				<TouchableOpacity onPress={()=>{this.markCurTime(time)}}>
 					<Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: 'gray', borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
 				</TouchableOpacity>
 			)
 		}
 
-		var _musicbox = [
+		let _musicbox = [
 			<View key={0} flexDirection='row'>
 				{ this.timeText }
 			</View>,
@@ -321,25 +362,28 @@ export default class FormationScreen extends React.Component {
 
 		for(let i=0; i<dancerNum; i++){
 			// time에 체크한 포인트가 있는지 확인
-			var prevTime = 0;
-			var curTime = 0;
-			var rowView = [];
+			let prevTime = 0;
+			let rowView = [];
 			for(let j=0; j<this.state.allPosList[i].length; j++){
 
-				curTime = this.state.allPosList[i][j].time;
+				let curTime = this.state.allPosList[i][j].time;
 
 				console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
-				for(let k=prevTime; k<curTime-1; k++){
+				
+				for(let k=prevTime+1; k<curTime; k++){
 					rowView.push(
-						<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, k+1)}>
-							<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+						<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, k)}>
+							<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}/>
 				 		</TouchableOpacity>
 					)
 				}
 
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(i, curTime)}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}></View>
+					<TouchableOpacity key={rowView.length} onLongPress={()=>{
+						console.log("long press!!",i,curTime);
+						this.deletePosition(i, curTime)
+						}}>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}/>
 					</TouchableOpacity>
 				)
 
@@ -347,10 +391,10 @@ export default class FormationScreen extends React.Component {
 			}
 
 			// 마지막 대열~노래 끝부분까지 회색박스 채우기
-			for(let j=curTime+1; j<=this.state.musicLength; j++){
+			for(let j=prevTime+1; j<=this.state.musicLength; j++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, j)}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}/>
 					</TouchableOpacity>
 				)
 			}
@@ -363,11 +407,12 @@ export default class FormationScreen extends React.Component {
 		}
 
 		this.setState({musicbox: _musicbox});
+		this.markCurTime(0);
 	}
 
 	markCurTime = (time) => {
-		var _musicbox = this.state.musicbox;
-		var _timeText = [...this.timeText];
+		let _musicbox = this.state.musicbox;
+		let _timeText = [...this.timeText];
 
 		_timeText[time] = <Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: COLORS.yellow, borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
 		// this.timeText = _timeText;
@@ -377,7 +422,7 @@ export default class FormationScreen extends React.Component {
 		{ _timeText }
 		</View>);
 		
-		this.setState({time: time, musicbox: _musicbox});
+		this.setState({time: time, musicbox: _musicbox}, () => {this.setDancerInit()});
 	}
 
 	render() {
@@ -395,6 +440,25 @@ export default class FormationScreen extends React.Component {
 				</View>
 
 				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
+				<View flexDirection='row'>
+					{/* <TouchableOpacity
+					onPress={()=>{
+						this.playAndPause();
+						this.setState({isPlay: !this.state.isPlay});
+						}}> */}
+
+					{ this.state.isPlay ? 
+					<TouchableOpacity onPress={()=>{this.pause()}}>
+						<Image source={require('../../assets/drawable/btn_pause.png')} style={styles.button}/>
+					</TouchableOpacity>
+					:
+					<TouchableOpacity onPress={()=>{this.play()}}>
+						<Image source={require('../../assets/drawable/btn_play.png')} style={styles.button}/>
+					</TouchableOpacity>
+					}
+					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{Math.round(this.state.time/60)}:{Math.round(this.state.time%60) < 10 ? '0'+Math.round(this.state.time%60) : Math.round(this.state.time%60)}</Text>
+					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.state.time}</Text>
+				</View>
 
 				<ScrollView>
 				<View style={{flexDirection: 'row'}}>
@@ -424,8 +488,8 @@ export default class FormationScreen extends React.Component {
 	componentDidMount() {
 		console.log(TAG, "componentDidMount");
 
-		var _allPosList = [];
-		var _dancerList = [];
+		let _allPosList = [];
+		let _dancerList = [];
 
 		this.state.db.transaction(txn => {
       txn.executeSql(
@@ -442,7 +506,7 @@ export default class FormationScreen extends React.Component {
 							"SELECT time, posx, posy FROM position WHERE nid=? AND did=? ORDER BY time",
         			[this.state.noteId, _dancerList[i].did],
         			(txn, posResult) => {
-								var posList = [];
+								let posList = [];
 								// console.log("posRes length:", posResult.rows.length);
 								for (let j = 0; j < posResult.rows.length; j++) {
 									// console.log("dancer:", posResult.rows.item(j));
@@ -464,13 +528,25 @@ export default class FormationScreen extends React.Component {
 				}
 			);
 		});
+	}
 
-		// 재생 버튼 누르면 ?초마다 실행됨
+	play = async () => {
+		console.log(TAG, "play");
 		this.interval = setInterval(() => {
-      if(this.state.isPlay == true){
-				this.setState({time: this.state.time+1});
-			}
+			this.setState({time: this.state.time+1});
 		}, 1000);
+
+		this.setState({isPlay: true}, () => {
+			this.setDancerInit();
+		});
+	}
+
+	pause = () => {
+		console.log(TAG, "pause");
+		clearInterval(this.interval);
+		this.setState({isPlay: false}, () => {
+			this.setDancerInit();
+		});
 	}
 
 	componentDidUpdate() {

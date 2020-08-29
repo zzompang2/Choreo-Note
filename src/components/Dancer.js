@@ -5,6 +5,8 @@ import {
 
 import {COLORS} from '../values/Colors';
 
+const TAG = "Dancer/";
+
 export default class Dancer extends React.Component {
   constructor(props) {
     super(props);
@@ -52,7 +54,7 @@ export default class Dancer extends React.Component {
 
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
-        //console.log(this.TAG + "onPanResponderRelease/터치 끝");
+        //console.log(TAG + "onPanResponderRelease/터치 끝");
 
         // this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
 
@@ -61,7 +63,6 @@ export default class Dancer extends React.Component {
         this.state.pan.setOffset({x: 0, y: 0});
       }
     });
-    this.TAG = "Dancer/";
   }
 
   // 전달받은 curTime에 어느 위치에 놓여져 있는지 계산한다.
@@ -89,9 +90,63 @@ export default class Dancer extends React.Component {
     return({x: position[i-1].posx + dx, y: position[i-1].posy + dy})
   }
 
+  playAnim = () => {
+    console.log(TAG, "playAnim: " + this.props.isPlay);
+
+    if(this.props.isPlay) {
+      let transformList = [];
+
+      // 시작 시간에 맞춰 애니메이션을 실행하기 위해
+      // 현재 시간에 어느 위치에 있는지 찾는다.
+      let i=0;
+      for(; i<this.props.position.length; i++){
+        if(this.props.curTime < this.props.position[i].time)
+          break;
+      }
+
+      if(i == this.props.position.length) return;
+
+      transformList.push( 
+        Animated.timing(
+          this.state.pan,
+          {
+            toValue: {x:this._val.x, y:this._val.y},
+            duration: 1,
+            useNativeDriver: true,
+            delay: 0,
+          }
+      ));
+
+      transformList.push( 
+        Animated.timing(
+          this.state.pan,
+          {
+            toValue: {x:this.props.position[i].posx, y:this.props.position[i].posy},
+            duration: (this.props.position[i].time - this.props.curTime) * 1000,
+            useNativeDriver: true,
+            delay: 0,
+          }
+      ));
+
+      for(var j=i+1; j<this.props.position.length; j++){
+        transformList.push(
+          Animated.timing(
+            this.state.pan,
+            {
+              toValue: {x:this.props.position[j].posx, y:this.props.position[j].posy},
+              duration: (this.props.position[j].time - this.props.position[j-1].time) * 1000,
+              useNativeDriver: true,
+              delay: 0,
+            }
+        ));
+      }
+      Animated.sequence(transformList).start();
+    }
+  }
+
   render() {
-    //console.log(this.TAG + "render");
-    //console.log(this.TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
+    //console.log(TAG + "render");
+    //console.log(TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
 
     const curPosition = this.getCurPosition();
     
@@ -111,60 +166,10 @@ export default class Dancer extends React.Component {
     );
   }
 
-  // componentDidUpdate() {
-  //   //console.log(this.TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
-
-  //   //console.log(this.TAG + "componentDidMount: " + this.props.toggle + "\n\n");
-  //   if(this.props.toggle) {
-  //     var transformList = [];
-
-  //     // 시작 시간에 맞춰 애니메이션을 실행하기 위해
-  //     // 현재 시간이 어디 사이에 있는지 찾는다.
-  //     for(var i=0; i<this.props.position.length; i++){
-  //       if(this.props.curTime < this.props.position[i].time){
-  //         break;
-  //       }
-  //     }
-
-  //     if(i == this.props.position.length) return;
-
-  //     transformList.push( 
-  //       Animated.timing(
-  //         this.state.pan,
-  //         {
-  //           toValue: {x:this._val.x, y:this._val.y},
-  //           duration: 1,
-  //           useNativeDriver: true,
-  //           delay: 0,
-  //         }
-  //     ));
-
-  //     transformList.push( 
-  //       Animated.timing(
-  //         this.state.pan,
-  //         {
-  //           toValue: {x:this.props.position[i].posx, y:this.props.position[i].posy},
-  //           duration: (this.props.position[i].time - this.props.curTime) * 1000,
-  //           useNativeDriver: true,
-  //           delay: 0,
-  //         }
-  //     ));
-
-  //     for(var j=i+1; j<this.props.position.length; j++){
-  //       transformList.push(
-  //         Animated.timing(
-  //           this.state.pan,
-  //           {
-  //             toValue: {x:this.props.position[j].posx, y:this.props.position[j].posy},
-  //             duration: (this.props.position[j].time - this.props.position[j-1].time) * 1000,
-  //             useNativeDriver: true,
-  //             delay: 0,
-  //           }
-  //       ));
-  //     }
-  //     Animated.sequence(transformList).start();
-  //   }
-  // }
+  componentDidUpdate() {
+    console.log(TAG, "componentDidUpdate");
+    this.playAnim();    
+  }
 }
 
 let CIRCLE_RADIUS = 20;
