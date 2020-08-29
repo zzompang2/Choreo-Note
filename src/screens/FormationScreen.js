@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, FlatList,
+	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, FlatList, Switch,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -32,7 +32,7 @@ export default class FormationScreen extends React.Component {
 			dancers: [],
 			dancerName: [],
 			// musicbox: [],
-			alignWithCoordinate: false,
+			// alignWithCoordinate: false,
 		}
 		this.dancerList=[];	// nid, did, name
 		this.scrollView;
@@ -41,6 +41,7 @@ export default class FormationScreen extends React.Component {
 		this.musicbox = [];	
 		this.coordinateSpace = 40;
 		this.radius = 20;
+		this.alignWithCoordinate = false;
 
 		this.setCoordinate();
 	}
@@ -167,7 +168,7 @@ export default class FormationScreen extends React.Component {
 
 		posx = Math.round(posx);
 		posy = Math.round(posy);
-
+		
 		this.state.db.transaction(txn => {
 			txn.executeSql(
 				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
@@ -320,14 +321,14 @@ export default class FormationScreen extends React.Component {
 		if(this.coordinateSpace < 50){
 			this.coordinateSpace += 5;
 			this.setCoordinate();
-			this.forceUpdate();
+			this.setDancerInit();
 		}
 	}
 	sizedownCoordinate = () => {
 		if(this.coordinateSpace > 20){
 			this.coordinateSpace -= 5;
 			this.setCoordinate();
-			this.forceUpdate();
+			this.setDancerInit();
 		}
 	}
 
@@ -364,19 +365,16 @@ export default class FormationScreen extends React.Component {
 				curTime={this.state.time}
 				isPlay={this.state.isPlay}
 				radius={this.radius}
+				alignWithCoordinate={this.alignWithCoordinate}
+				coordinateSpace={this.coordinateSpace}
 				// elevation={100}
 				/>
 			)
 			_dancerName.push(
 				<View key={_dancerName.length}>
-					<TouchableOpacity onPress={()=>{
-						if(this.state.isPlay) this.setState({isPlay: false})
-						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, rerender: this.rerender})}
-						}>
-						<Text style={{height: 20, width: 60, fontSize: 11,}}>
-							[{i+1}] {this.dancerList[i].name}
-						</Text>
-					</TouchableOpacity>
+					<Text style={{height: 20, width: 60, fontSize: 11,}}>
+						[{i+1}] {this.dancerList[i].name}
+					</Text>
 				</View>
 			)
 		}
@@ -510,6 +508,24 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 					<TouchableOpacity onPress={()=>this.sizedownCoordinate()}>
 						<IconIonicons name="contract" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<Text>align</Text>
+					<Switch
+					trackColor={{ false: COLORS.red, true: COLORS.blue }}
+					thumbColor={this.alignWithCoordinate ? "#f5dd4b" : "#f4f3f4"}
+					ios_backgroundColor="#3e3e3e"
+					onValueChange={() => {
+						console.log("switch! change to " + !this.alignWithCoordinate);
+						this.alignWithCoordinate = !this.alignWithCoordinate;
+						this.setDancerInit();
+					}}
+					value={this.alignWithCoordinate}/>
+					<Text>dancer</Text>
+					<TouchableOpacity onPress={()=>{
+						if(this.state.isPlay) this.setState({isPlay: false})
+						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, rerender: this.rerender})}
+						}>
+						<IconIonicons name="people-sharp" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 				</View>
 				

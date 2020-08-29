@@ -60,8 +60,14 @@ export default class Dancer extends React.Component {
 
         // this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
 
-        this._val.x = Math.round(this._val.x);
-        this._val.y = Math.round(this._val.y);
+        // alignWithCoordinate = true 라면 좌표축에 맞춘다.
+        if(this.props.alignWithCoordinate){
+          this._val.x = Math.round(this._val.x / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
+          this._val.y = Math.round(this._val.y / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
+        }else{
+          this._val.x = Math.round(this._val.x);
+          this._val.y = Math.round(this._val.y);
+        }
 
         // 부모 컴포넌트로 값 보내기
         this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
