@@ -42,6 +42,7 @@ export default class FormationScreen extends React.Component {
 
 		this.coordinateSpace = props.route.params.coordinateSpace;
 		this.radius = props.route.params.radius;
+		console.log(TAG, "coord: "+this.coordinateSpace, "radius: " + this.radius);
 		this.alignWithCoordinate = false;
 
 		this.setCoordinate();
@@ -329,7 +330,7 @@ export default class FormationScreen extends React.Component {
 			this.state.db.transaction(txn => {
 				txn.executeSql(
 					"UPDATE note " +
-					"SET radius=radius+2 " +
+					"SET radius=radius-2 " +
 					"WHERE nid=?;",
 					[this.state.noteId]
 				);
