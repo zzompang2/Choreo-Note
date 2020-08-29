@@ -5,6 +5,7 @@ import {
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
+import Slider from '@react-native-community/slider'
 
 // custom library
 import Dancer from '../components/Dancer'
@@ -14,6 +15,7 @@ import { FONTS } from '../values/Fonts'
 
 let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
+const boxSize = 25;
 
 // 화면의 가로, 세로 길이 받아오기
 const {width,height} = Dimensions.get('window');
@@ -106,15 +108,17 @@ export default class FormationScreen extends React.Component {
 			for(let k=prevTime; k<curTime-1; k++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k+1)}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+						<View style={styles.uncheckedBox}></View>
 					 </TouchableOpacity>
 				)
 			}
 
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}></View>
-				</TouchableOpacity>
+				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
+					style={{alignItems: 'center', justifyContent: 'center'}}>
+						<View style={styles.uncheckedBox}/>
+						<View style={styles.checkedBox}/>
+					</TouchableOpacity>
 			)
 
 			prevTime = curTime;
@@ -124,7 +128,7 @@ export default class FormationScreen extends React.Component {
 		for(let j=prevTime+1; j<=this.state.musicLength; j++){
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					<View style={styles.uncheckedBox}></View>
 				</TouchableOpacity>
 			)
 		}
@@ -193,15 +197,17 @@ export default class FormationScreen extends React.Component {
 			for(let k=prevTime+1; k<curTime; k++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+						<View style={styles.uncheckedBox}></View>
 					 </TouchableOpacity>
 				)
 			}
 
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}/>
-				</TouchableOpacity>
+				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
+					style={{alignItems: 'center', justifyContent: 'center'}}>
+						<View style={styles.uncheckedBox}/>
+						<View style={styles.checkedBox}/>
+					</TouchableOpacity>
 			)
 
 			prevTime = curTime;
@@ -211,7 +217,7 @@ export default class FormationScreen extends React.Component {
 		for(let j=prevTime+1; j<=this.state.musicLength; j++){
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					<View style={styles.uncheckedBox}></View>
 				</TouchableOpacity>
 			)
 		}
@@ -272,15 +278,17 @@ export default class FormationScreen extends React.Component {
 			for(let k=prevTime+1; k<curTime; k++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+						<View style={styles.uncheckedBox}></View>
 					 </TouchableOpacity>
 				)
 			}
 
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>this.deletePosition(did, curTime)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}/>
-				</TouchableOpacity>
+				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
+					style={{alignItems: 'center', justifyContent: 'center'}}>
+						<View style={styles.uncheckedBox}/>
+						<View style={styles.checkedBox}/>
+					</TouchableOpacity>
 			)
 
 			prevTime = curTime;
@@ -290,7 +298,7 @@ export default class FormationScreen extends React.Component {
 		for(let j=prevTime+1; j<=this.state.musicLength; j++){
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
-					<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}></View>
+					<View style={styles.uncheckedBox}></View>
 				</TouchableOpacity>
 			)
 		}
@@ -391,7 +399,7 @@ export default class FormationScreen extends React.Component {
 		const dancerNum = this.state.allPosList.length;
 
 		let _dancers = [];
-		let _dancerName = [ <Text key={0} style={{height: 20}}/> ];
+		let _dancerName = [ <Text key={0} style={{height: boxSize}}/> ];
 
 		for(let i=0; i<dancerNum; i++){
       _dancers.push(
@@ -409,11 +417,9 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 			_dancerName.push(
-				<View key={_dancerName.length}>
-					<Text style={{height: 20, width: 60, fontSize: 11,}}>
-						[{i+1}] {this.dancerList[i].name}
-					</Text>
-				</View>
+				<Text key={_dancerName.length} style={{height: boxSize, width: 60, fontSize: 11, textAlignVertical: 'center'}}>
+					{i+1}. {this.dancerList[i].name}
+				</Text>
 			)
 		}
 		this.setState({dancers: _dancers, dancerName: _dancerName})
@@ -427,11 +433,15 @@ export default class FormationScreen extends React.Component {
 		this.timeText = [];
 		for(let time=0; time <= this.state.musicLength; time++){
 			this.timeText.push(
-				<TouchableOpacity onPress={()=>{
+				<TouchableOpacity 
+				style={{height: boxSize, width: boxSize, justifyContent: 'center'}}
+				onPress={()=>{
 					this.markCurTime(time)
 					this.setState({time: time}, ()=>{this.setDancerInit()})
 					}}>
-					<Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: 'gray', borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
+					<Text style={{fontSize: 11, textAlign: 'center'}}>
+						{time}
+					</Text>
 				</TouchableOpacity>
 			)
 		}
@@ -455,17 +465,16 @@ export default class FormationScreen extends React.Component {
 				for(let k=prevTime+1; k<curTime; k++){
 					rowView.push(
 						<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, k)}>
-							<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}/>
+							<View style={styles.uncheckedBox}/>
 				 		</TouchableOpacity>
 					)
 				}
 
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>{
-						console.log("long press!!",i,curTime);
-						this.deletePosition(i, curTime)
-						}}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.red, borderColor: COLORS.white, borderWidth: 1}}/>
+					<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(i, curTime) }}
+					style={{alignItems: 'center', justifyContent: 'center'}}>
+						<View style={styles.uncheckedBox}/>
+						<View style={styles.checkedBox}/>
 					</TouchableOpacity>
 				)
 
@@ -476,7 +485,7 @@ export default class FormationScreen extends React.Component {
 			for(let j=prevTime+1; j<=this.state.musicLength; j++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, j)}>
-						<View style={{height: 20, width: 20, backgroundColor: COLORS.grayMiddle, borderColor: COLORS.white, borderWidth: 1}}/>
+						<View style={styles.uncheckedBox}/>
 					</TouchableOpacity>
 				)
 			}
@@ -494,10 +503,17 @@ export default class FormationScreen extends React.Component {
 	}
 
 	markCurTime = (time) => {
+		
 		// let _musicbox = this.musicbox;
 		let _timeText = [...this.timeText];
 
-		_timeText[time] = <Text style={{height: 20, width: 20, fontSize: 11, textAlign: 'center', backgroundColor: COLORS.yellow, borderColor: COLORS.white, borderWidth: 1}}>{time}</Text>
+		_timeText[time] = 
+		<View
+		style={{height: boxSize, width: boxSize, justifyContent: 'center', borderColor: COLORS.grayMiddle, borderRadius: boxSize/2, borderWidth: 1}}>
+			<Text style={{fontSize: 11, textAlign: 'center'}}>
+				{time}
+			</Text>
+		</View>
 		// this.timeText = _timeText;
 
 		this.musicbox.splice(0, 1, 
@@ -526,29 +542,28 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "render");
 
 		// 인원수에 맞게 music box view의 높이를 정하기 위해서
-		const dancerNum = this.state.allPosList.length;
-		console.log(TAG, "dancerNum:", dancerNum);
-		this.scrollViewStyle = {maxHeight: (20 + dancerNum*20)};
+		// const dancerNum = this.state.allPosList.length;
+		// this.scrollViewStyle = {maxHeight: (20 + dancerNum*20), height: 40};
 
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
 				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow, alignItems: 'center', justifyContent: 'space-between'}}>
-					<Text>size</Text>
+					<Text>댄서{"\n"}크기</Text>
 					<TouchableOpacity onPress={()=>this.sizeupDancer()}>
 						<IconIonicons name="expand" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={()=>this.sizedownDancer()}>
 						<IconIonicons name="contract" size={24} color="#ffffff"/>
 					</TouchableOpacity>
-					<Text>coordinate</Text>
+					<Text>좌표{"\n"}간격</Text>
 					<TouchableOpacity onPress={()=>this.sizeupCoordinate()}>
 						<IconIonicons name="expand" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={()=>this.sizedownCoordinate()}>
 						<IconIonicons name="contract" size={24} color="#ffffff"/>
 					</TouchableOpacity>
-					<Text>align</Text>
+					<Text>좌표{"\n"}맞춤</Text>
 					<Switch
 					trackColor={{ false: COLORS.red, true: COLORS.blue }}
 					thumbColor={this.alignWithCoordinate ? "#f5dd4b" : "#f4f3f4"}
@@ -559,7 +574,7 @@ export default class FormationScreen extends React.Component {
 						this.setDancerInit();
 					}}
 					value={this.alignWithCoordinate}/>
-					<Text>dancer</Text>
+					<Text>댄서{"\n"}편집</Text>
 					<TouchableOpacity onPress={()=>{
 						if(this.state.isPlay) this.setState({isPlay: false})
 						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, rerender: this.rerender})}
@@ -568,11 +583,13 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 				
-				<View style={{minHeight: height*2/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-					{ this.coordinate }
-					<View style={{width: width-6, height: height*2/5, borderColor: COLORS.grayMiddle, borderWidth: 1}}/>
-					{ this.state.dancers }
-				</View>
+				
+					<View style={{height: height*2/5, margin: 3, alignItems: 'center', justifyContent: 'center'}}>
+						{ this.coordinate }
+						<View style={{width: width-6, height: height*2/5, borderColor: COLORS.grayMiddle, borderWidth: 1}}/>
+						{ this.state.dancers }
+					</View>
+				
 
 				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
 				<View flexDirection='row'>
@@ -586,9 +603,20 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 					}
 					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
+					<Slider
+					value={this.state.time}
+					onSlidingComplete={value=>{
+						console.log(TAG, "onSlidingComplete:", Math.floor(value));
+						this.markCurTime(Math.floor(value))
+						this.setState({time: Math.floor(value)}, ()=>{this.setDancerInit()})
+					}}
+					maximumValue={this.state.musicLength}
+					style={{flex: 1}}
+					/>
 				</View>
 
-				<ScrollView style={this.scrollViewStyle}>
+				{/* <ScrollView style={this.scrollViewStyle}> */}
+				<ScrollView style={{flex: 1}}>
 				<View style={{flexDirection: 'row'}}>
 
 					<View style={{flexDirection: 'column'}}>
@@ -712,5 +740,18 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
     position: 'absolute',
-  },
+	},
+	uncheckedBox: {
+		height: boxSize, 
+		width: 1, 
+		marginHorizontal: (boxSize-1)/2, 
+		backgroundColor: COLORS.grayMiddle
+	},
+	checkedBox: {
+		height: 10, 
+		width: 10, 
+		backgroundColor: COLORS.red,
+		borderRadius: 5,
+		position: 'absolute'
+	},
 })

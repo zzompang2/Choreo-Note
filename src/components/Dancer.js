@@ -68,8 +68,8 @@ export default class Dancer extends React.Component {
         else{
           // alignWithCoordinate = true 라면 좌표축에 맞춘다.
           if(this.props.alignWithCoordinate){
-            this._val.x = Math.round(this._val.x / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
-            this._val.y = Math.round(this._val.y / (this.props.coordinateSpace/2)) * (this.props.coordinateSpace/2);
+            this._val.x = Math.round(this._val.x / (this.props.coordinateSpace)) * (this.props.coordinateSpace);
+            this._val.y = Math.round(this._val.y / (this.props.coordinateSpace)) * (this.props.coordinateSpace);
           }else{
             this._val.x = Math.round(this._val.x);
             this._val.y = Math.round(this._val.y);
@@ -110,7 +110,7 @@ export default class Dancer extends React.Component {
   }
 
   playAnim = () => {
-    console.log(TAG, "playAnim: " + this.props.isPlay);
+    //console.log(TAG, "playAnim: " + this.props.isPlay);
 
     if(this.props.isPlay) {
       let transformList = [];
@@ -164,8 +164,7 @@ export default class Dancer extends React.Component {
   }
 
   render() {
-    console.log(TAG, "render");
-    //console.log(TAG + "_val: " + Math.round(this._val.x) +", "+Math.round(this._val.y));
+    //console.log(TAG, "render");
 
     this.radius = this.props.radius;
     const curPosition = this.getCurPosition();
@@ -182,18 +181,17 @@ export default class Dancer extends React.Component {
         {...this.panResponder.panHandlers}
         style={[panStyle, styles.circle, {width: this.radius*2, height: this.radius*2, borderRadius: this.radius}]}>
         <Text style={[styles.number, {fontSize: this.radius}]}>{this.props.did+1}</Text>
-        <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text>
+        {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
       </Animated.View>
     );
   }
 
   componentDidUpdate() {
-    console.log(TAG, "componentDidUpdate");
+    //console.log(TAG, "componentDidUpdate");
     this.playAnim();    
   }
 }
 
-// let CIRCLE_RADIUS = 20;
 let styles = StyleSheet.create({
   // 모양 정의를 위한 스타일
   circle: {
