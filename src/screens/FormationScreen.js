@@ -39,8 +39,9 @@ export default class FormationScreen extends React.Component {
 		this.scrollViewStyle;
 		this.timeText = [];
 		this.musicbox = [];	
-		this.coordinateSpace = 40;
-		this.radius = 20;
+
+		this.coordinateSpace = props.route.params.coordinateSpace;
+		this.radius = props.route.params.radius;
 		this.alignWithCoordinate = false;
 
 		this.setCoordinate();
@@ -309,12 +310,30 @@ export default class FormationScreen extends React.Component {
 		if(this.radius < 20){
 			this.radius += 2;
 			this.setDancerInit();
+
+			this.state.db.transaction(txn => {
+				txn.executeSql(
+					"UPDATE note " +
+					"SET radius=radius+2 " +
+					"WHERE nid=?;",
+					[this.state.noteId]
+				);
+			});
 		}
 	}
 	sizedownDancer = () => {
 		if(this.radius > 10){
 			this.radius -= 2;
 			this.setDancerInit();
+
+			this.state.db.transaction(txn => {
+				txn.executeSql(
+					"UPDATE note " +
+					"SET radius=radius+2 " +
+					"WHERE nid=?;",
+					[this.state.noteId]
+				);
+			});
 		}
 	}
 	sizeupCoordinate = () => {
@@ -322,6 +341,15 @@ export default class FormationScreen extends React.Component {
 			this.coordinateSpace += 5;
 			this.setCoordinate();
 			this.setDancerInit();
+
+			this.state.db.transaction(txn => {
+				txn.executeSql(
+					"UPDATE note " +
+					"SET coordinateSpace=coordinateSpace+5 " +
+					"WHERE nid=?;",
+					[this.state.noteId]
+				);
+			});
 		}
 	}
 	sizedownCoordinate = () => {
@@ -329,6 +357,15 @@ export default class FormationScreen extends React.Component {
 			this.coordinateSpace -= 5;
 			this.setCoordinate();
 			this.setDancerInit();
+
+			this.state.db.transaction(txn => {
+				txn.executeSql(
+					"UPDATE note " +
+					"SET coordinateSpace=coordinateSpace-5 " +
+					"WHERE nid=?;",
+					[this.state.noteId]
+				);
+			});
 		}
 	}
 
@@ -494,7 +531,7 @@ export default class FormationScreen extends React.Component {
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
-				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow, alignItems: 'center'}}>
+				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow, alignItems: 'center', justifyContent: 'space-between'}}>
 					<Text>size</Text>
 					<TouchableOpacity onPress={()=>this.sizeupDancer()}>
 						<IconIonicons name="expand" size={24} color="#ffffff"/>

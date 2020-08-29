@@ -16,8 +16,6 @@ export default class Dancer extends React.Component {
       pan: new Animated.ValueXY(),
     };
     this._val = { x:0, y:0 };
-
-    console.log(TAG, "radius is " + this.radius);
     
     // 최종 좌표의 값(value)을 _val 값에 대입되도록 한다.
 		this.state.pan.addListener((value) => this._val = value);
