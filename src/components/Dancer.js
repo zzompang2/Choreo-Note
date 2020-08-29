@@ -31,7 +31,7 @@ export default class Dancer extends React.Component {
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
         // drag되기 전 초기 위치 저장
-        this._prevVal = {x: this._val.x, y: this._val.y}
+        // this._prevVal = {x: this._val.x, y: this._val.y}
 
         this.state.pan.setOffset({
         x: this._val.x,
@@ -57,6 +57,9 @@ export default class Dancer extends React.Component {
         //console.log(TAG + "onPanResponderRelease/터치 끝");
 
         // this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
+
+        this._val.x = Math.round(this._val.x);
+        this._val.y = Math.round(this._val.y);
 
         // 부모 컴포넌트로 값 보내기
         this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
@@ -85,8 +88,8 @@ export default class Dancer extends React.Component {
     if(curTime == position[i].time)
       return({x: position[i].posx, y: position[i].posy});
 
-    const dx = (position[i].posx - position[i-1].posx) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time);
-    const dy = (position[i].posy - position[i-1].posy) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time);    
+    const dx = Math.round( (position[i].posx - position[i-1].posx) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time) );
+    const dy = Math.round( (position[i].posy - position[i-1].posy) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time) );
     
     return({x: position[i-1].posx + dx, y: position[i-1].posy + dy})
   }

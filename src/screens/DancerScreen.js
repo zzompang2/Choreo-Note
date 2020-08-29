@@ -8,6 +8,7 @@ import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
+TAG = "ListScreen";
 
 export default class ListScreen extends React.Component {
 	constructor(props){
@@ -18,11 +19,10 @@ export default class ListScreen extends React.Component {
 			dancerList: props.route.params.dancerList,
 		}
 		this.allPosList = props.route.params.allPosList;
-		this.TAG = "ListScreen";
 	}
 
 	changeName = (text, did) => {
-		console.log(this.TAG, "changeName: ", text + ", " + did)
+		console.log(TAG, "changeName: ", text + ", " + did)
 
 		// SQLite DB에서 업데이트
 		this.state.db.transaction(txn => {
@@ -39,11 +39,11 @@ export default class ListScreen extends React.Component {
 		_dancerList[did].name = text;
 		this.setState({dancerList: _dancerList});
 
-		this.props.route.params.refresh(_dancerList, this.allPosList);
+		//this.props.route.params.refresh(_dancerList, this.allPosList);
 	}
 
 	addDancer = () => {
-		console.log(this.TAG, "addDancer");
+		console.log(TAG, "addDancer");
 
 		const dancerNum = this.state.dancerList.length;
 
@@ -63,11 +63,11 @@ export default class ListScreen extends React.Component {
 		this.setState({dancerList: _dancerList});
 		this.allPosList.push([{time:0, posx:0, posy:0}]);
 
-		this.props.route.params.refresh(_dancerList, this.allPosList);
+		// this.props.route.params.refresh(_dancerList, this.allPosList);
 	}
 
 	deleteDancer = (did) => {
-		console.log(this.TAG, "deleteDancer");
+		console.log(TAG, "deleteDancer");
 
 		Alert.alert(
 			"경고", 
@@ -76,7 +76,7 @@ export default class ListScreen extends React.Component {
 				{
 					text: "예!",
 					onPress: () => {
-						console.log(this.TAG, "deleteDancer: YES")
+						console.log(TAG, "deleteDancer: YES")
 						this.state.db.transaction(txn => {
 							txn.executeSql(
 								"DELETE FROM position " +
@@ -110,7 +110,7 @@ export default class ListScreen extends React.Component {
 						this.allPosList.splice(did, 1);
 
 						this.setState({dancerList: _dancerList});
-						this.props.route.params.refresh(_dancerList, this.allPosList);
+						// this.props.route.params.refresh(_dancerList, this.allPosList);
 					},
 				},
 				{ text: "아니요, 안 할래요.", style: "cancel" }
@@ -169,6 +169,11 @@ export default class ListScreen extends React.Component {
 				/>
 			</SafeAreaView>
 		)
+	}
+
+	componentWillUnmount(){
+		console.log(TAG, 'componentWillUnmount')
+		this.props.route.params.rerender(this.state.dancerList, this.allPosList);
 	}
 }
 

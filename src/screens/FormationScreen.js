@@ -3,6 +3,8 @@ import {
 	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, FlatList,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
+import IconIonicons from 'react-native-vector-icons/Ionicons';
+import IconAntDesign from 'react-native-vector-icons/AntDesign';
 
 // custom library
 import Dancer from '../components/Dancer'
@@ -30,12 +32,15 @@ export default class FormationScreen extends React.Component {
 			dancers: [],
 			dancerName: [],
 			// musicbox: [],
+			alignWithCoordinate: false,
 		}
 		this.dancerList=[];	// nid, did, name
 		this.scrollView;
 		this.scrollViewStyle;
 		this.timeText = [];
-		this.musicbox = [];
+		this.musicbox = [];	
+		this.space = 50;
+
 		this.setCoordinate();
 	}
 
@@ -158,6 +163,9 @@ export default class FormationScreen extends React.Component {
 			posx = posList[i-1].posx;
 			posy = posList[i-1].posy;
 		}
+
+		posx = Math.round(posx);
+		posy = Math.round(posy);
 
 		this.state.db.transaction(txn => {
 			txn.executeSql(
@@ -299,9 +307,12 @@ export default class FormationScreen extends React.Component {
 
 	}
 
-	refresh = (_dancerList, _allPosList) => {
+	rerender = (_dancerList, _allPosList) => {
 		this.dancerList = _dancerList;
-		this.setState({allPosList: _allPosList});
+		this.setState({allPosList: _allPosList}, ()=>{
+			this.setDancerInit();
+			this.setBoxInit();
+		});
 	}
 
 	setTimeState = (time) => {
@@ -335,7 +346,7 @@ export default class FormationScreen extends React.Component {
 				<View key={_dancerName.length}>
 					<TouchableOpacity onPress={()=>{
 						if(this.state.isPlay) this.setState({isPlay: false})
-						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, refresh: this.refresh})}
+						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.state.allPosList, rerender: this.rerender})}
 						}>
 						<Text style={{height: 20, width: 60, fontSize: 11,}}>
 							[{i+1}] {this.dancerList[i].name}
@@ -441,10 +452,10 @@ export default class FormationScreen extends React.Component {
 	}
 
 	setCoordinate = () => {
+		console.log(TAG, 'setCoordinate:', this.space);
 		this.coordinate = [];
-		const space = 50;
-		for(let x=Math.round((-width/2)/space)*space; x<width/2; x=x+space){
-			for(let y=Math.round((-height/2)/space)*space; y<height/2; y=y+space){
+		for(let x=Math.round((-width/2)/this.space)*this.space; x<width/2; x=x+this.space){
+			for(let y=Math.round((-height/2)/this.space)*this.space; y<height/2; y=y+this.space){
 				this.coordinate.push(<View style={[styles.circle, {transform: [{translateX: x}, {translateY: y}]}]}/>)
 			}
 		}
@@ -460,6 +471,9 @@ export default class FormationScreen extends React.Component {
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
+				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow}}>
+				</View>
+				
 				<View style={{minHeight: height*3/5, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
 					{ this.state.dancers }
 					{ this.coordinate }
@@ -468,12 +482,12 @@ export default class FormationScreen extends React.Component {
 				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
 				<View flexDirection='row'>
 					{ this.state.isPlay ? 
-					<TouchableOpacity onPress={()=>{this.pause()}}>
-						<Image source={require('../../assets/drawable/btn_pause.png')} style={styles.button}/>
+					<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 10}}>
+						<IconAntDesign name="pausecircleo" size={25}/>
 					</TouchableOpacity>
 					:
-					<TouchableOpacity onPress={()=>{this.play()}}>
-						<Image source={require('../../assets/drawable/btn_play.png')} style={styles.button}/>
+					<TouchableOpacity onPress={()=>{this.play()}} style={{margin: 10}}>
+						<IconAntDesign name="play" size={25}/>
 					</TouchableOpacity>
 					}
 					{/* <Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text> */}
@@ -597,10 +611,9 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	button: {
-    width: 30,
-    height: 30,
-    marginTop: 10,
-    marginRight: 10,
+    width: 50,
+    height: 50,
+		margin: 10,
 	},
 	circle: {
     backgroundColor: COLORS.red,

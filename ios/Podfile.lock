@@ -317,6 +317,8 @@ PODS:
     - React
   - RNSqlite2 (1.0.0):
     - React
+  - RNVectorIcons (7.0.0):
+    - React
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -377,6 +379,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSqlite2 (from `../node_modules/react-native-sqlite-2`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -463,6 +466,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sound"
   RNSqlite2:
     :path: "../node_modules/react-native-sqlite-2"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -512,9 +517,10 @@ SPEC CHECKSUMS:
   RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
   RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNSqlite2: f255020dc5fbfbf7d1943f0cc38550cf6f4e001c
+  RNVectorIcons: da6fe858f5a65d7bbc3379540a889b0b12aa5976
   Yoga: 7740b94929bbacbddda59bf115b5317e9a161598
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 1ed8c38805c90571584ead280976f361dcc739c9
+PODFILE CHECKSUM: 331580dc9f277ddfed17488b2eaf0aa6b0998fdd
 
 COCOAPODS: 1.9.3
