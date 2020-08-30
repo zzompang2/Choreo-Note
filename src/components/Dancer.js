@@ -77,7 +77,7 @@ export default class Dancer extends React.Component {
           }
 
           // 부모 컴포넌트로 값 보내기
-          this.props.dropedPositionSubmit(this.props.did, this._val.x, this._val.y);
+          this.props.dropPosition(this.props.did, this._val.x, this._val.y);
         }
         this.state.pan.setOffset({x: 0, y: 0});
         this.forceUpdate();
@@ -87,7 +87,7 @@ export default class Dancer extends React.Component {
 
   // 전달받은 curTime에 어느 위치에 놓여져 있는지 계산한다.
   getCurPosition = () => {
-    const position = this.props.position;
+    const position = [...this.props.position];
     const curTime = this.props.curTime;
 
     // 초기 상태는 지우지 못하도록 했으니,
@@ -107,7 +107,7 @@ export default class Dancer extends React.Component {
       return({x: position[i].posx, y: position[i].posy});
 
     // 이전 checked point(i-1 번째)의 duration 중인 경우
-    const leftedDuration = this.props.position[i-1].time + this.props.position[i-1].duration - this.props.curTime;
+    const leftedDuration = position[i-1].time + position[i-1].duration - this.props.curTime;
     if(leftedDuration >= 0)
       return({x: position[i-1].posx, y: position[i-1].posy});
 
@@ -119,6 +119,7 @@ export default class Dancer extends React.Component {
 
   playAnim = () => {
     //console.log(TAG, "playAnim: " + this.props.isPlay);
+    const position = [...this.props.position];
 
     if(this.props.isPlay) {
       let transformList = [];
@@ -126,16 +127,16 @@ export default class Dancer extends React.Component {
       // 시작 시간에 맞춰 애니메이션을 실행하기 위해
       // 현재 시간에 어느 위치에 있는지 찾는다.
       let i=0;
-      for(; i<this.props.position.length; i++){
-        if(this.props.curTime < this.props.position[i].time)
+      for(; i<position.length; i++){
+        if(this.props.curTime < position[i].time)
           break;
       }
 
       // 최종 좌표 이후의 시간인 경우: 애니메이션 필요 없음.
-      if(i == this.props.position.length) return;
+      if(i == position.length) return;
 
       // 이전 좌표의 duration이 아직 진행중인 경우를 체크
-      let leftedDuration = this.props.position[i-1].time + this.props.position[i-1].duration - this.props.curTime;
+      let leftedDuration = position[i-1].time + position[i-1].duration - this.props.curTime;
       leftedDuration = ( leftedDuration > 0 ? leftedDuration : 0 );
       
       // 첫번째 애니메이션: 현재 시간 ~ 처음으로 나오는 좌표의 위치
@@ -143,8 +144,8 @@ export default class Dancer extends React.Component {
         Animated.timing(
           this.state.pan,
           {
-            toValue: {x:this.props.position[i].posx, y:this.props.position[i].posy},
-            duration: (this.props.position[i].time - this.props.curTime - leftedDuration) * 1000,
+            toValue: {x: position[i].posx, y: position[i].posy},
+            duration: (position[i].time - this.props.curTime - leftedDuration) * 1000,
             useNativeDriver: true,
             delay: leftedDuration * 1000,
           }
@@ -152,15 +153,15 @@ export default class Dancer extends React.Component {
       );
 
       // 나머지 애니메이션: 저장된 정보대로 다음 좌표의 위치로 이동
-      for(var j=i+1; j<this.props.position.length; j++){
+      for(var j=i+1; j<position.length; j++){
         transformList.push(
           Animated.timing(
             this.state.pan,
             {
-              toValue: {x:this.props.position[j].posx, y:this.props.position[j].posy},
-              duration: (this.props.position[j].time - this.props.position[j-1].time - this.props.position[j-1].duration) * 1000,
+              toValue: {x:position[j].posx, y:position[j].posy},
+              duration: (position[j].time - position[j-1].time - position[j-1].duration) * 1000,
               useNativeDriver: true,
-              delay: this.props.position[j-1].duration * 1000,
+              delay: position[j-1].duration * 1000,
             }
           ),
         );

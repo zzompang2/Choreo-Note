@@ -19,7 +19,7 @@ class ListScreen extends React.Component {
 		}
 
 		db.transaction(txn => {
-			txn.executeSql('DROP TABLE IF EXISTS note;', []);
+			// txn.executeSql('DROP TABLE IF EXISTS note;', []);
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS note(' +
 					'nid INTEGER NOT NULL, ' +
@@ -31,9 +31,9 @@ class ListScreen extends React.Component {
 					'PRIMARY KEY("nid") );',
 				[]
 			);
-			txn.executeSql(
-				'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.01.01", "사람들이 움직이는 게", 3, 3);', []
-			);
+			// txn.executeSql(
+			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.01.01", "사람들이 움직이는 게", 3, 3);', []
+			// );
 
 			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
 			txn.executeSql(
@@ -119,7 +119,7 @@ class ListScreen extends React.Component {
 		const todayDate = new Date();
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, "title", ?, "music", 35, 16);', 
+				'INSERT INTO note VALUES (?, "title", ?, "music", 3, 3);', 
 				[this.state.noteList.length, todayDate.getFullYear() + "." + (todayDate.getMonth()+1) + "." + todayDate.getDate()],
 				() => { this.updateNoteList(); }
 			);

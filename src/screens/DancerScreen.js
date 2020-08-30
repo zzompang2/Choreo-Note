@@ -16,9 +16,9 @@ export default class ListScreen extends React.Component {
 		this.state={
 			db,
 			noteId: props.route.params.noteId,
-			dancerList: props.route.params.dancerList,
+			dancerList: [...props.route.params.dancerList],
 		}
-		this.allPosList = props.route.params.allPosList;
+		this.allPosList = [...props.route.params.allPosList];
 	}
 
 	changeName = (text, did) => {
@@ -35,11 +35,9 @@ export default class ListScreen extends React.Component {
 			);
 		});
 
-		var _dancerList = this.state.dancerList;
+		let _dancerList = [...this.state.dancerList];
 		_dancerList[did].name = text;
 		this.setState({dancerList: _dancerList});
-
-		//this.props.route.params.refresh(_dancerList, this.allPosList);
 	}
 
 	addDancer = () => {
@@ -58,12 +56,10 @@ export default class ListScreen extends React.Component {
 			);
 		});
 
-		var _dancerList = this.state.dancerList;
-		_dancerList.push({nid: this.state.noteId, did: dancerNum, name: " "});
+		let _dancerList = [...this.state.dancerList];
+		_dancerList.push({did: dancerNum, name: " "}); // {did, name}
+		this.allPosList.push([{time: 0, posx: 0, posy: 0, duration: 0}]);
 		this.setState({dancerList: _dancerList});
-		this.allPosList.push([{time:0, posx:0, posy:0}]);
-
-		// this.props.route.params.refresh(_dancerList, this.allPosList);
 	}
 
 	deleteDancer = (did) => {
@@ -101,16 +97,14 @@ export default class ListScreen extends React.Component {
 							);
 						});
 
-						var _dancerList = this.state.dancerList;
+						let _dancerList = [...this.state.dancerList];
 						_dancerList.splice(did, 1);
 						for(let i=did; i<_dancerList.length; i++){
 							_dancerList[i].did -= 1;
 						}
 
 						this.allPosList.splice(did, 1);
-
 						this.setState({dancerList: _dancerList});
-						// this.props.route.params.refresh(_dancerList, this.allPosList);
 					},
 				},
 				{ text: "아니요, 안 할래요.", style: "cancel" }
@@ -173,7 +167,7 @@ export default class ListScreen extends React.Component {
 
 	componentWillUnmount(){
 		console.log(TAG, 'componentWillUnmount')
-		this.props.route.params.rerender(this.state.dancerList, this.allPosList);
+		this.props.route.params.changeDancerList(this.state.dancerList, this.allPosList);
 	}
 }
 

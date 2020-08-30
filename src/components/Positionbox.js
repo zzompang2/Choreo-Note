@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-	View, Text, StyleSheet, PanResponder, Animated, Dimensions, TouchableOpacity,
+	PanResponder, Animated,
 } from "react-native";
 import { COLORS } from '../values/Colors'
 
@@ -14,12 +14,9 @@ export default class Positionbox extends React.Component {
 		this.state = {
 			pan: new Animated.ValueXY(),
 		}
-		// this._val = { x:0, y:0 };
+
 		this.duration = this.props.duration;
-		// this.isEditMode = false;
-
-		// this.state.pan.addListener((value) => this._val = value);
-
+	
 		this.panResponder = PanResponder.create({
 			// 주어진 터치 이벤트에 반응할지를 결정(return T/F)
       onStartShouldSetPanResponder: (e, gesture) => true,
@@ -29,41 +26,18 @@ export default class Positionbox extends React.Component {
 				console.log(TAG, "onPanResponderGrant/터치 시작");
 
 				// scroll lock
-				this.props.positionTouchHandler(true);
-
-        // // drag되기 전 초기 위치 저장
-        // this._prevVal = {x: this._val.x, y: this._val.y}
-
-        // this.state.pan.setOffset({
-				// 	x: this._val.x,
-				// 	y: this._val.y,
-        // })
-        // this.state.pan.setValue({x:0, y:0});
-        // //this.onChange();
+				this.props.setScrollEnable(true);
       },
 
-       // moving 제스쳐가 진행중일 때 실행.
-       // 마우스 따라 움직이도록 하는 코드.
-      //  onPanResponderMove:
-      //  Animated.event(
-      //    [null, 
-      //    { dx: this.state.pan.x, 
-      //      dy: this.state.pan.y }
-      //    ], 
-      //    {useNativeDriver: false}
-			//  ),
 			onPanResponderMove: (e, gesture) => {
-				const _changedDuration = this.duration + Math.round(gesture.dx / this.boxSize);
-
 				// this.props.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
 				// this.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
 				// _changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
-				if(this.props.duration != _changedDuration && _changedDuration >= 0){
-					// this.duration = _changedDuration;
-					this.props.changeDuration(_changedDuration);	// this.props.duration = _changedDuration
+				const _changedDuration = this.duration + Math.round(gesture.dx / this.props.boxSize);
 
-					// console.log('duration change!');
+				if(this.props.duration != _changedDuration && _changedDuration >= 0){
+					this.props.changeDuration(_changedDuration, true);	// this.props.duration = _changedDuration
 				}
 			},
 
@@ -72,41 +46,31 @@ export default class Positionbox extends React.Component {
 				console.log(TAG, "onPanResponderRelease/터치 끝:");
 				
 				// scroll unlock
-				this.props.positionTouchHandler(false);
+				this.props.setScrollEnable(false);
 
 				// 그냥 클릭한 경우: select 취소
 				if(gesture.dx == 0){
-					// this.isEditMode = false;
-					// this.forceUpdate();
 					this.props.unselectPosition();
 					return;
 				}
 				else{
 					this.duration = this.props.duration;
-					this.props.changeDurationDB(this.duration);
+					this.props.changeDuration(this.duration, false);
 				}
-
-        // this.state.pan.setOffset({x: 0, y: 0});
       }
 		})
 	}
 
 	render(){
 		console.log(TAG, 'render');
-		// selectedStyle = {backgroundColor: COLORS.yellow};
-		
-		this.boxSize = this.props.boxSize;
-		// this.duration = this.props.duration;
-
-		// const panStyle = { transform: this.state.pan.getTranslateTransform() }
 
 		return(
 			<Animated.View
 			{...this.panResponder.panHandlers}
 			style={{
-				height: 10, 
-				width: 10 + this.boxSize * this.props.duration, 
-				marginHorizontal: this.boxSize/2 - 5,
+				height: this.props.positionboxSize, 
+				width: this.props.positionboxSize + this.props.boxSize * this.props.duration, 
+				marginHorizontal: this.props.boxSize/2 - 5,
 				backgroundColor: COLORS.blue,
 				borderRadius: 5,
 				position: 'absolute'
