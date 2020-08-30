@@ -114,24 +114,27 @@ export default class FormationScreen extends React.Component {
 			}
 
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
-					style={{alignItems: 'center', justifyContent: 'center'}}>
-						<View style={{
-							height: boxSize, 
-							width: 1, 
-							marginLeft: (boxSize-1)/2,
-							marginRight: (boxSize-1)/2 + boxSize*duration,
-							backgroundColor: COLORS.grayMiddle
-						}}/>
-						<View style={{
-							height: 10, 
-							width: 10 + boxSize * duration, 
-							marginHorizontal: boxSize/2 - 5,
-							backgroundColor: COLORS.red,
-							borderRadius: 5,
-							position: 'absolute'
-						}}/>
-					</TouchableOpacity>
+				<TouchableOpacity 
+				key={rowView.length} 
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
+				style={{alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{
+						height: boxSize, 
+						width: 1, 
+						marginLeft: (boxSize-1)/2,
+						marginRight: (boxSize-1)/2 + boxSize*duration,
+						backgroundColor: COLORS.grayMiddle
+					}}/>
+					<View style={{
+						height: 10, 
+						width: 10 + boxSize * duration, 
+						marginHorizontal: boxSize/2 - 5,
+						backgroundColor: COLORS.red,
+						borderRadius: 5,
+						position: 'absolute'
+					}}/>
+				</TouchableOpacity>
 			)
 
 			prevTime = curTime + duration;
@@ -217,24 +220,27 @@ export default class FormationScreen extends React.Component {
 			}
 
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
-					style={{alignItems: 'center', justifyContent: 'center'}}>
-						<View style={{
-							height: boxSize, 
-							width: 1, 
-							marginLeft: (boxSize-1)/2,
-							marginRight: (boxSize-1)/2 + boxSize*duration,
-							backgroundColor: COLORS.grayMiddle
-						}}/>
-						<View style={{
-							height: 10, 
-							width: 10 + boxSize * duration, 
-							marginHorizontal: boxSize/2 - 5,
-							backgroundColor: COLORS.red,
-							borderRadius: 5,
-							position: 'absolute'
-						}}/>
-					</TouchableOpacity>
+				<TouchableOpacity
+				key={rowView.length} 
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
+				style={{alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{
+						height: boxSize, 
+						width: 1, 
+						marginLeft: (boxSize-1)/2,
+						marginRight: (boxSize-1)/2 + boxSize*duration,
+						backgroundColor: COLORS.grayMiddle
+					}}/>
+					<View style={{
+						height: 10, 
+						width: 10 + boxSize * duration, 
+						marginHorizontal: boxSize/2 - 5,
+						backgroundColor: COLORS.red,
+						borderRadius: 5,
+						position: 'absolute'
+					}}/>
+				</TouchableOpacity>
 			)
 
 			prevTime = curTime + duration;
@@ -312,7 +318,10 @@ export default class FormationScreen extends React.Component {
 			}
 
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
+				<TouchableOpacity 
+				key={rowView.length} 
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
 					style={{alignItems: 'center', justifyContent: 'center'}}>
 						<View style={{
 							height: boxSize, 
@@ -516,7 +525,10 @@ export default class FormationScreen extends React.Component {
 
 				// checked box 채우기
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
+					<TouchableOpacity 
+					key={rowView.length} 
+					onPress={()=>this.selectPosition(did, j)}
+					onLongPress={()=>this.deletePosition(did, curTime)}
 					style={{alignItems: 'flex-start', justifyContent: 'center'}}>
 						<View style={{
 							height: boxSize, 
@@ -558,6 +570,18 @@ export default class FormationScreen extends React.Component {
 		// this.setState({musicbox: _musicbox});
 
 		this.markCurTime(0);
+	}
+
+	selectPosition = (did, positionIndex) => {
+		console.log('select!', did, positionIndex);
+		this.isSelected = true;
+		this.selectedDancer = (did+1) + '. ' + '함창수';
+		this.selectedTime = this.state.allPosList[did][positionIndex].time;
+		this.selectedPosx = this.state.allPosList[did][positionIndex].posx;
+		this.selectedPosy = this.state.allPosList[did][positionIndex].posy;
+		this.selectedDuration = this.state.allPosList[did][positionIndex].duration;
+
+		this.forceUpdate();
 	}
 
 	markCurTime = (time) => {
@@ -651,7 +675,7 @@ export default class FormationScreen extends React.Component {
 				
 
 				{/* <Player musicLength={this.state.musicLength} time={this.state.time} setTimeState={this.setTimeState}/> */}
-				<View flexDirection='row'>
+				<View style={{flexDirection: 'row', alignItems: 'center'}}>
 					{ this.state.isPlay ? 
 					<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 10}}>
 						<IconAntDesign name="pausecircleo" size={25}/>
@@ -662,16 +686,17 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 					}
 					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
-					{/* <Slider
-					value={this.state.time}
-					onSlidingComplete={value=>{
-						console.log(TAG, "onSlidingComplete:", Math.floor(value));
-						this.markCurTime(Math.floor(value))
-						this.setState({time: Math.floor(value)}, ()=>{this.setDancerInit()})
-					}}
-					maximumValue={this.state.musicLength}
-					style={{flex: 1}}
-					/> */}
+					<View style={{flexDirection: 'column'}}>
+						<View style={{flexDirection: 'row'}}>
+							<Text style={{fontSize: 14, textAlign: 'left'}}>선택된 댄서: {this.selectedDancer}  </Text>
+							<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedTime}  </Text>
+						</View>
+						<View style={{flexDirection: 'row'}}>
+							<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedPosx}  </Text>
+							<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedPosy}  </Text>
+							<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedDuration}  </Text>
+						</View>
+					</View>
 				</View>
 
 				{/* <ScrollView style={this.scrollViewStyle}> */}
