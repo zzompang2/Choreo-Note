@@ -41,6 +41,7 @@ export default class FormationScreen extends React.Component {
 		this.scrollViewStyle;
 		this.timeText = [];
 		this.musicbox = [];	
+		this.isSelected = false;
 
 		this.coordinateLevel = props.route.params.coordinateLevel;
 		this.radiusLevel = props.route.params.radiusLevel;
@@ -572,16 +573,166 @@ export default class FormationScreen extends React.Component {
 		this.markCurTime(0);
 	}
 
-	selectPosition = (did, positionIndex) => {
-		console.log('select!', did, positionIndex);
-		this.isSelected = true;
-		this.selectedDancer = (did+1) + '. ' + '함창수';
-		this.selectedTime = this.state.allPosList[did][positionIndex].time;
-		this.selectedPosx = this.state.allPosList[did][positionIndex].posx;
-		this.selectedPosy = this.state.allPosList[did][positionIndex].posy;
-		this.selectedDuration = this.state.allPosList[did][positionIndex].duration;
+	unselectPosition = () => {
+		console.log('unselect..');
+		this.isSelected = false;
 
-		this.forceUpdate();
+		const did = this.selectedDid;
+
+		// box 수정
+		let _allPosList = this.state.allPosList;
+		let prevTime = 0;
+		let rowView = [];
+		for(let j=0; j<_allPosList[did].length; j++){
+
+			const curTime = _allPosList[did][j].time;
+			const duration = _allPosList[did][j].duration;
+
+			for(let k=prevTime+1; k<curTime; k++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
+						<View style={styles.uncheckedBox}></View>
+					 </TouchableOpacity>
+				)
+			}
+
+			rowView.push(
+				<TouchableOpacity 
+				key={rowView.length} 
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
+				style={{alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{
+						height: boxSize, 
+						width: 1, 
+						marginLeft: (boxSize-1)/2,
+						marginRight: (boxSize-1)/2 + boxSize*duration,
+						backgroundColor: COLORS.grayMiddle
+					}}/>
+					<View style={{
+						height: 10, 
+						width: 10 + boxSize * duration, 
+						marginHorizontal: boxSize/2 - 5,
+						backgroundColor: COLORS.red,
+						borderRadius: 5,
+						position: 'absolute'
+					}}/>
+				</TouchableOpacity>
+			)
+
+			prevTime = curTime + duration;
+		}
+
+		// 마지막 대열~노래 끝부분까지 회색박스 채우기
+		for(let j=prevTime+1; j<=this.state.musicLength; j++){
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
+					<View style={styles.uncheckedBox}></View>
+				</TouchableOpacity>
+			)
+		}
+		// let _musicbox = [...this.musicbox];
+
+		this.musicbox.splice(1+did, 1,
+			<View flexDirection='row'>
+					{rowView}
+			</View>
+			)
+
+		this.setState({allPosList: _allPosList});
+	}
+
+	selectPosition = (did, positionIdx) => {
+		// 선택되어 있던 것 제거
+		if(this.isSelected){
+			this.unselectPosition();
+
+			// 같은 부분 선택한 경우
+			if(this.selectedDid == did && this.selectedPositionIdx == positionIdx){
+				this.forceUpdate(); // 화면의 선택 정보 지우기 위해.
+				return;
+			}
+		}
+		
+		console.log('select!', did, positionIdx);
+
+		this.isSelected = true;
+		this.selectedDid = did;
+		this.selectedPositionIdx = positionIdx;
+
+		this.selectedDancer = (did+1) + '. ' + '함창수';
+		this.selectedTime = this.state.allPosList[did][positionIdx].time;
+		this.selectedPosx = this.state.allPosList[did][positionIdx].posx;
+		this.selectedPosy = this.state.allPosList[did][positionIdx].posy;
+		this.selectedDuration = this.state.allPosList[did][positionIdx].duration;
+
+		
+		// box 수정
+		let _allPosList = this.state.allPosList;
+		let prevTime = 0;
+		let rowView = [];
+		for(let j=0; j<_allPosList[did].length; j++){
+
+			const curTime = _allPosList[did][j].time;
+			const duration = _allPosList[did][j].duration;
+
+			for(let k=prevTime+1; k<curTime; k++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
+						<View style={styles.uncheckedBox}></View>
+					 </TouchableOpacity>
+				)
+			}
+
+			if(j == positionIdx)
+				selectedStyle = {backgroundColor: COLORS.yellow};
+			else
+				selectedStyle = {};
+
+			rowView.push(
+				<TouchableOpacity 
+				key={rowView.length} 
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
+				style={{alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{
+						height: boxSize, 
+						width: 1, 
+						marginLeft: (boxSize-1)/2,
+						marginRight: (boxSize-1)/2 + boxSize*duration,
+						backgroundColor: COLORS.grayMiddle
+					}}/>
+					<View style={[{
+						height: 10, 
+						width: 10 + boxSize * duration, 
+						marginHorizontal: boxSize/2 - 5,
+						backgroundColor: COLORS.red,
+						borderRadius: 5,
+						position: 'absolute'
+					}, selectedStyle]}/>
+				</TouchableOpacity>
+			)
+
+			prevTime = curTime + duration;
+		}
+
+		// 마지막 대열~노래 끝부분까지 회색박스 채우기
+		for(let j=prevTime+1; j<=this.state.musicLength; j++){
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
+					<View style={styles.uncheckedBox}></View>
+				</TouchableOpacity>
+			)
+		}
+		// let _musicbox = [...this.musicbox];
+
+		this.musicbox.splice(1+did, 1,
+			<View flexDirection='row'>
+					{rowView}
+			</View>
+			)
+
+		this.setState({allPosList: _allPosList});
 	}
 
 	markCurTime = (time) => {
@@ -686,17 +837,21 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 					}
 					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
-					<View style={{flexDirection: 'column'}}>
-						<View style={{flexDirection: 'row'}}>
-							<Text style={{fontSize: 14, textAlign: 'left'}}>선택된 댄서: {this.selectedDancer}  </Text>
-							<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedTime}  </Text>
+					{ this.isSelected ? 
+						<View style={{flexDirection: 'column'}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>선택된 댄서: {this.selectedDancer}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedTime}  </Text>
+							</View>
+							<View style={{flexDirection: 'row'}}>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedPosx}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedPosy}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedDuration}  </Text>
+							</View>
 						</View>
-						<View style={{flexDirection: 'row'}}>
-							<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedPosx}  </Text>
-							<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedPosy}  </Text>
-							<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedDuration}  </Text>
-						</View>
-					</View>
+						:
+						<View/>
+					}
 				</View>
 
 				{/* <ScrollView style={this.scrollViewStyle}> */}
