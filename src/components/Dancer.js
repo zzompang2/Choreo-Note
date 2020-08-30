@@ -67,9 +67,10 @@ export default class Dancer extends React.Component {
         }
         else{
           // alignWithCoordinate = true 라면 좌표축에 맞춘다.
+          const coordinateSpace = 15 + this.props.coordinateLevel * 5;
           if(this.props.alignWithCoordinate){
-            this._val.x = Math.round(this._val.x / (this.props.coordinateSpace)) * (this.props.coordinateSpace);
-            this._val.y = Math.round(this._val.y / (this.props.coordinateSpace)) * (this.props.coordinateSpace);
+            this._val.x = Math.round(this._val.x / coordinateSpace) * coordinateSpace;
+            this._val.y = Math.round(this._val.y / coordinateSpace) * coordinateSpace;
           }else{
             this._val.x = Math.round(this._val.x);
             this._val.y = Math.round(this._val.y);
