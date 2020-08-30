@@ -4,9 +4,9 @@ import {
 } from "react-native";
 import { COLORS } from '../values/Colors'
 
-const TAG = "Position/";
+const TAG = "Positionbox/";
 
-export default class Position extends React.Component {
+export default class Positionbox extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -16,13 +16,13 @@ export default class Position extends React.Component {
 		}
 		// this._val = { x:0, y:0 };
 		this.duration = this.props.duration;
-		this.isEditMode = false;
+		// this.isEditMode = false;
 
 		// this.state.pan.addListener((value) => this._val = value);
 
 		this.panResponder = PanResponder.create({
 			// 주어진 터치 이벤트에 반응할지를 결정(return T/F)
-      onStartShouldSetPanResponder: (e, gesture) => this.isEditMode,
+      onStartShouldSetPanResponder: (e, gesture) => true,
 
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
@@ -73,11 +73,17 @@ export default class Position extends React.Component {
 				
 				// scroll unlock
 				this.props.positionTouchHandler(false);
-				this.duration = this.props.duration;
 
+				// 그냥 클릭한 경우: select 취소
 				if(gesture.dx == 0){
-					this.isEditMode = false;
-					this.forceUpdate();
+					// this.isEditMode = false;
+					// this.forceUpdate();
+					this.props.unselectPosition();
+					return;
+				}
+				else{
+					this.duration = this.props.duration;
+					this.props.changeDurationDB(this.duration);
 				}
 
         // this.state.pan.setOffset({x: 0, y: 0});
@@ -95,7 +101,6 @@ export default class Position extends React.Component {
 		// const panStyle = { transform: this.state.pan.getTranslateTransform() }
 
 		return(
-			this.isEditMode ?
 			<Animated.View
 			{...this.panResponder.panHandlers}
 			style={{
@@ -106,23 +111,6 @@ export default class Position extends React.Component {
 				borderRadius: 5,
 				position: 'absolute'
 			}}/>
-			:
-			<TouchableOpacity 
-			onPress={() => {
-				console.log("edit mode on!");
-				this.isEditMode = !this.isEditMode;
-				this.forceUpdate();
-			}}
-			style={{
-				height: 10, 
-				width: 10 + this.boxSize * this.props.duration, 
-				marginHorizontal: this.boxSize/2 - 5,
-				backgroundColor: COLORS.yellow,
-				borderRadius: 5,
-				position: 'absolute'
-			}}>
-			</TouchableOpacity>
-			
 		)
 	}
 }

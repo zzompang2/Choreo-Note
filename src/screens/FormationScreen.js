@@ -9,7 +9,7 @@ import Slider from '@react-native-community/slider'
 
 // custom library
 import Dancer from '../components/Dancer'
-import Position from '../components/Position'
+import Positionbox from '../components/Positionbox'
 import Player from '../components/Player'
 import { COLORS } from '../values/Colors'
 import { FONTS } from '../values/Fonts'
@@ -17,6 +17,7 @@ import { FONTS } from '../values/Fonts'
 let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
 const boxSize = 25;
+const positionboxSize = 20;
 
 // 화면의 가로, 세로 길이 받아오기
 const {width,height} = Dimensions.get('window');
@@ -700,7 +701,7 @@ export default class FormationScreen extends React.Component {
 						width: 1, 
 						marginLeft: (boxSize-1)/2,
 						marginRight: (boxSize-1)/2 + boxSize*duration,
-						backgroundColor: COLORS.grayMiddle
+						backgroundColor: COLORS.grayMiddle,
 					}}/>
 					{ j != positionIdx ?
 						<View style={{
@@ -712,11 +713,13 @@ export default class FormationScreen extends React.Component {
 							position: 'absolute'
 						}}/>
 						:
-						<Position
+						<Positionbox
 						boxSize={boxSize}
 						duration={duration}
 						positionTouchHandler={this.positionTouchHandler}
-						changeDuration={this.changeDuration}/>
+						changeDuration={this.changeDuration}
+						changeDurationDB={this.changeDurationDB}
+						unselectPosition={this.unselectPosition}/>
 					}
 				</TouchableOpacity>
 			)
@@ -747,14 +750,30 @@ export default class FormationScreen extends React.Component {
 		this.setState({isPositionTouch: isTouch});
 	}
 
+	changeDurationDB = (changedDuration) => {
+		this.state.db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE position " +
+				"SET duration=? " +
+				"WHERE nid=? " +
+				"AND did=? " +
+				"AND time=?;",
+				[changedDuration, this.state.noteId, this.selectedDid, this.selectedTime],
+			);
+		});
+	}
 	changeDuration = (changedDuration) => {
 		console.log(TAG, 'changeDuration', changedDuration);
 
-		// box 수정
+		// 변경된 duration으로 수정
 		let _allPosList = this.state.allPosList;
+		const did = this.selectedDid;
+		_allPosList[did][this.selectedPositionIdx].duration = changedDuration;
+		this.selectedDuration = changedDuration;
+		
+		// box 수정
 		let prevTime = 0;
 		let rowView = [];
-		const did = this.selectedDid;
 
 		for(let j=0; j<_allPosList[did].length; j++){
 
@@ -779,7 +798,7 @@ export default class FormationScreen extends React.Component {
 						height: boxSize, 
 						width: 1, 
 						marginLeft: (boxSize-1)/2,
-						marginRight: ( j != this.selectedPositionIdx ? (boxSize-1)/2 + boxSize*(duration) : (boxSize-1)/2 + boxSize*(changedDuration) ),
+						marginRight: (boxSize-1)/2 + boxSize*(duration),
 						backgroundColor: COLORS.grayMiddle
 					}}/>
 					{ j != this.selectedPositionIdx ?
@@ -792,16 +811,18 @@ export default class FormationScreen extends React.Component {
 							position: 'absolute'
 						}}/>
 						:
-						<Position
+						<Positionbox
 						boxSize={boxSize}
-						duration={changedDuration}
+						duration={duration}
 						positionTouchHandler={this.positionTouchHandler}
-						changeDuration={this.changeDuration}/>
+						changeDuration={this.changeDuration}
+						changeDurationDB={this.changeDurationDB}
+						unselectPosition={this.unselectPosition}/>
 					}
 				</TouchableOpacity>
 			)
 
-			prevTime = curTime + ( j != this.selectedPositionIdx ? duration : changedDuration );
+			prevTime = curTime + duration;
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
