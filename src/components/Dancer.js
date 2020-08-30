@@ -166,7 +166,7 @@ export default class Dancer extends React.Component {
   render() {
     //console.log(TAG, "render");
 
-    this.radius = this.props.radius;
+    const radiusLength = 10 + this.props.radiusLevel * 2;
     const curPosition = this.getCurPosition();
     
     // cur position 적용
@@ -179,8 +179,8 @@ export default class Dancer extends React.Component {
     return (
       <Animated.View
         {...this.panResponder.panHandlers}
-        style={[panStyle, styles.circle, {width: this.radius*2, height: this.radius*2, borderRadius: this.radius}]}>
-        <Text style={[styles.number, {fontSize: this.radius}]}>{this.props.did+1}</Text>
+        style={[panStyle, styles.circle, {width: radiusLength*2, height: radiusLength*2, borderRadius: radiusLength}]}>
+        <Text style={[styles.number, {fontSize: radiusLength}]}>{this.props.did+1}</Text>
         {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
       </Animated.View>
     );

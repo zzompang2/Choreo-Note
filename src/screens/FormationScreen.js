@@ -42,9 +42,8 @@ export default class FormationScreen extends React.Component {
 		this.timeText = [];
 		this.musicbox = [];	
 
-		this.coordinateSpace = props.route.params.coordinateSpace;
-		this.radius = props.route.params.radius;
-		console.log(TAG, "coord: "+this.coordinateSpace, "radius: " + this.radius);
+		this.coordinateLevel = props.route.params.coordinateLevel;
+		this.radiusLevel = props.route.params.radiusLevel;
 		this.alignWithCoordinate = false;
 
 		this.setCoordinate();
@@ -316,14 +315,14 @@ export default class FormationScreen extends React.Component {
 	}
 
 	sizeupDancer = () => {
-		if(this.radius < 20){
-			this.radius += 2;
+		if(this.radiusLevel < 5){
+			this.radiusLevel++;
 			this.setDancerInit();
 
 			this.state.db.transaction(txn => {
 				txn.executeSql(
 					"UPDATE note " +
-					"SET radius=radius+2 " +
+					"SET radiusLevel=radiusLevel+1 " +
 					"WHERE nid=?;",
 					[this.state.noteId]
 				);
@@ -331,14 +330,14 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 	sizedownDancer = () => {
-		if(this.radius > 10){
-			this.radius -= 2;
+		if(this.radiusLevel > 1){
+			this.radiusLevel--;
 			this.setDancerInit();
 
 			this.state.db.transaction(txn => {
 				txn.executeSql(
 					"UPDATE note " +
-					"SET radius=radius-2 " +
+					"SET radiusLevel=radiusLevel-1 " +
 					"WHERE nid=?;",
 					[this.state.noteId]
 				);
@@ -346,15 +345,15 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 	sizeupCoordinate = () => {
-		if(this.coordinateSpace < 50){
-			this.coordinateSpace += 5;
+		if(this.coordinateLevel < 5){
+			this.coordinateLevel++;
 			this.setCoordinate();
 			this.setDancerInit();
 
 			this.state.db.transaction(txn => {
 				txn.executeSql(
 					"UPDATE note " +
-					"SET coordinateSpace=coordinateSpace+5 " +
+					"SET coordinateLevel=coordinateLevel+1 " +
 					"WHERE nid=?;",
 					[this.state.noteId]
 				);
@@ -362,15 +361,15 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 	sizedownCoordinate = () => {
-		if(this.coordinateSpace > 20){
-			this.coordinateSpace -= 5;
+		if(this.coordinateLevel > 1){
+			this.coordinateLevel--;
 			this.setCoordinate();
 			this.setDancerInit();
 
 			this.state.db.transaction(txn => {
 				txn.executeSql(
 					"UPDATE note " +
-					"SET coordinateSpace=coordinateSpace-5 " +
+					"SET coordinateLevel=coordinateLevel-1 " +
 					"WHERE nid=?;",
 					[this.state.noteId]
 				);
@@ -410,9 +409,9 @@ export default class FormationScreen extends React.Component {
 				dropedPositionSubmit={this.dropedPositionSubmit} 
 				curTime={this.state.time}
 				isPlay={this.state.isPlay}
-				radius={this.radius}
+				radiusLevel={this.radiusLevel}
 				alignWithCoordinate={this.alignWithCoordinate}
-				coordinateSpace={this.coordinateSpace}
+				coordinateLevel={this.coordinateLevel}
 				// elevation={100}
 				/>
 			)
@@ -529,10 +528,11 @@ export default class FormationScreen extends React.Component {
 	}
 
 	setCoordinate = () => {
-		console.log(TAG, 'setCoordinate:', this.coordinateSpace);
+		console.log(TAG, 'setCoordinate:', this.coordinateLevel);
+		const coordinateSpace = 15 + this.coordinateLevel*5;
 		this.coordinate = [];
-		for(let x=Math.round((-(width-6)/2)/this.coordinateSpace)*this.coordinateSpace; x<(width-6)/2; x=x+this.coordinateSpace){
-			for(let y=Math.ceil((-height/5)/this.coordinateSpace)*this.coordinateSpace; y<height/5; y=y+this.coordinateSpace){
+		for(let x=Math.round((-(width-6)/2)/coordinateSpace)*coordinateSpace; x<(width-6)/2; x=x+coordinateSpace){
+			for(let y=Math.ceil((-height/5)/coordinateSpace)*coordinateSpace; y<height/5; y=y+coordinateSpace){
 				this.coordinate.push(<View style={[styles.circle, {transform: [{translateX: x}, {translateY: y}]}]}/>)
 			}
 		}

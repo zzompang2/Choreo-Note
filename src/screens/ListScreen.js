@@ -26,13 +26,13 @@ class ListScreen extends React.Component {
 					'title TEXT NOT NULL, ' +
 					'date TEXT NOT NULL, ' +
 					'music TEXT, ' +
-					'coordinateSpace INTEGER, ' +
-					'radius INTEGER, ' +
+					'coordinateLevel INTEGER, ' +
+					'radiusLevel INTEGER, ' +
 					'PRIMARY KEY("nid") );',
 				[]
 			);
 			// txn.executeSql(
-			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.01.01", "사람들이 움직이는 게", 35, 16);', []
+			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.01.01", "사람들이 움직이는 게", 3, 3);', []
 			// );
 
 			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
@@ -137,13 +137,13 @@ class ListScreen extends React.Component {
 
 		this.state.db.transaction(txn => {
       txn.executeSql(
-				"SELECT coordinateSpace, radius "+
+				"SELECT coordinateLevel, radiusLevel "+
 				"FROM note "+
 				"WHERE nid=?",
 				[nid],
 				(txn, res) => {
 					console.log(res.rows.item(0));
-					return this.props.navigation.navigate('Formation', {noteId: nid, coordinateSpace: res.rows.item(0).coordinateSpace, radius: res.rows.item(0).radius});
+					return this.props.navigation.navigate('Formation', {noteId: nid, coordinateLevel: res.rows.item(0).coordinateLevel, radiusLevel: res.rows.item(0).radiusLevel});
 			});
 		});
 	}
