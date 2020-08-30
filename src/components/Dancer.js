@@ -184,10 +184,10 @@ export default class Dancer extends React.Component {
     const panStyle = { transform: this.state.pan.getTranslateTransform() }
     return (
       <Animated.View
-        {...this.panResponder.panHandlers}
-        style={[panStyle, styles.circle, {width: radiusLength*2, height: radiusLength*2, borderRadius: radiusLength}]}>
-        <Text style={[styles.number, {fontSize: radiusLength}]}>{this.props.did+1}</Text>
-        {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
+      {...this.panResponder.panHandlers}
+      style={[panStyle, styles.circle, {width: radiusLength*2, height: radiusLength*2, borderRadius: radiusLength}]}>
+      <Text style={[styles.number, {fontSize: radiusLength}]}>{this.props.did+1}</Text>
+      {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
       </Animated.View>
     );
   }

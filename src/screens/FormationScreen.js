@@ -9,6 +9,7 @@ import Slider from '@react-native-community/slider'
 
 // custom library
 import Dancer from '../components/Dancer'
+import Position from '../components/Position'
 import Player from '../components/Player'
 import { COLORS } from '../values/Colors'
 import { FONTS } from '../values/Fonts'
@@ -35,6 +36,7 @@ export default class FormationScreen extends React.Component {
 			dancerName: [],
 			// musicbox: [],
 			// alignWithCoordinate: false,
+			isPositionTouch: false,
 		}
 		this.dancerList=[];	// nid, did, name
 		this.scrollView;
@@ -278,6 +280,9 @@ export default class FormationScreen extends React.Component {
 			Alert.alert("경고", "초기 상태는 지울 수 없어요!");
 			return;
 		}
+
+		if(this.isSelected && this.selectedTime == time)
+			this.unselectPosition();
 		
 		this.state.db.transaction(txn => {
       txn.executeSql(
@@ -684,16 +689,11 @@ export default class FormationScreen extends React.Component {
 				)
 			}
 
-			if(j == positionIdx)
-				selectedStyle = {backgroundColor: COLORS.yellow};
-			else
-				selectedStyle = {};
-
 			rowView.push(
 				<TouchableOpacity 
 				key={rowView.length} 
-				onPress={()=>this.selectPosition(did, j)}
-				onLongPress={()=>this.deletePosition(did, curTime)}
+				// onPress={()=>this.selectPosition(did, j)}
+				// onLongPress={()=>this.deletePosition(did, curTime)}
 				style={{alignItems: 'center', justifyContent: 'center'}}>
 					<View style={{
 						height: boxSize, 
@@ -702,18 +702,106 @@ export default class FormationScreen extends React.Component {
 						marginRight: (boxSize-1)/2 + boxSize*duration,
 						backgroundColor: COLORS.grayMiddle
 					}}/>
-					<View style={[{
-						height: 10, 
-						width: 10 + boxSize * duration, 
-						marginHorizontal: boxSize/2 - 5,
-						backgroundColor: COLORS.red,
-						borderRadius: 5,
-						position: 'absolute'
-					}, selectedStyle]}/>
+					{ j != positionIdx ?
+						<View style={{
+							height: 10, 
+							width: 10 + boxSize * duration, 
+							marginHorizontal: boxSize/2 - 5,
+							backgroundColor: COLORS.red,
+							borderRadius: 5,
+							position: 'absolute'
+						}}/>
+						:
+						<Position
+						boxSize={boxSize}
+						duration={duration}
+						positionTouchHandler={this.positionTouchHandler}
+						changeDuration={this.changeDuration}/>
+					}
 				</TouchableOpacity>
 			)
 
 			prevTime = curTime + duration;
+		}
+
+		// 마지막 대열~노래 끝부분까지 회색박스 채우기
+		for(let j=prevTime+1; j<=this.state.musicLength; j++){
+			rowView.push(
+				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
+					<View style={styles.uncheckedBox}></View>
+				</TouchableOpacity>
+			)
+		}
+		// let _musicbox = [...this.musicbox];
+
+		this.musicbox.splice(1+did, 1,
+			<View flexDirection='row'>
+					{rowView}
+			</View>
+			)
+
+		this.setState({allPosList: _allPosList});
+	}
+
+	positionTouchHandler = (isTouch) => {
+		this.setState({isPositionTouch: isTouch});
+	}
+
+	changeDuration = (changedDuration) => {
+		console.log(TAG, 'changeDuration', changedDuration);
+
+		// box 수정
+		let _allPosList = this.state.allPosList;
+		let prevTime = 0;
+		let rowView = [];
+		const did = this.selectedDid;
+
+		for(let j=0; j<_allPosList[did].length; j++){
+
+			const curTime = _allPosList[did][j].time;
+			const duration = _allPosList[did][j].duration;
+
+			for(let k=prevTime+1; k<curTime; k++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
+						<View style={styles.uncheckedBox}></View>
+					 </TouchableOpacity>
+				)
+			}
+
+			rowView.push(
+				<TouchableOpacity 
+				key={rowView.length} 
+				// onPress={()=>this.selectPosition(did, j)}
+				// onLongPress={()=>this.deletePosition(did, curTime)}
+				style={{alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{
+						height: boxSize, 
+						width: 1, 
+						marginLeft: (boxSize-1)/2,
+						marginRight: ( j != this.selectedPositionIdx ? (boxSize-1)/2 + boxSize*(duration) : (boxSize-1)/2 + boxSize*(changedDuration) ),
+						backgroundColor: COLORS.grayMiddle
+					}}/>
+					{ j != this.selectedPositionIdx ?
+						<View style={{
+							height: 10, 
+							width: 10 + boxSize * duration, 
+							marginHorizontal: boxSize/2 - 5,
+							backgroundColor: COLORS.red,
+							borderRadius: 5,
+							position: 'absolute'
+						}}/>
+						:
+						<Position
+						boxSize={boxSize}
+						duration={changedDuration}
+						positionTouchHandler={this.positionTouchHandler}
+						changeDuration={this.changeDuration}/>
+					}
+				</TouchableOpacity>
+			)
+
+			prevTime = curTime + ( j != this.selectedPositionIdx ? duration : changedDuration );
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
@@ -855,13 +943,14 @@ export default class FormationScreen extends React.Component {
 				</View>
 
 				{/* <ScrollView style={this.scrollViewStyle}> */}
-				<ScrollView style={{flex: 1}}>
+				<ScrollView style={{flex: 1}} scrollEnabled={!this.state.isPositionTouch}>
 				<View style={{flexDirection: 'row'}}>
 
 					<View style={{flexDirection: 'column'}}>
 						{ this.state.dancerName }
 					</View>
 					<ScrollView
+					scrollEnabled={!this.state.isPositionTouch}
 					horizontal={true}
 					showsHorizontalScrollIndicator={false}
 					ref={ref => (this.scrollView = ref)}>
