@@ -36,14 +36,13 @@ class ListScreen extends React.Component {
 			// );
 
 			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
-			// txn.executeSql('DROP TABLE IF EXISTS position', []);
-			// txn.executeSql(
-			// 	'CREATE TABLE IF NOT EXISTS dancer(' +
-			// 		'nid INTEGER NOT NULL, ' +
-			// 		'did INTEGER NOT NULL, ' +
-			// 		'name	TEXT, ' +
-			// 		'PRIMARY KEY(did, nid) );'
-			// );
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS dancer(' +
+					'nid INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'name	TEXT, ' +
+					'PRIMARY KEY(did, nid) );'
+			);
 			// txn.executeSql(
 			// 	'INSERT INTO dancer VALUES (0, 0, "ham");'
 			// );
@@ -62,44 +61,54 @@ class ListScreen extends React.Component {
 			// txn.executeSql(
 			// 	'INSERT INTO dancer VALUES (0, 5, "aff");'
 			// );
+
+			// txn.executeSql('DROP TABLE IF EXISTS position', []);
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS position(' +
+					'nid INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'time INTEGER NOT NULL, ' +
+					'posx INTEGER NOT NULL, ' +
+					'posy INTEGER NOT NULL, ' +
+					'duration INTEGER NOT NULL, ' +
+					'PRIMARY KEY(nid, did, time) );'
+			);
 			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 6, "qwe");'
+			// 	'INSERT INTO position VALUES (0, 0, 0, -160, -100, 0);'
 			// );
 			// txn.executeSql(
-			// 	'CREATE TABLE IF NOT EXISTS position(' +
-			// 		'nid INTEGER NOT NULL, ' +
-			// 		'did INTEGER NOT NULL, ' +
-			// 		'time INTEGER NOT NULL, ' +
-			// 		'posx INTEGER NOT NULL, ' +
-			// 		'posy INTEGER NOT NULL, ' +
-			// 		'PRIMARY KEY(nid, did, time) );'
+			// 	'INSERT INTO position VALUES (0, 1, 0, -160, -60, 1);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 0, 0, -50);'
+			// 	'INSERT INTO position VALUES (0, 2, 0, -160, -20, 2);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 5, 0, -50);'
+			// 	'INSERT INTO position VALUES (0, 3, 0, -160, 20, 3);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 10, 0, -50);'
+			// 	'INSERT INTO position VALUES (0, 4, 0, -160, 60, 4);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 1, 0, -30, -30);'
+			// 	'INSERT INTO position VALUES (0, 5, 0, -160, 100, 5);'
+			// );
+
+			// txn.executeSql(
+			// 	'INSERT INTO position VALUES (0, 0, 10, 160, -100, 0);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 2, 0, 30, -30);'
+			// 	'INSERT INTO position VALUES (0, 1, 10, 160, -60, 0);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 3, 0, -60, -10);'
+			// 	'INSERT INTO position VALUES (0, 2, 10, 160, -20, 0);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 4, 0, 60, -10);'
+			// 	'INSERT INTO position VALUES (0, 3, 10, 160, 20, 0);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 5, 0, -90, 10);'
+			// 	'INSERT INTO position VALUES (0, 4, 10, 160, 60, 0);'
 			// );
 			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 6, 0, 90, 10);'
+			// 	'INSERT INTO position VALUES (0, 5, 10, 160, 100, 0);'
 			// );
 		})
 	}

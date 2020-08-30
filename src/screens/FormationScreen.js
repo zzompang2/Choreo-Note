@@ -69,13 +69,13 @@ export default class FormationScreen extends React.Component {
 				[this.state.noteId, did, time]
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
+				"INSERT INTO position VALUES (?, ?, ?, ?, ?, 0);",
 				[this.state.noteId, did, time, _x, _y]
 			);
 		})
 
 		// state 업데이트
-		const newPos = {posx: _x, posy: _y, time: time};
+		const newPos = {posx: _x, posy: _y, time: time, duration: 0};
 		let _allPosList = [...this.state.allPosList];
 		let posList = _allPosList[did];
 
@@ -101,7 +101,8 @@ export default class FormationScreen extends React.Component {
 		let rowView = [];
 		for(let j=0; j<_allPosList[did].length; j++){
 
-			let curTime = _allPosList[did][j].time;
+			const curTime = _allPosList[did][j].time;
+			const duration = _allPosList[did][j].duration;
 
 			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
 			for(let k=prevTime; k<curTime-1; k++){
@@ -115,12 +116,25 @@ export default class FormationScreen extends React.Component {
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
 					style={{alignItems: 'center', justifyContent: 'center'}}>
-						<View style={styles.uncheckedBox}/>
-						<View style={styles.checkedBox}/>
+						<View style={{
+							height: boxSize, 
+							width: 1, 
+							marginLeft: (boxSize-1)/2,
+							marginRight: (boxSize-1)/2 + boxSize*duration,
+							backgroundColor: COLORS.grayMiddle
+						}}/>
+						<View style={{
+							height: 10, 
+							width: 10 + boxSize * duration, 
+							marginHorizontal: boxSize/2 - 5,
+							backgroundColor: COLORS.red,
+							borderRadius: 5,
+							position: 'absolute'
+						}}/>
 					</TouchableOpacity>
 			)
 
-			prevTime = curTime;
+			prevTime = curTime + duration;
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
@@ -176,12 +190,12 @@ export default class FormationScreen extends React.Component {
 		
 		this.state.db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
+				"INSERT INTO position VALUES (?, ?, ?, ?, ?, 0);",
 				[this.state.noteId, did, time, posx, posy]
 			);
 		});
 
-		posList.splice(i, 0, {posx: posx, posy: posy, time: time});
+		posList.splice(i, 0, {posx: posx, posy: posy, time: time, duration: 0});
 		_allPosList.splice(did, 1, posList);
 
 		// box 수정
@@ -190,7 +204,8 @@ export default class FormationScreen extends React.Component {
 		let rowView = [];
 		for(let j=0; j<_allPosList[did].length; j++){
 
-			let curTime = _allPosList[did][j].time;
+			const curTime = _allPosList[did][j].time;
+			const duration = _allPosList[did][j].duration;
 
 			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
 			for(let k=prevTime+1; k<curTime; k++){
@@ -204,12 +219,25 @@ export default class FormationScreen extends React.Component {
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
 					style={{alignItems: 'center', justifyContent: 'center'}}>
-						<View style={styles.uncheckedBox}/>
-						<View style={styles.checkedBox}/>
+						<View style={{
+							height: boxSize, 
+							width: 1, 
+							marginLeft: (boxSize-1)/2,
+							marginRight: (boxSize-1)/2 + boxSize*duration,
+							backgroundColor: COLORS.grayMiddle
+						}}/>
+						<View style={{
+							height: 10, 
+							width: 10 + boxSize * duration, 
+							marginHorizontal: boxSize/2 - 5,
+							backgroundColor: COLORS.red,
+							borderRadius: 5,
+							position: 'absolute'
+						}}/>
 					</TouchableOpacity>
 			)
 
-			prevTime = curTime;
+			prevTime = curTime + duration;
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
@@ -271,7 +299,8 @@ export default class FormationScreen extends React.Component {
 		let rowView = [];
 		for(let j=0; j<_allPosList[did].length; j++){
 
-			let curTime = _allPosList[did][j].time;
+			const curTime = _allPosList[did][j].time;
+			const duration = _allPosList[did][j].duration;
 
 			console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
 			for(let k=prevTime+1; k<curTime; k++){
@@ -285,12 +314,25 @@ export default class FormationScreen extends React.Component {
 			rowView.push(
 				<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
 					style={{alignItems: 'center', justifyContent: 'center'}}>
-						<View style={styles.uncheckedBox}/>
-						<View style={styles.checkedBox}/>
+						<View style={{
+							height: boxSize, 
+							width: 1, 
+							marginLeft: (boxSize-1)/2,
+							marginRight: (boxSize-1)/2 + boxSize*duration,
+							backgroundColor: COLORS.grayMiddle
+						}}/>
+						<View style={{
+							height: 10, 
+							width: 10 + boxSize * duration, 
+							marginHorizontal: boxSize/2 - 5,
+							backgroundColor: COLORS.red,
+							borderRadius: 5,
+							position: 'absolute'
+						}}/>
 					</TouchableOpacity>
 			)
 
-			prevTime = curTime;
+			prevTime = curTime + duration;
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
@@ -435,8 +477,9 @@ export default class FormationScreen extends React.Component {
 				<TouchableOpacity 
 				style={{height: boxSize, width: boxSize, justifyContent: 'center'}}
 				onPress={()=>{
-					this.markCurTime(time)
-					this.setState({time: time}, ()=>{this.setDancerInit()})
+					this.markCurTime(time);
+					this.setState({time: time});
+					this.pause(); // {isPlay:false} & setDancerInit()
 					}}>
 					<Text style={{fontSize: 11, textAlign: 'center'}}>
 						{time}
@@ -451,39 +494,55 @@ export default class FormationScreen extends React.Component {
 			</View>,
 		];
 
-		for(let i=0; i<dancerNum; i++){
+		for(let did=0; did<dancerNum; did++){
 			// time에 체크한 포인트가 있는지 확인
 			let prevTime = 0;
 			let rowView = [];
-			for(let j=0; j<this.state.allPosList[i].length; j++){
+			for(let j=0; j<this.state.allPosList[did].length; j++){
 
-				let curTime = this.state.allPosList[i][j].time;
+				const curTime = this.state.allPosList[did][j].time;
+				const duration = this.state.allPosList[did][j].duration;
 
 				console.log(TAG, "prevTime: "+prevTime+" curTime: " + curTime);
 				
+				// checked box 직전까지 빈 공간 채우기
 				for(let k=prevTime+1; k<curTime; k++){
 					rowView.push(
-						<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, k)}>
+						<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, k)}>
 							<View style={styles.uncheckedBox}/>
 				 		</TouchableOpacity>
 					)
 				}
 
+				// checked box 채우기
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(i, curTime) }}
-					style={{alignItems: 'center', justifyContent: 'center'}}>
-						<View style={styles.uncheckedBox}/>
-						<View style={styles.checkedBox}/>
+					<TouchableOpacity key={rowView.length} onLongPress={()=>{ this.deletePosition(did, curTime) }}
+					style={{alignItems: 'flex-start', justifyContent: 'center'}}>
+						<View style={{
+							height: boxSize, 
+							width: 1, 
+							marginLeft: (boxSize-1)/2,
+							marginRight: (boxSize-1)/2 + boxSize*duration,
+							backgroundColor: COLORS.grayMiddle
+						}}/>
+						<View style={{
+							height: 10, 
+							width: 10 + boxSize * duration, 
+							marginHorizontal: boxSize/2 - 5,
+							backgroundColor: COLORS.red,
+							borderRadius: 5,
+							position: 'absolute'
+						}}/>
 					</TouchableOpacity>
 				)
 
-				prevTime = curTime;
+				prevTime = curTime + duration;
 			}
 
-			// 마지막 대열~노래 끝부분까지 회색박스 채우기
+			// 노래 끝부분까지 빈 공간 채우기
 			for(let j=prevTime+1; j<=this.state.musicLength; j++){
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(i, j)}>
+					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, j)}>
 						<View style={styles.uncheckedBox}/>
 					</TouchableOpacity>
 				)
@@ -603,7 +662,7 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 					}
 					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
-					<Slider
+					{/* <Slider
 					value={this.state.time}
 					onSlidingComplete={value=>{
 						console.log(TAG, "onSlidingComplete:", Math.floor(value));
@@ -612,7 +671,7 @@ export default class FormationScreen extends React.Component {
 					}}
 					maximumValue={this.state.musicLength}
 					style={{flex: 1}}
-					/>
+					/> */}
 				</View>
 
 				{/* <ScrollView style={this.scrollViewStyle}> */}
@@ -656,7 +715,7 @@ export default class FormationScreen extends React.Component {
 					for (let i = 0; i < dancerResult.rows.length; i++) {
 						_dancerList.push(dancerResult.rows.item(i));
 						tx.executeSql(
-							"SELECT time, posx, posy FROM position WHERE nid=? AND did=? ORDER BY time",
+							"SELECT time, posx, posy, duration FROM position WHERE nid=? AND did=? ORDER BY time",
         			[this.state.noteId, _dancerList[i].did],
         			(txn, posResult) => {
 								let posList = [];

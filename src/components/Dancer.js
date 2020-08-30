@@ -90,22 +90,29 @@ export default class Dancer extends React.Component {
     const position = this.props.position;
     const curTime = this.props.curTime;
 
-    // 사실 error를 return해야 맞는 것 같다.
+    // 초기 상태는 지우지 못하도록 했으니,
+    // 사실상 error인 경우이다.
     if(position.length == 0) return({x:0, y:0});
 
-    // 몇 번째 index 사이에 있는지 계산.
-    for(var i=0; i<position.length; i++){
+    // 어떤 checked point들 사이에 있는지 계산 ( [i-1] < ... <= [i] )
+    for(var i=0; i<position.length; i++)
       if(curTime <= position[i].time) break;
-    }
-    // 가장 큰 시간보다 큰 경우.
+
+    // 최종 checked point의 시간보다 큰 경우
     if(i == position.length)
       return({x: position[i-1].posx, y: position[i-1].posy});
-    // check point와 시간이 같은 경우
+
+    // 어떤 checked point와 시간이 같은 경우
     if(curTime == position[i].time)
       return({x: position[i].posx, y: position[i].posy});
 
-    const dx = Math.round( (position[i].posx - position[i-1].posx) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time) );
-    const dy = Math.round( (position[i].posy - position[i-1].posy) * (curTime - position[i-1].time) / (position[i].time - position[i-1].time) );
+    // 이전 checked point(i-1 번째)의 duration 중인 경우
+    const leftedDuration = this.props.position[i-1].time + this.props.position[i-1].duration - this.props.curTime;
+    if(leftedDuration >= 0)
+      return({x: position[i-1].posx, y: position[i-1].posy});
+
+    const dx = Math.round( (position[i].posx - position[i-1].posx) * (curTime - position[i-1].time - position[i-1].duration) / (position[i].time - position[i-1].time - position[i-1].duration) );
+    const dy = Math.round( (position[i].posy - position[i-1].posy) * (curTime - position[i-1].time - position[i-1].duration) / (position[i].time - position[i-1].time - position[i-1].duration) );
     
     return({x: position[i-1].posx + dx, y: position[i-1].posy + dy})
   }
@@ -124,41 +131,39 @@ export default class Dancer extends React.Component {
           break;
       }
 
+      // 최종 좌표 이후의 시간인 경우: 애니메이션 필요 없음.
       if(i == this.props.position.length) return;
 
-      transformList.push( 
-        Animated.timing(
-          this.state.pan,
-          {
-            toValue: {x:this._val.x, y:this._val.y},
-            duration: 1,
-            useNativeDriver: true,
-            delay: 0,
-          }
-      ));
-
+      // 이전 좌표의 duration이 아직 진행중인 경우를 체크
+      let leftedDuration = this.props.position[i-1].time + this.props.position[i-1].duration - this.props.curTime;
+      leftedDuration = ( leftedDuration > 0 ? leftedDuration : 0 );
+      
+      // 첫번째 애니메이션: 현재 시간 ~ 처음으로 나오는 좌표의 위치
       transformList.push( 
         Animated.timing(
           this.state.pan,
           {
             toValue: {x:this.props.position[i].posx, y:this.props.position[i].posy},
-            duration: (this.props.position[i].time - this.props.curTime) * 1000,
+            duration: (this.props.position[i].time - this.props.curTime - leftedDuration) * 1000,
             useNativeDriver: true,
-            delay: 0,
+            delay: leftedDuration * 1000,
           }
-      ));
+        )
+      );
 
+      // 나머지 애니메이션: 저장된 정보대로 다음 좌표의 위치로 이동
       for(var j=i+1; j<this.props.position.length; j++){
         transformList.push(
           Animated.timing(
             this.state.pan,
             {
               toValue: {x:this.props.position[j].posx, y:this.props.position[j].posy},
-              duration: (this.props.position[j].time - this.props.position[j-1].time) * 1000,
+              duration: (this.props.position[j].time - this.props.position[j-1].time - this.props.position[j-1].duration) * 1000,
               useNativeDriver: true,
-              delay: 0,
+              delay: this.props.position[j-1].duration * 1000,
             }
-        ));
+          ),
+        );
       }
       Animated.sequence(transformList).start();
     }

@@ -49,12 +49,12 @@ export default class ListScreen extends React.Component {
 
 		this.state.db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, ?, ?);",
-				[this.state.noteId, dancerNum, " "]
+				"INSERT INTO dancer VALUES (?, ?, ' ');",
+				[this.state.noteId, dancerNum]
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, ?, ?, ?, ?);",
-				[this.state.noteId, dancerNum, 0, 0, 0]
+				"INSERT INTO position VALUES (?, ?, 0, 0, 0, 0);",
+				[this.state.noteId, dancerNum]
 			);
 		});
 
