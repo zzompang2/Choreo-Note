@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-	View, Text, StyleSheet, PanResponder, Animated, Dimensions,
+	View, Text, StyleSheet, PanResponder, Animated, Dimensions, TouchableOpacity,
 } from "react-native";
 import { COLORS } from '../values/Colors'
 
@@ -16,12 +16,13 @@ export default class Position extends React.Component {
 		}
 		// this._val = { x:0, y:0 };
 		this.duration = this.props.duration;
+		this.isEditMode = false;
 
 		// this.state.pan.addListener((value) => this._val = value);
 
 		this.panResponder = PanResponder.create({
 			// 주어진 터치 이벤트에 반응할지를 결정(return T/F)
-      onStartShouldSetPanResponder: (e, gesture) => true,
+      onStartShouldSetPanResponder: (e, gesture) => this.isEditMode,
 
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
@@ -68,21 +69,25 @@ export default class Position extends React.Component {
 
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
-				console.log(TAG, "onPanResponderRelease/터치 끝");
+				console.log(TAG, "onPanResponderRelease/터치 끝:");
 				
 				// scroll unlock
 				this.props.positionTouchHandler(false);
 				this.duration = this.props.duration;
 
+				if(gesture.dx == 0){
+					this.isEditMode = false;
+					this.forceUpdate();
+				}
+
         // this.state.pan.setOffset({x: 0, y: 0});
-        this.forceUpdate();
       }
 		})
 	}
 
 	render(){
 		console.log(TAG, 'render');
-		selectedStyle = {backgroundColor: COLORS.yellow};
+		// selectedStyle = {backgroundColor: COLORS.yellow};
 		
 		this.boxSize = this.props.boxSize;
 		// this.duration = this.props.duration;
@@ -90,16 +95,34 @@ export default class Position extends React.Component {
 		// const panStyle = { transform: this.state.pan.getTranslateTransform() }
 
 		return(
+			this.isEditMode ?
 			<Animated.View
 			{...this.panResponder.panHandlers}
-			style={[{
+			style={{
 				height: 10, 
 				width: 10 + this.boxSize * this.props.duration, 
 				marginHorizontal: this.boxSize/2 - 5,
-				backgroundColor: COLORS.red,
+				backgroundColor: COLORS.blue,
 				borderRadius: 5,
 				position: 'absolute'
-			}, selectedStyle]}/>
+			}}/>
+			:
+			<TouchableOpacity 
+			onPress={() => {
+				console.log("edit mode on!");
+				this.isEditMode = !this.isEditMode;
+				this.forceUpdate();
+			}}
+			style={{
+				height: 10, 
+				width: 10 + this.boxSize * this.props.duration, 
+				marginHorizontal: this.boxSize/2 - 5,
+				backgroundColor: COLORS.yellow,
+				borderRadius: 5,
+				position: 'absolute'
+			}}>
+			</TouchableOpacity>
+			
 		)
 	}
 }

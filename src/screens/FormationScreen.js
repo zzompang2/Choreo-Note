@@ -692,8 +692,8 @@ export default class FormationScreen extends React.Component {
 			rowView.push(
 				<TouchableOpacity 
 				key={rowView.length} 
-				// onPress={()=>this.selectPosition(did, j)}
-				// onLongPress={()=>this.deletePosition(did, curTime)}
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
 				style={{alignItems: 'center', justifyContent: 'center'}}>
 					<View style={{
 						height: boxSize, 
@@ -772,8 +772,8 @@ export default class FormationScreen extends React.Component {
 			rowView.push(
 				<TouchableOpacity 
 				key={rowView.length} 
-				// onPress={()=>this.selectPosition(did, j)}
-				// onLongPress={()=>this.deletePosition(did, curTime)}
+				onPress={()=>this.selectPosition(did, j)}
+				onLongPress={()=>this.deletePosition(did, curTime)}
 				style={{alignItems: 'center', justifyContent: 'center'}}>
 					<View style={{
 						height: boxSize, 
