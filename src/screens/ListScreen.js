@@ -22,7 +22,7 @@ class ListScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteList: [],
+			noteList: [],		// {nid, title, date, music, coordinateLevel, radiusLevel}
 			isEditMode: false,
 		}
 
@@ -254,48 +254,13 @@ class ListScreen extends React.Component {
 		});
 	}
 
-	moveToFormationScreen = (nid) => {
-		console.log(TAG, 'moveToFormationScreen');
-
-		if(this.state.isEditMode) return;
-
-		this.state.db.transaction(txn => {
-      txn.executeSql(
-				"SELECT coordinateLevel, radiusLevel "+
-				"FROM note "+
-				"WHERE nid=?",
-				[nid],
-				(txn, res) => {
-					return this.props.navigation.navigate(
-						'Formation',
-						{
-							noteId: nid, 
-							coordinateLevel: res.rows.item(0).coordinateLevel, 
-							radiusLevel: res.rows.item(0).radiusLevel
-						}
-					);
-			});
-		});
-	}
-
 	render() {
 		console.log(TAG, "render");
 
 		return(
 			<SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
 			
-				<View style={
-					{
-						width:'100%', 
-						height:50, 
-						flexDirection: 'row', 
-						backgroundColor:COLORS.purple, 
-						alignItems: 'center', 
-						justifyContent: 'space-between', 
-						// marginBottom: 10, 
-						paddingHorizontal: 20,
-					}
-				}>
+				<View style={styles.toolbar}>
 					{!this.state.isEditMode ?
 					<TouchableOpacity onPress={()=>{ this.setState({isEditMode: true}); }}>
 						<Text style={{color: COLORS.white}}>편집</Text>
@@ -305,7 +270,7 @@ class ListScreen extends React.Component {
 						<Text style={{color: COLORS.white}}>완료</Text>
 					</TouchableOpacity>}
 
-					<Text style={{color:COLORS.white, fontSize: 15,}}>Choreo Note</Text>
+					<Text style={styles.toolbarTitle}>Choreo Note</Text>
 					<TouchableOpacity onPress={()=>this.addNote()}>
 						<IconIonicons name="create-outline" size={24} color={COLORS.white}/>
 					</TouchableOpacity>
@@ -316,7 +281,10 @@ class ListScreen extends React.Component {
 					data={this.state.noteList}
 					renderItem={({item, index}) => 
 					<View style={styles.noteItem}>
-						<TouchableOpacity style={{flex: 1}} onPress={()=>{this.moveToFormationScreen(item.nid)}}>
+						<TouchableOpacity style={{flex: 1}} 
+						onPress={()=>{
+							this.props.navigation.navigate('Formation', {noteInfo: this.state.noteList[item.nid]});
+						}}>
 							<View style={styles.columnContainer}>
 								{this.state.isEditMode ?
 								<View style={{flexDirection: 'row'}}>
@@ -379,7 +347,6 @@ class ListScreen extends React.Component {
 				"SELECT * FROM note",
         [],
         (tx, result) => {
-          // console.log('length: ', result.rows.length);
 					for (let i = 0; i < result.rows.length; i++) {
 						console.log("item:", result.rows.item(i));
 						_noteList.push(result.rows.item(i));
@@ -392,6 +359,19 @@ class ListScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+	toolbar: {
+		width:'100%', 
+		height:50, 
+		flexDirection: 'row', 
+		backgroundColor:COLORS.purple, 
+		alignItems: 'center', 
+		justifyContent: 'space-between', 
+		paddingHorizontal: 20,
+	},
+	toolbarTitle: {
+		color:COLORS.white, 
+		fontSize: 15,
+	},
 	noteItem: {
 		flex: 1,
 		flexDirection: 'row',
@@ -420,7 +400,6 @@ const styles = StyleSheet.create({
 	title: {
 		flex: 1,
 		color: COLORS.blackDark,
-		// backgroundColor: COLORS.yellow,
 		fontSize: 18,
 		marginTop: 5,
 		paddingVertical: 5,

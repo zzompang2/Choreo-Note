@@ -25,11 +25,12 @@ export default class FormationScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteId: props.route.params.noteId,
+			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, coordinateLevel, radiusLevel}
 			time: 0,
 			musicLength: 20,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
+			isSettingMode: false,	// 세팅 모드인가?
 			dancers: [],
 			nameColumn: [],
 		}
@@ -41,8 +42,8 @@ export default class FormationScreen extends React.Component {
 		this.musicbox = [];	
 		this.selectedPositionIdx = -1;	// unselect: -1, select: >=0
 
-		this.coordinateLevel = props.route.params.coordinateLevel;
-		this.radiusLevel = props.route.params.radiusLevel;
+		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
+		this.radiusLevel = this.state.noteInfo.radiusLevel;
 		this.alignWithCoordinate = false;
 
 		this.setCoordinate();
@@ -368,7 +369,7 @@ export default class FormationScreen extends React.Component {
 				}
 				newPos = {...newPos, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
-				this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: this.state.noteId, did: did, time: time});
+				this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: this.state.noteInfo.nid, did: did, time: time});
 				this.setMusicbox(did);
 				this.forceUpdate();
 				return;
@@ -378,7 +379,7 @@ export default class FormationScreen extends React.Component {
 				break;
 		}
 		posList.splice(i, 0, newPos);
-		this.DB_INSERT('position', {nid: this.state.noteId, did: did, time: time, posx: posx, posy: posy, duration: 0})
+		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0})
 		this.setMusicbox(did);
 		this.forceUpdate();
 	}
@@ -416,7 +417,7 @@ export default class FormationScreen extends React.Component {
 		posy = Math.round(posy);
 		posList.splice(i, 0, {posx: posx, posy: posy, time: time, duration: 0});
 
-		this.DB_INSERT('position', {nid: this.state.noteId, did: did, time: time, posx: posx, posy: posy, duration: 0});
+		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0});
 		this.setMusicbox(did);
 		this.forceUpdate();
 	}
@@ -444,7 +445,7 @@ export default class FormationScreen extends React.Component {
 			}
 		}
 
-		this.DB_DELETE('position', {nid: this.state.noteId, did: did, time: time})
+		this.DB_DELETE('position', {nid: this.state.noteInfo.nid, did: did, time: time})
 		this.setMusicbox(did);
 		this.setDancer();
 	}
@@ -476,7 +477,7 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: this.state.noteId});
+		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: this.state.noteInfo.nid});
 		this.setCoordinate();
 		this.forceUpdate();
 	}
@@ -507,7 +508,7 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: this.state.noteId});
+		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: this.state.noteInfo.nid});
 		this.setDancer();
 	}
 
@@ -597,7 +598,7 @@ export default class FormationScreen extends React.Component {
 
 		// 수정이 끝났다면 DB 업데이트
 		if(!isEditing)
-			this.DB_UPDATE('position', {duration: changedDuration}, {nid: this.state.noteId, did: this.selectedDid, time: this.selectedTime});
+			this.DB_UPDATE('position', {duration: changedDuration}, {nid: this.state.noteInfo.nid, did: this.selectedDid, time: this.selectedTime});
 	}
 
 	/** 초(sec) => "분:초" 변환한다.
@@ -615,22 +616,35 @@ export default class FormationScreen extends React.Component {
 		return(
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
-				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow, alignItems: 'center', justifyContent: 'space-between'}}>
-					<IconIonicons name="cog-outline" size={24} color="#ffffff"/>
+				<View style={styles.toolbar}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('List');}}>
+						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<Text style={styles.toolbarTitle}>{this.state.noteInfo.title}</Text>
+					
+					<TouchableOpacity onPress={()=>{this.setState({isSettingMode: !this.state.isSettingMode})}}>
+						<IconIonicons name={this.state.isSettingMode ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
+					</TouchableOpacity>
+				</View>
+				{this.state.isSettingMode ?
+				<View style={styles.toolbar}>
+
+					<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
+						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
+					</TouchableOpacity>
 					<Text>댄서{"\n"}크기</Text>
 					<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
-						<IconIonicons name="expand" size={24} color="#ffffff"/>
+						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
 					</TouchableOpacity>
-					<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
-						<IconIonicons name="contract" size={24} color="#ffffff"/>
+					
+					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
+						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 					<Text>좌표{"\n"}간격</Text>
 					<TouchableOpacity onPress={()=>this.resizeCoordinate('up')}>
-						<IconIonicons name="expand" size={24} color="#ffffff"/>
+						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
 					</TouchableOpacity>
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
-						<IconIonicons name="contract" size={24} color="#ffffff"/>
-					</TouchableOpacity>
+					
 					<Text>좌표{"\n"}맞춤</Text>
 					<Switch
 					trackColor={{ false: COLORS.red, true: COLORS.blue }}
@@ -642,15 +656,20 @@ export default class FormationScreen extends React.Component {
 						this.setDancer();
 					}}
 					value={this.alignWithCoordinate}/>
-					<Text>댄서{"\n"}편집</Text>
 					<TouchableOpacity onPress={()=>{
 						if(this.state.isPlay) this.setState({isPlay: false})
-						this.props.navigation.navigate('Dancer', {noteId: this.state.noteId, dancerList: this.dancerList, allPosList: this.allPosList, changeDancerList: this.changeDancerList})}
+						this.props.navigation.navigate('Dancer', {
+							noteId: this.state.noteInfo.nid, 
+							dancerList: this.dancerList, 
+							allPosList: this.allPosList, 
+							changeDancerList: this.changeDancerList})}
 						}>
 						<IconIonicons name="people-sharp" size={24} color="#ffffff"/>
-					</TouchableOpacity>
+					</TouchableOpacity>				
 				</View>
-				
+				:
+				<View/>
+				}
 				
 				<View style={{height: height*2/5, alignItems: 'center', justifyContent: 'center'}}>
 					<View style={{width: width, height: height*2/5, backgroundColor: COLORS.white}}/>
@@ -717,7 +736,7 @@ export default class FormationScreen extends React.Component {
 				"WHERE p.nid=? " +
 				"AND p.nid=d.nid " +
 				"AND p.did=d.did;",
-        [this.state.noteId],
+        [this.state.noteInfo.nid],
         (tx, dancerResult) => {
 					for (let i = 0; i < dancerResult.rows.length; i++) {
 						this.dancerList.push(dancerResult.rows.item(i)); // {did, name}
@@ -732,7 +751,7 @@ export default class FormationScreen extends React.Component {
 				"FROM position " +
 				"WHERE nid=? " +
 				"ORDER BY did, time;",
-				[this.state.noteId],
+				[this.state.noteInfo.nid],
 				(tx, posResult) => {
 					if(posResult.rows.length != 0){
 						let posList = [];
@@ -792,6 +811,19 @@ export default class FormationScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+	toolbar: {
+		width:'100%', 
+		height:50, 
+		flexDirection: 'row', 
+		backgroundColor:COLORS.purple, 
+		alignItems: 'center', 
+		justifyContent: 'space-between', 
+		paddingHorizontal: 20,
+	},
+	toolbarTitle: {
+		color:COLORS.white, 
+		fontSize: 15,
+	},
 	uncheckedBox: {
 		height: boxSize, 
 		width: 1, 
