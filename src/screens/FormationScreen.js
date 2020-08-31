@@ -610,120 +610,26 @@ export default class FormationScreen extends React.Component {
 		return Math.floor(sec/60) + ':' + ( Math.floor(sec%60) < 10 ? '0'+Math.floor(sec%60) : Math.floor(sec%60) )
 	}
 
-	render() {
-		console.log(TAG, "render");
+	play = async () => {
+		console.log(TAG, "play");
+		this.interval = setInterval(() => {
+			this.setTimebox(this.state.time+1);
+			// time에 맞게 scroll view를 강제 scroll하기
+			this.scrollView.scrollTo({x: (this.state.time-5)*boxSize, animated: false});
+			this.setState({time: this.state.time+1});
+		}, 1000);
 
-		return(
-			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
+		this.setState({isPlay: true}, () => {
+			this.setDancer();
+		});
+	}
 
-				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('List');}}>
-						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					<Text style={styles.toolbarTitle}>{this.state.noteInfo.title}</Text>
-					
-					<TouchableOpacity onPress={()=>{this.setState({isSettingMode: !this.state.isSettingMode})}}>
-						<IconIonicons name={this.state.isSettingMode ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
-					</TouchableOpacity>
-				</View>
-				{this.state.isSettingMode ?
-				<View style={styles.toolbar}>
-
-					<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
-						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					<Text>댄서{"\n"}크기</Text>
-					<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
-						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
-						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					<Text>좌표{"\n"}간격</Text>
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('up')}>
-						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					
-					<Text>좌표{"\n"}맞춤</Text>
-					<Switch
-					trackColor={{ false: COLORS.red, true: COLORS.blue }}
-					thumbColor={this.alignWithCoordinate ? "#f5dd4b" : "#f4f3f4"}
-					ios_backgroundColor="#3e3e3e"
-					onValueChange={() => {
-						console.log("switch! change to " + !this.alignWithCoordinate);
-						this.alignWithCoordinate = !this.alignWithCoordinate;
-						this.setDancer();
-					}}
-					value={this.alignWithCoordinate}/>
-					<TouchableOpacity onPress={()=>{
-						if(this.state.isPlay) this.setState({isPlay: false})
-						this.props.navigation.navigate('Dancer', {
-							noteId: this.state.noteInfo.nid, 
-							dancerList: this.dancerList, 
-							allPosList: this.allPosList, 
-							changeDancerList: this.changeDancerList})}
-						}>
-						<IconIonicons name="people-sharp" size={24} color="#ffffff"/>
-					</TouchableOpacity>				
-				</View>
-				:
-				<View/>
-				}
-				
-				<View style={{height: height*2/5, alignItems: 'center', justifyContent: 'center'}}>
-					<View style={{width: width, height: height*2/5, backgroundColor: COLORS.white}}/>
-					{ this.coordinate }
-					{ this.state.dancers }
-				</View>
-				
-				<View style={{flexDirection: 'row', alignItems: 'center'}}>
-					{ this.state.isPlay ? 
-					<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 10}}>
-						<IconAntDesign name="pausecircleo" size={25}/>
-					</TouchableOpacity>
-					:
-					<TouchableOpacity onPress={()=>{this.play()}} style={{margin: 10}}>
-						<IconAntDesign name="play" size={25}/>
-					</TouchableOpacity>
-					}
-					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
-					{ this.selectedPositionIdx != -1 ? 
-						<View style={{flexDirection: 'column'}}>
-							<View style={{flexDirection: 'row'}}>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>선택된 댄서: {this.selectedDancer}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedTime}  </Text>
-							</View>
-							<View style={{flexDirection: 'row'}}>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedPosx}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedPosy}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedDuration}  </Text>
-							</View>
-						</View>
-						:
-						<View/>
-					}
-				</View>
-
-				<ScrollView style={{flex: 1}} scrollEnabled={!this.state.isEditing}>
-					<View style={{flexDirection: 'row'}}>
-						<View style={{flexDirection: 'column'}}>
-							{ this.state.nameColumn }
-						</View>
-						<ScrollView
-						scrollEnabled={!this.state.isEditing}
-						horizontal={true}
-						showsHorizontalScrollIndicator={false}
-						ref={ref => (this.scrollView = ref)}>
-							<View flexDirection='column'>
-								{ this.musicbox }
-							</View>
-						</ScrollView>
-					</View>
-				</ScrollView>
-
-			</SafeAreaView>
-		)
+	pause = () => {
+		console.log(TAG, "pause");
+		clearInterval(this.interval);
+		this.setState({isPlay: false}, () => {
+			this.setDancer();
+		});
 	}
 
 	componentDidMount() {
@@ -780,33 +686,130 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
-	play = async () => {
-		console.log(TAG, "play");
-		this.interval = setInterval(() => {
-			this.setTimebox(this.state.time+1);
-			// time에 맞게 scroll view를 강제 scroll하기
-			this.scrollView.scrollTo({x: (this.state.time-5)*boxSize, animated: false});
-			this.setState({time: this.state.time+1});
-		}, 1000);
-
-		this.setState({isPlay: true}, () => {
-			this.setDancer();
-		});
-	}
-
-	pause = () => {
-		console.log(TAG, "pause");
-		clearInterval(this.interval);
-		this.setState({isPlay: false}, () => {
-			this.setDancer();
-		});
-	}
-
 	// componentDidUpdate() { }
 
 	componentWillUnmount() {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
+	}
+
+	render() {
+		console.log(TAG, "render");
+
+		return(
+			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
+			<View style={{flex: 1}}>
+
+				<View style={styles.toolbar}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('List');}}>
+						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<Text style={styles.toolbarTitle}>{this.state.noteInfo.title}</Text>
+					
+					<TouchableOpacity onPress={()=>{this.setState({isSettingMode: !this.state.isSettingMode})}}>
+						<IconIonicons name={this.state.isSettingMode ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					
+				</View>
+				
+				<View style={{height: height*2/5, alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{width: width, height: height*2/5, backgroundColor: COLORS.white}}/>
+					{ this.coordinate }
+					{ this.state.dancers }
+				</View>
+				
+				<View style={{flexDirection: 'row', alignItems: 'center'}}>
+					{ this.state.isPlay ? 
+					<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 10}}>
+						<IconAntDesign name="pausecircleo" size={25}/>
+					</TouchableOpacity>
+					:
+					<TouchableOpacity onPress={()=>{this.play()}} style={{margin: 10}}>
+						<IconAntDesign name="play" size={25}/>
+					</TouchableOpacity>
+					}
+					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
+					{ this.selectedPositionIdx != -1 ? 
+						<View style={{flexDirection: 'column'}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>선택된 댄서: {this.selectedDancer}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedTime}  </Text>
+							</View>
+							<View style={{flexDirection: 'row'}}>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedPosx}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedPosy}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedDuration}  </Text>
+							</View>
+						</View>
+						:
+						<View/>
+					}
+				</View>
+
+				<ScrollView style={{flex: 1}} scrollEnabled={!this.state.isEditing}>
+					<View style={{flexDirection: 'row'}}>
+						<View style={{flexDirection: 'column'}}>
+							{ this.state.nameColumn }
+						</View>
+						<ScrollView
+						scrollEnabled={!this.state.isEditing}
+						horizontal={true}
+						showsHorizontalScrollIndicator={false}
+						ref={ref => (this.scrollView = ref)}>
+							<View flexDirection='column'>
+								{ this.musicbox }
+							</View>
+						</ScrollView>
+					</View>
+				</ScrollView>
+
+				{this.state.isSettingMode ?
+				<View style={styles.menu}>
+
+					<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
+						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<Text>댄서{"\n"}크기</Text>
+					<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
+						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					
+					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
+						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					<Text>좌표{"\n"}간격</Text>
+					<TouchableOpacity onPress={()=>this.resizeCoordinate('up')}>
+						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+					
+					<Text>좌표{"\n"}맞춤</Text>
+					<Switch
+					trackColor={{ false: COLORS.red, true: COLORS.blue }}
+					thumbColor={this.alignWithCoordinate ? "#f5dd4b" : "#f4f3f4"}
+					ios_backgroundColor="#3e3e3e"
+					onValueChange={() => {
+						console.log("switch! change to " + !this.alignWithCoordinate);
+						this.alignWithCoordinate = !this.alignWithCoordinate;
+						this.setDancer();
+					}}
+					value={this.alignWithCoordinate}/>
+					<TouchableOpacity onPress={()=>{
+						if(this.state.isPlay) this.setState({isPlay: false})
+						this.props.navigation.navigate('Dancer', {
+							noteId: this.state.noteInfo.nid, 
+							dancerList: this.dancerList, 
+							allPosList: this.allPosList, 
+							changeDancerList: this.changeDancerList})}
+						}>
+						<IconIonicons name="people-sharp" size={24} color="#ffffff"/>
+					</TouchableOpacity>				
+				</View>
+				:
+				<View/>
+				}
+			</View>
+			</SafeAreaView>
+		)
 	}
 }
 
@@ -819,6 +822,17 @@ const styles = StyleSheet.create({
 		alignItems: 'center', 
 		justifyContent: 'space-between', 
 		paddingHorizontal: 20,
+	},
+	menu: {
+		width: 200, 
+		flexDirection: 'column', 
+		backgroundColor:COLORS.blue, 
+		alignItems: 'center',
+		position: 'absolute', 
+		top: 50, 
+		right: 0,
+		borderRadius: 10,
+		borderTopRightRadius: 0,
 	},
 	toolbarTitle: {
 		color:COLORS.white, 
