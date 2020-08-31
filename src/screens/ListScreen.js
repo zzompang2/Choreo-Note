@@ -379,6 +379,7 @@ const styles = StyleSheet.create({
 	},
 	noteItem: {
 		flex: 1,
+		height: 65,
 		flexDirection: 'row',
 		alignItems: 'center',
 		marginLeft: 15,
@@ -390,7 +391,6 @@ const styles = StyleSheet.create({
 	columnContainer: {
     flexDirection:'column',
 		flex: 1,
-		height: 65,
 		justifyContent: 'space-between',
 	},
 	rowContainer: {

@@ -30,7 +30,7 @@ export default class FormationScreen extends React.Component {
 			musicLength: 20,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
-			isSettingMode: false,	// 세팅 모드인가?
+			isMenuPop: false,	// 세팅 모드인가?
 			dancers: [],
 			nameColumn: [],
 		}
@@ -711,12 +711,12 @@ export default class FormationScreen extends React.Component {
 					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('List');}}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
+
 					<Text style={styles.toolbarTitle}>{this.state.noteInfo.title}</Text>
 					
-					<TouchableOpacity onPress={()=>{this.setState({isSettingMode: !this.state.isSettingMode})}}>
-						<IconIonicons name={this.state.isSettingMode ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
+					<TouchableOpacity onPress={()=>{this.setState({isMenuPop: !this.state.isMenuPop})}}>
+						<IconIonicons name={this.state.isMenuPop ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
 					</TouchableOpacity>
-					
 				</View>
 				
 				<View style={{height: height*2/5, alignItems: 'center', justifyContent: 'center'}}>
@@ -770,8 +770,13 @@ export default class FormationScreen extends React.Component {
 					</View>
 				</ScrollView>
 
-				{this.state.isSettingMode ?
+				{this.state.isMenuPop ?
 				<View style={styles.menuProvider}>
+
+					<TouchableOpacity 
+					style={{width: '100%', height: '100%', position: 'absolute'}}
+					onPress={()=>{this.setState({isMenuPop: false})}}/>
+
 					<View style={styles.menu}>
 
 						<View style={styles.menuItem}>
@@ -820,9 +825,10 @@ export default class FormationScreen extends React.Component {
 								noteId: this.state.noteInfo.nid, 
 								dancerList: this.dancerList, 
 								allPosList: this.allPosList, 
-								changeDancerList: this.changeDancerList})
-							}
-						}>
+								changeDancerList: this.changeDancerList
+							})
+							this.setState({isMenuPop: false});
+						}}>
 							<Text style={styles.menuText}>댄서 편집</Text>
 						</TouchableOpacity>
 					</View>

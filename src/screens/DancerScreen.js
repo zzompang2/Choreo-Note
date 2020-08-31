@@ -118,42 +118,48 @@ export default class ListScreen extends React.Component {
 	listViewItemSeparator = () => 
 		<View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 	
-	listItemView = (item) => {
-		console.log(TAG, 'listItemView');
+	listItemView = (item) => 
+		<View style={styles.dancerItem}>
 
-		return(
-			<View style={{flexDirection: 'row', alignItems: 'center',}}>
+			<Text 
+			style={{width: 20, fontSize: 16, color: COLORS.grayMiddle,}}>
+				{item.did+1}
+			</Text>
 
-				<Text 
-				style={{width: 20, fontSize: 16, color: COLORS.grayMiddle,}}>
-					{item.did+1}
-				</Text>
+			<TextInput
+			maxLength={10}
+			style={{flex: 1, fontSize: 16, color: COLORS.blackDark, padding: 10,}}
+			placeholder="이름을 입력해 주세요."
+			onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}>
+				{item.name}
+			</TextInput>
 
-				<TextInput
-				maxLength={10}
-				style={{flex: 1, fontSize: 16, color: COLORS.blackDark, padding: 10,}}
-				placeholder="이름을 입력해 주세요."
-				onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}>
-					{item.name}
-				</TextInput>
+			<TouchableOpacity
+			onPress={()=>this.deleteDancer(item.did)}>
+				<IconIonicons name="trash-outline" size={20} color={COLORS.grayMiddle}/>
+			</TouchableOpacity>
 
-				<TouchableOpacity
-				onPress={()=>this.deleteDancer(item.did)}>
-					<IconIonicons name="trash-outline" size={20} color={COLORS.grayMiddle}/>
-				</TouchableOpacity>
-
-			</View>
-		)
-	}
+		</View>
 
 	render(){
 		console.log(TAG, 'render');
 
 		return(
-			<SafeAreaView style={{flex: 1, width: '80%', alignSelf: 'center'}}>
-				<TouchableOpacity onPress={()=>this.addDancer()}>
-					<IconIonicons name="person-add" size={20} color={COLORS.grayMiddle}/>
-				</TouchableOpacity>
+			<SafeAreaView style={{flex: 1, flexDirection: 'column', backgroundColor: COLORS.white}}>
+
+				<View style={styles.toolbar}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('Formation');}}>
+						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
+					</TouchableOpacity>
+
+					<Text style={styles.toolbarTitle}>댄서 편집</Text>
+					
+					<TouchableOpacity onPress={()=>this.addDancer()}>
+						<IconIonicons name="person-add" size={20} color={COLORS.white}/>
+					</TouchableOpacity>
+				</View>
+
+				
 				<FlatList
 				showsVerticalScrollIndicator={false}
 				data={this.state.dancerList}
@@ -167,17 +173,31 @@ export default class ListScreen extends React.Component {
 
 	componentWillUnmount(){
 		console.log(TAG, 'componentWillUnmount');
-		console.log("dancerList:", this.state.dancerList);
-		console.log("allPosList:", this.allPosList);
 		this.props.route.params.changeDancerList(this.state.dancerList, this.allPosList);
 	}
 }
 
 
 const styles = StyleSheet.create({
-	button: {
-    width: 15,
-    height: 15,
-    margin: 10,
-  },
+	toolbar: {
+		width: '100%', 
+		height: 50,
+		flexDirection: 'row', 
+		backgroundColor: COLORS.purple, 
+		alignItems: 'center', 
+		justifyContent: 'space-between', 
+		paddingHorizontal: 20,
+	},
+	toolbarTitle: {
+		color:COLORS.white, 
+		fontSize: 15,
+	},
+	dancerItem: {
+		flex: 1,
+		height: 50,
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginLeft: 15,
+    marginRight: 15,
+	}
 })
