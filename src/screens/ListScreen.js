@@ -1,9 +1,10 @@
 import React from 'react';
 import {
-  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput,
+  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput, Alert,
 } from 'react-native';
-
 import SQLite from "react-native-sqlite-storage";
+import IconIonicons from 'react-native-vector-icons/Ionicons';
+
 import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 
@@ -22,6 +23,7 @@ class ListScreen extends React.Component {
 		this.state = {
       db,
 			noteList: [],
+			isEditMode: false,
 		}
 
 		db.transaction(txn => {
@@ -132,7 +134,7 @@ class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, ?, ?, "music", 3, 3);', 
+				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 3, 3);', 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
 				() => {this.updateNoteList();},
 				() => {console.log('ERROR');}
@@ -160,8 +162,83 @@ class ListScreen extends React.Component {
 		});
 	}
 
+	deleteNote = (nid) => {
+		console.log(TAG, "deleteNote", nid);
+
+		Alert.alert(
+			"경고", 
+			"정말 삭제하시겠어요? 되돌릴 수 없습니다!",
+			[
+				{
+					text: "예!",
+					onPress: () => {
+						this.state.db.transaction(txn => {
+							txn.executeSql(
+								"DELETE FROM note " +
+								"WHERE nid=?;",
+								[nid],
+								() => {console.log('success!');},
+								(e) => {console.log('ERROR1', e);}
+							);
+							txn.executeSql(
+								"DELETE FROM position " +
+								"WHERE nid=?;",
+								[nid],
+								() => {console.log('success!');},
+								(e) => {console.log('ERROR2', e);}
+							);
+
+							txn.executeSql(
+								"DELETE FROM dancer " +
+								"WHERE nid=?;",
+								[nid],
+								() => {console.log('success!');},
+								(e) => {console.log('ERROR3', e);}
+							);
+
+							txn.executeSql(
+								"UPDATE note " +
+								"SET nid=nid-1 " +
+								"WHERE nid>?;",
+								[nid],
+								() => {console.log('success!');},
+								() => {console.log('ERROR4', e);}
+							);
+
+							txn.executeSql(
+								"UPDATE dancer " +
+								"SET nid=nid-1 " +
+								"WHERE nid>?;",
+								[nid],
+								() => {console.log('success!');},
+								() => {console.log('ERROR5', e);}
+							);
+
+							txn.executeSql(
+								"UPDATE position " +
+								"SET nid=nid-1 " +
+								"WHERE nid>?;",
+								[nid],
+								() => {console.log('success!');},
+								() => {console.log('ERROR6', e);}
+							);
+						});
+
+						let _noteList = [...this.state.noteList];
+						_noteList.splice(nid, 1);
+						this.setState({noteList: _noteList});
+					},
+				},
+				{ text: "아니요, 안 할래요.", style: "cancel" }
+			],
+			{ cancelable: false }
+		);
+	}
+
 	changeName = (text, nid) => {
 		console.log(TAG, "changeName: ", text + ", " + nid)
+
+		// text가 비어있는 경우
 
 		// SQLite DB에서 업데이트
 		this.state.db.transaction(txn => {
@@ -177,6 +254,8 @@ class ListScreen extends React.Component {
 	moveToFormationScreen = (nid) => {
 		console.log(TAG, 'moveToFormationScreen');
 
+		if(this.state.isEditMode) return;
+
 		this.state.db.transaction(txn => {
       txn.executeSql(
 				"SELECT coordinateLevel, radiusLevel "+
@@ -184,8 +263,14 @@ class ListScreen extends React.Component {
 				"WHERE nid=?",
 				[nid],
 				(txn, res) => {
-					console.log(res.rows.item(0));
-					return this.props.navigation.navigate('Formation', {noteId: nid, coordinateLevel: res.rows.item(0).coordinateLevel, radiusLevel: res.rows.item(0).radiusLevel});
+					return this.props.navigation.navigate(
+						'Formation',
+						{
+							noteId: nid, 
+							coordinateLevel: res.rows.item(0).coordinateLevel, 
+							radiusLevel: res.rows.item(0).radiusLevel
+						}
+					);
 			});
 		});
 	}
@@ -194,38 +279,80 @@ class ListScreen extends React.Component {
 		console.log(TAG, "render");
 
 		return(
-			<SafeAreaView style={{flex: 1}}>
+			<SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
 			
-				<View style={{width:'100%', height:50, flexDirection: 'row', backgroundColor:COLORS.purple, alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, paddingHorizontal: 30}}>
-					<Text></Text>
+				<View style={
+					{
+						width:'100%', 
+						height:50, 
+						flexDirection: 'row', 
+						backgroundColor:COLORS.purple, 
+						alignItems: 'center', 
+						justifyContent: 'space-between', 
+						// marginBottom: 10, 
+						paddingHorizontal: 20,
+					}
+				}>
+					{!this.state.isEditMode ?
+					<TouchableOpacity onPress={()=>{ this.setState({isEditMode: true}); }}>
+						<Text style={{color: COLORS.white}}>편집</Text>
+					</TouchableOpacity>
+					:
+					<TouchableOpacity onPress={()=>{ this.setState({isEditMode: false}); this.updateNoteList(); }}>
+						<Text style={{color: COLORS.white}}>완료</Text>
+					</TouchableOpacity>}
+
 					<Text style={{color:COLORS.white, fontSize: 15,}}>Choreo Note</Text>
 					<TouchableOpacity onPress={()=>this.addNote()}>
-						<Text style={{color:COLORS.white, fontSize: 13, padding: 5}}>추가</Text>
+						<IconIonicons name="create-outline" size={24} color={COLORS.white}/>
 					</TouchableOpacity>
 				</View>
 
 				<View style={{flex: 1}}>
 					<FlatList
 					data={this.state.noteList}
-					renderItem={({item, index}) => {
-						return(
-							<TouchableOpacity onPress={()=>this.moveToFormationScreen(item.nid)}>
-								<View style={styles.rowContainer}>
+					renderItem={({item, index}) => 
+					<View style={styles.noteItem}>
+						<TouchableOpacity style={{flex: 1}} onPress={()=>{this.moveToFormationScreen(item.nid)}}>
+							<View style={styles.columnContainer}>
+								{this.state.isEditMode ?
+								<View style={{flexDirection: 'row'}}>
 									<TextInput 
-									numberOfLines={1} 
+									numberOfLines={1}
 									maxLength={30}
-									style={styles.title}
-									onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.nid)}>
+									style={[styles.title, styles.titleInput]}
+									placeholder="제목을 입력해 주세요."
+									onChangeTex
+									onChangeText={text=>{this.changeName(text, item.nid)}}>
 										{item.title}
 									</TextInput>
-									<View style={styles.columnContainer}>
-										<TextInput numberOfLines={1} style={styles.music}>{item.music}</TextInput>
-										<Text numberOfLines={1} style={styles.date}>{item.date}</Text>
-									</View>
 								</View>
-							</TouchableOpacity>
-						)
-					}}
+								:
+								<Text
+								numberOfLines={1} 
+								maxLength={30}
+								style={styles.title}
+								onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.nid)}>
+									{item.title}
+								</Text>
+								}
+								<View style={styles.rowContainer}>
+									<IconIonicons name="calendar" size={15} color={COLORS.grayMiddle}/>
+									<Text numberOfLines={1} style={styles.date}> {item.date}</Text>
+									<IconIonicons name="musical-notes" size={15} color={COLORS.grayMiddle}/>
+									<Text numberOfLines={1} style={styles.music}> {item.music}</Text>
+								</View>
+							</View>
+						</TouchableOpacity>
+						{ !this.state.isEditMode ?
+						<View/>
+						:
+						<TouchableOpacity onPress={()=>{this.deleteNote(item.nid)}}>
+							<IconIonicons name="trash-outline" size={30} color={COLORS.grayMiddle} style={{paddingStart: 10}}/>
+						</TouchableOpacity>
+						}
+					</View>
+					}
 					keyExtractor={(item, index) => index.toString()}
 					style={styles.list}
 					/>
@@ -262,41 +389,56 @@ class ListScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-	list: {
-		backgroundColor: COLORS.grayLight,
-	},
-	rowContainer: {
-    flexDirection:'row',
-    flex: 1,
-    justifyContent: 'space-between',
-    marginLeft: 15,
+	noteItem: {
+		flex: 1,
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginLeft: 15,
     marginRight: 15,
-    padding: 9,
-    borderBottomWidth: 0.8,
+		borderBottomWidth: 0.8,
     borderBottomColor: COLORS.grayMiddle,
+	},
+	list: {
+		flex: 1,
 	},
 	columnContainer: {
     flexDirection:'column',
-    alignItems: 'flex-end',
+		flex: 1,
+		height: 65,
+		// padding: 9,
+		justifyContent: 'space-between',
+	},
+	rowContainer: {
+		flexDirection:'row',
+		alignItems: 'center',
+		marginBottom: 10,
+		// backgroundColor: COLORS.blue,
 	},
 	title: {
-    color: COLORS.blackDark, 
-		fontSize:18,
-		paddingRight: 10,
+		flex: 1,
+		color: COLORS.blackDark,
 		// backgroundColor: COLORS.yellow,
+		fontSize: 18,
+		marginTop: 5,
+		paddingVertical: 5,
+    //fontFamily: FONTS.binggrae2,
+	},
+	titleInput: {
+		backgroundColor: COLORS.grayLight,
+		paddingHorizontal: 7,
+		borderRadius: 10,
+		borderColor: COLORS.grayMiddle,
+		borderWidth: 1,
+	},
+	date: {
+		width: 70,
+    color: COLORS.grayMiddle, 
+		fontSize:12,
     //fontFamily: FONTS.binggrae2,
   },
   music: {
-    color: COLORS.red, 
+    color: COLORS.grayMiddle, 
     fontSize:12,
-    paddingLeft: 10,
-    textAlign: 'right',
-    //fontFamily: FONTS.binggrae2,
-  },
-  date: {
-    color: COLORS.grayDark, 
-    fontSize:12,
-    paddingLeft: 10,
     //fontFamily: FONTS.binggrae2,
   },
 })

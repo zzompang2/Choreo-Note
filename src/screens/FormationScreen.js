@@ -616,6 +616,7 @@ export default class FormationScreen extends React.Component {
 			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
 
 				<View style={{width: '100%', height: 50, flexDirection: 'row', backgroundColor: COLORS.yellow, alignItems: 'center', justifyContent: 'space-between'}}>
+					<IconIonicons name="cog-outline" size={24} color="#ffffff"/>
 					<Text>댄서{"\n"}크기</Text>
 					<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
 						<IconIonicons name="expand" size={24} color="#ffffff"/>
