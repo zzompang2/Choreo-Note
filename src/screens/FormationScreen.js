@@ -25,7 +25,7 @@ export default class FormationScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, coordinateLevel, radiusLevel}
+			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
 			time: 0,
 			musicLength: 20,
 			isPlay: false,		// play 중인가?
@@ -44,7 +44,7 @@ export default class FormationScreen extends React.Component {
 
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
 		this.radiusLevel = this.state.noteInfo.radiusLevel;
-		this.alignWithCoordinate = false;
+		this.alignWithCoordinate = this.state.noteInfo.alignWithCoordinate ? true : false;		// 좌표에 맞물려 이동
 
 		this.setCoordinate();
 	}
@@ -691,6 +691,13 @@ export default class FormationScreen extends React.Component {
 	componentWillUnmount() {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
+		this.props.route.params.updateNoteList();
+	}
+
+	changeAlignWithCoordinate = () => {
+		this.alignWithCoordinate = !this.alignWithCoordinate;
+		this.DB_UPDATE('note', {alignWithCoordinate: this.alignWithCoordinate}, {nid: this.state.noteInfo.nid});
+		this.setDancer();
 	}
 
 	render() {
@@ -764,45 +771,61 @@ export default class FormationScreen extends React.Component {
 				</ScrollView>
 
 				{this.state.isSettingMode ?
-				<View style={styles.menu}>
+				<View style={styles.menuProvider}>
+					<View style={styles.menu}>
 
-					<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
-						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					<Text>댄서{"\n"}크기</Text>
-					<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
-						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
-						<IconIonicons name="caret-back" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					<Text>좌표{"\n"}간격</Text>
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('up')}>
-						<IconIonicons name="caret-forward" size={24} color="#ffffff"/>
-					</TouchableOpacity>
-					
-					<Text>좌표{"\n"}맞춤</Text>
-					<Switch
-					trackColor={{ false: COLORS.red, true: COLORS.blue }}
-					thumbColor={this.alignWithCoordinate ? "#f5dd4b" : "#f4f3f4"}
-					ios_backgroundColor="#3e3e3e"
-					onValueChange={() => {
-						console.log("switch! change to " + !this.alignWithCoordinate);
-						this.alignWithCoordinate = !this.alignWithCoordinate;
-						this.setDancer();
-					}}
-					value={this.alignWithCoordinate}/>
-					<TouchableOpacity onPress={()=>{
-						if(this.state.isPlay) this.setState({isPlay: false})
-						this.props.navigation.navigate('Dancer', {
-							noteId: this.state.noteInfo.nid, 
-							dancerList: this.dancerList, 
-							allPosList: this.allPosList, 
-							changeDancerList: this.changeDancerList})}
+						<View style={styles.menuItem}>
+							<Text style={styles.menuText}>댄서 크기</Text>
+							<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
+								<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
+							</TouchableOpacity>
+							<Text>{this.radiusLevel}</Text>
+							<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
+								<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
+							</TouchableOpacity>
+						</View>
+
+						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
+
+						<View style={styles.menuItem}>
+							<Text style={styles.menuText}>좌표 간격</Text>
+							<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
+								<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
+							</TouchableOpacity>
+							<Text>{this.coordinateLevel}</Text>
+							<TouchableOpacity onPress={()=>this.resizeCoordinate('up')}>
+								<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
+							</TouchableOpacity>
+						</View>
+
+						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
+
+						<View style={styles.menuItem}>
+							<Text style={styles.menuText}>좌표 맞춤</Text>
+							<Switch
+							trackColor={{true: COLORS.red}}
+							thumbColor={COLORS.white}
+							ios_backgroundColor={COLORS.grayDark}
+							onValueChange={() => {this.changeAlignWithCoordinate()}}
+							value={this.alignWithCoordinate}/>
+						</View>
+
+						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
+
+						<TouchableOpacity 
+						style={styles.menuItem}
+						onPress={()=>{
+							if(this.state.isPlay) this.setState({isPlay: false});
+							this.props.navigation.navigate('Dancer', {
+								noteId: this.state.noteInfo.nid, 
+								dancerList: this.dancerList, 
+								allPosList: this.allPosList, 
+								changeDancerList: this.changeDancerList})
+							}
 						}>
-						<IconIonicons name="people-sharp" size={24} color="#ffffff"/>
-					</TouchableOpacity>				
+							<Text style={styles.menuText}>댄서 편집</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 				:
 				<View/>
@@ -816,23 +839,36 @@ export default class FormationScreen extends React.Component {
 const styles = StyleSheet.create({
 	toolbar: {
 		width:'100%', 
-		height:50, 
+		height:50,
 		flexDirection: 'row', 
 		backgroundColor:COLORS.purple, 
 		alignItems: 'center', 
 		justifyContent: 'space-between', 
 		paddingHorizontal: 20,
 	},
-	menu: {
-		width: 200, 
-		flexDirection: 'column', 
-		backgroundColor:COLORS.blue, 
-		alignItems: 'center',
+	menuProvider: {
+		width: '100%',
+		height: '100%',
 		position: 'absolute', 
+		alignItems: 'flex-end',
 		top: 50, 
 		right: 0,
-		borderRadius: 10,
-		borderTopRightRadius: 0,
+	},
+	menu: {
+		flexDirection: 'column', 
+		backgroundColor:COLORS.grayLight, 
+		borderWidth: 1,
+		borderColor: COLORS.grayMiddle,
+		paddingHorizontal: 10,
+	},
+	menuItem: {
+		height: 50,
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	menuText: {
+		width: 80,
+		color: COLORS.blackDark,
 	},
 	toolbarTitle: {
 		color:COLORS.white, 

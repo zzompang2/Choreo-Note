@@ -115,13 +115,8 @@ export default class ListScreen extends React.Component {
 		);
 	}
 
-	listViewItemSeparator = () => {
-		console.log(TAG, 'listViewItemSeparator');
-		
-    return (
-      <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
-    );
-	};
+	listViewItemSeparator = () => 
+		<View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 	
 	listItemView = (item) => {
 		console.log(TAG, 'listItemView');

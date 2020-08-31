@@ -22,7 +22,7 @@ class ListScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteList: [],		// {nid, title, date, music, coordinateLevel, radiusLevel}
+			noteList: [],		// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
 			isEditMode: false,
 		}
 
@@ -34,14 +34,15 @@ class ListScreen extends React.Component {
 					'title TEXT NOT NULL, ' +
 					'date TEXT NOT NULL, ' +
 					'music TEXT NOT NULL, ' +
-					'coordinateLevel INTEGER NOT NULL, ' +
 					'radiusLevel INTEGER NOT NULL, ' +
+					'coordinateLevel INTEGER NOT NULL, ' +
+					'alignWithCoordinate TINYINT(1) NOT NULL, ' +
 					'PRIMARY KEY("nid") );',
 				[]
 			);
 
 			// txn.executeSql(
-			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.1.1", "사람들이 움직이는 게", 3, 3);', []
+			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.1.1", "사람들이 움직이는 게", 3, 3, 0);', []
 			// );
 
 			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
@@ -134,7 +135,7 @@ class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 3, 3);', 
+				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 3, 3, 0);', 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
 				() => {this.updateNoteList();},
 				() => {console.log('ERROR');}
@@ -254,6 +255,9 @@ class ListScreen extends React.Component {
 		});
 	}
 
+	listViewItemSeparator = () => 
+		<View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
+
 	render() {
 		console.log(TAG, "render");
 
@@ -279,11 +283,12 @@ class ListScreen extends React.Component {
 				<View style={{flex: 1}}>
 					<FlatList
 					data={this.state.noteList}
+					ItemSeparatorComponent={this.listViewItemSeparator}
 					renderItem={({item, index}) => 
 					<View style={styles.noteItem}>
 						<TouchableOpacity style={{flex: 1}} 
 						onPress={()=>{
-							this.props.navigation.navigate('Formation', {noteInfo: this.state.noteList[item.nid]});
+							this.props.navigation.navigate('Formation', {noteInfo: this.state.noteList[item.nid], updateNoteList: this.updateNoteList});
 						}}>
 							<View style={styles.columnContainer}>
 								{this.state.isEditMode ?
@@ -378,8 +383,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		marginLeft: 15,
     marginRight: 15,
-		borderBottomWidth: 0.8,
-    borderBottomColor: COLORS.grayMiddle,
 	},
 	list: {
 		flex: 1,
@@ -388,14 +391,12 @@ const styles = StyleSheet.create({
     flexDirection:'column',
 		flex: 1,
 		height: 65,
-		// padding: 9,
 		justifyContent: 'space-between',
 	},
 	rowContainer: {
 		flexDirection:'row',
 		alignItems: 'center',
 		marginBottom: 10,
-		// backgroundColor: COLORS.blue,
 	},
 	title: {
 		flex: 1,
