@@ -41,7 +41,7 @@ class ListScreen extends React.Component {
 			);
 
 			// txn.executeSql(
-			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.01.01", "사람들이 움직이는 게", 3, 3);', []
+			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.1.1", "사람들이 움직이는 게", 3, 3);', []
 			// );
 
 			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
@@ -226,6 +226,9 @@ class ListScreen extends React.Component {
 
 						let _noteList = [...this.state.noteList];
 						_noteList.splice(nid, 1);
+						for(let i=nid; i<_noteList.length; i++){
+							_noteList[i].nid--;
+						}
 						this.setState({noteList: _noteList});
 					},
 				},
@@ -369,7 +372,7 @@ class ListScreen extends React.Component {
 	updateNoteList = () => {
 		console.log(TAG, "updateNoteList");
 
-		var temp = [];
+		let _noteList = [];
 
 		this.state.db.transaction(txn => {
       txn.executeSql(
@@ -379,9 +382,9 @@ class ListScreen extends React.Component {
           // console.log('length: ', result.rows.length);
 					for (let i = 0; i < result.rows.length; i++) {
 						console.log("item:", result.rows.item(i));
-						temp.push(result.rows.item(i));
+						_noteList.push(result.rows.item(i));
 					}		
-					this.setState({noteList: temp})
+					this.setState({noteList: _noteList})
 				}
 			);
 		});
