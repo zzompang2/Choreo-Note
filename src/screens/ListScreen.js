@@ -9,6 +9,12 @@ import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "ListScreen/";
+const randomCouple = [
+	['오작교 댄스', '견우', '직녀'],
+	['콩팥', '콩쥐', '팥쥐'],
+	['겨울왕국', '엘사', '안나'],
+	['긴머리 휘날리며', '라푼젤', '파스칼'],
+]
 
 class ListScreen extends React.Component {
 	constructor(props){
@@ -25,12 +31,13 @@ class ListScreen extends React.Component {
 					'nid INTEGER NOT NULL, ' +
 					'title TEXT NOT NULL, ' +
 					'date TEXT NOT NULL, ' +
-					'music TEXT, ' +
-					'coordinateLevel INTEGER, ' +
-					'radiusLevel INTEGER, ' +
+					'music TEXT NOT NULL, ' +
+					'coordinateLevel INTEGER NOT NULL, ' +
+					'radiusLevel INTEGER NOT NULL, ' +
 					'PRIMARY KEY("nid") );',
 				[]
 			);
+
 			// txn.executeSql(
 			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연", "2016.01.01", "사람들이 움직이는 게", 3, 3);', []
 			// );
@@ -40,7 +47,7 @@ class ListScreen extends React.Component {
 				'CREATE TABLE IF NOT EXISTS dancer(' +
 					'nid INTEGER NOT NULL, ' +
 					'did INTEGER NOT NULL, ' +
-					'name	TEXT, ' +
+					'name	TEXT NOT NULL, ' +
 					'PRIMARY KEY(did, nid) );'
 			);
 			// txn.executeSql(
@@ -113,18 +120,44 @@ class ListScreen extends React.Component {
 		})
 	}
 
-	addNote = () => {
-		console.log(TAG, "addNote");
+	dateFormat(date) {
+		return date.getFullYear() + "." + (date.getMonth()+1) + "." + date.getDate();
+	}
 
-		const todayDate = new Date();
+	addNote = () => {
+		const newNid = this.state.noteList.length;
+		const randomValue = Math.floor(Math.random() * randomCouple.length);
+
+		console.log(TAG, "addNote", newNid, randomValue);
+
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, "title", ?, "music", 3, 3);', 
-				[this.state.noteList.length, todayDate.getFullYear() + "." + (todayDate.getMonth()+1) + "." + todayDate.getDate()],
-				() => { this.updateNoteList(); }
+				'INSERT INTO note VALUES (?, ?, ?, "music", 3, 3);', 
+				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
+				() => {this.updateNoteList();},
+				() => {console.log('ERROR');}
+			);
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (?, 0, ?);",
+				[newNid, randomCouple[randomValue][1]]
+			);
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (?, 1, ?);",
+				[newNid, randomCouple[randomValue][2]]
+			);
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
+				[newNid],
+				() => {console.log('success!');},
+				(e) => {console.log('ERROR', e);}
+			);
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, 1, 0, 30, 0, 0);",
+				[newNid],
+				() => {console.log('success!');},
+				(e) => {console.log('ERROR');}
 			);
 		});
-	
 	}
 
 	changeName = (text, nid) => {

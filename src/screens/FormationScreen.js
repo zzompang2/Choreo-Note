@@ -1,16 +1,14 @@
 import React from 'react';
 import {
-	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, FlatList, Switch,
+	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, Switch,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
-import Slider from '@react-native-community/slider'
 
 // custom library
 import Dancer from '../components/Dancer'
 import Positionbox from '../components/Positionbox'
-import Player from '../components/Player'
 import { COLORS } from '../values/Colors'
 import { FONTS } from '../values/Fonts'
 
@@ -30,13 +28,10 @@ export default class FormationScreen extends React.Component {
 			noteId: props.route.params.noteId,
 			time: 0,
 			musicLength: 20,
-			// animationPlayToggle: false,
-			isPlay: false,
-			dancers: [],
-			dancerName: [],
-			// musicbox: [],
-			// alignWithCoordinate: false,
+			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
+			dancers: [],
+			nameColumn: [],
 		}
 		this.allPosList=[];
 		this.dancerList=[];	// nid, did, name
@@ -129,6 +124,7 @@ export default class FormationScreen extends React.Component {
 	 * @param markedTime 마크할 시간 (없다면 초기화)
 	 */
 	setTimebox = (markedTime) => {
+		console.log(TAG, 'setTimebox');
 
 		let _timeText;
 
@@ -254,15 +250,35 @@ export default class FormationScreen extends React.Component {
 	/** music box 전체를 초기화한다.
 	 * - re-render: NO
 	 * - update: this.musicbox(, this.timeText)
-	 * @param did 
+	 * @param markedTime 마크할 시간 (없다면 초기화)
 	 */
-	setMusicboxs = () => {
+	setMusicboxs = (markedTime) => {
 		console.log(TAG, "setMusicboxs");
 
 		this.musicbox = [];	// 제거된 dancer가 있을 수 있으므로 초기화.
-		this.setTimebox();
-		for(let did=0; did<this.dancerList.length; did++)
+
+		this.setTimebox(markedTime);
+
+		// 댄서 0명일 경우: 비어있는 row 하나 추가
+		if(this.dancerList.length == 0){
+			let rowView = [];
+			// 마지막 대열~노래 끝부분까지 회색박스 채우기
+			for(let i=0; i<=this.state.musicLength; i++){
+				rowView.push( <View style={styles.uncheckedBox}/> )
+			}
+			this.musicbox.splice(1, 1,
+				<View 
+				key={1}
+				flexDirection='row'>
+					{rowView}
+				</View>
+			)
+		}
+		// 댄서가 존재하는 경우
+		else{
+			for(let did=0; did<this.dancerList.length; did++)
 			this.setMusicbox(did);
+		}
 	}
 
 	/** coordinate를 설정한다.
@@ -294,14 +310,14 @@ export default class FormationScreen extends React.Component {
 
 	/** 댄서들 이름과 <Dancer>들을 설정한다.
 	 * - re-render: YES ( setState )
-	 * - update: dancers, dancerName
+	 * - update: dancers, nameColumn
 	 */
 	setDancer = () => {
 		console.log(TAG, "setDancer: " + this.allPosList.length);
 		const dancerNum = this.allPosList.length;
 
 		let _dancers = [];
-		let _dancerName = [ <Text key={0} style={{height: boxSize}}/> ];
+		let _nameColumn = [ <Text key={0} style={{height: boxSize, width: 60}}/> ];
 
 		for(let i=0; i<dancerNum; i++){
       _dancers.push(
@@ -318,13 +334,13 @@ export default class FormationScreen extends React.Component {
 				// elevation={100}
 				/>
 			)
-			_dancerName.push(
-				<Text key={_dancerName.length} style={{height: boxSize, width: 60, fontSize: 11, textAlignVertical: 'center'}}>
+			_nameColumn.push(
+				<Text key={_nameColumn.length} style={{height: boxSize, width: 60, fontSize: 11, textAlignVertical: 'center'}}>
 					{i+1}. {this.dancerList[i].name}
 				</Text>
 			)
 		}
-		this.setState({dancers: _dancers, dancerName: _dancerName})
+		this.setState({dancers: _dancers, nameColumn: _nameColumn})
 	}
 	
 	/** <Dancer>에서 드래그 후 드랍한 위치 정보로 position DB에 추가/수정한다.
@@ -497,14 +513,15 @@ export default class FormationScreen extends React.Component {
 
 	/** <DancerScreen>에서 수정된 정보를 적용한다.
 	 * - re-render: YES ( setDancer() )
-	 * - update: this.dancerList, this.allPosList / this.musicbox / dancers, dancerName
+	 * - update: this.dancerList, this.allPosList / this.musicbox / dancers, nameColumn
 	 * @param {array} _dancerList 변경된 dancerList
 	 * @param {array} _allPosList 변경된 allPosList
 	 */
 	changeDancerList = (_dancerList, _allPosList) => {
+		console.log(TAG, 'changeDancerList');
 		this.dancerList = [..._dancerList];
 		this.allPosList = [..._allPosList];
-		this.setMusicboxs();
+		this.setMusicboxs(this.state.time);
 		this.setDancer();
 	}
 	
@@ -671,7 +688,7 @@ export default class FormationScreen extends React.Component {
 				<ScrollView style={{flex: 1}} scrollEnabled={!this.state.isEditing}>
 					<View style={{flexDirection: 'row'}}>
 						<View style={{flexDirection: 'column'}}>
-							{ this.state.dancerName }
+							{ this.state.nameColumn }
 						</View>
 						<ScrollView
 						scrollEnabled={!this.state.isEditing}
@@ -716,23 +733,25 @@ export default class FormationScreen extends React.Component {
 				"ORDER BY did, time;",
 				[this.state.noteId],
 				(tx, posResult) => {
-					let posList = [];
-					let did = 0;
-					for(let i=0; i < posResult.rows.length; i++){
-						// did번째 댄서의 position을 하나씩 push
-						if(posResult.rows.item(i).did == did){
-							posList.push(posResult.rows.item(i));
+					if(posResult.rows.length != 0){
+						let posList = [];
+						let did = 0;
+						for(let i=0; i < posResult.rows.length; i++){
+							// did번째 댄서의 position을 하나씩 push
+							if(posResult.rows.item(i).did == did){
+								posList.push(posResult.rows.item(i));
+							}
+							// did번째 댄서의 position을 모두 넣은 경우
+							else{
+								this.allPosList.push(posList);
+								did++;
+								i--;
+								posList = [];
+							}
 						}
-						// did번째 댄서의 position을 모두 넣은 경우
-						else{
-							this.allPosList.push(posList);
-							did++;
-							i--;
-							posList = [];
-						}
+						// 마지막 댄서의 posList
+						this.allPosList.push(posList);
 					}
-					// 마지막 댄서의 posList
-					this.allPosList.push(posList);
 
 					this.setMusicboxs();
 					this.setDancer();

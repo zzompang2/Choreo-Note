@@ -2,8 +2,10 @@ import React from 'react';
 import {
   SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput, Image, Alert
 } from 'react-native';
-
 import SQLite from "react-native-sqlite-storage";
+import IconIonicons from 'react-native-vector-icons/Ionicons';
+
+// custom library
 import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 
@@ -37,7 +39,7 @@ export default class ListScreen extends React.Component {
 
 		let _dancerList = [...this.state.dancerList];
 		_dancerList[did].name = text;
-		this.setState({dancerList: _dancerList});
+		this.setState({dancerList: _dancerList, isFocus: false});
 	}
 
 	addDancer = () => {
@@ -47,7 +49,7 @@ export default class ListScreen extends React.Component {
 
 		this.state.db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, ?, ' ');",
+				"INSERT INTO dancer VALUES (?, ?, '');",
 				[this.state.noteId, dancerNum]
 			);
 			txn.executeSql(
@@ -57,7 +59,7 @@ export default class ListScreen extends React.Component {
 		});
 
 		let _dancerList = [...this.state.dancerList];
-		_dancerList.push({did: dancerNum, name: " "}); // {did, name}
+		_dancerList.push({did: dancerNum, name: ""}); // {did, name}
 		this.allPosList.push([{time: 0, posx: 0, posy: 0, duration: 0}]);
 		this.setState({dancerList: _dancerList});
 	}
@@ -114,32 +116,35 @@ export default class ListScreen extends React.Component {
 	}
 
 	listViewItemSeparator = () => {
+		console.log(TAG, 'listViewItemSeparator');
+		
     return (
       <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
     );
 	};
 	
 	listItemView = (item) => {
+		console.log(TAG, 'listItemView');
+
 		return(
 			<View style={{flexDirection: 'row', alignItems: 'center',}}>
 
 				<Text 
-				style={{fontSize: 16, color: COLORS.grayMiddle, padding: 10,}}>
+				style={{width: 20, fontSize: 16, color: COLORS.grayMiddle,}}>
 					{item.did+1}
 				</Text>
 
 				<TextInput
 				maxLength={10}
-				style={{fontSize: 16, color: COLORS.blackDark, padding: 10, paddingRight: 50}}
+				style={{flex: 1, fontSize: 16, color: COLORS.blackDark, padding: 10,}}
+				placeholder="이름을 입력해 주세요."
 				onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}>
 					{item.name}
 				</TextInput>
 
-				<View style={{flex: 1}}/>
-
 				<TouchableOpacity
 				onPress={()=>this.deleteDancer(item.did)}>
-				<Image source={require('../../assets/drawable/btn_delete.png')} style={styles.button}/>
+					<IconIonicons name="trash-outline" size={20} color={COLORS.grayMiddle}/>
 				</TouchableOpacity>
 
 			</View>
@@ -147,12 +152,12 @@ export default class ListScreen extends React.Component {
 	}
 
 	render(){
+		console.log(TAG, 'render');
+
 		return(
 			<SafeAreaView style={{flex: 1, width: '80%', alignSelf: 'center'}}>
 				<TouchableOpacity onPress={()=>this.addDancer()}>
-				<Text
-				style={{fontSize: 16, color: COLORS.grayMiddle, paddingTop: 10, paddingBottom: 5, alignSelf: 'center'}}>
-					이름을 눌러 수정하거나 여기를 눌러 댄서를 추가하세요.</Text>
+					<IconIonicons name="person-add" size={20} color={COLORS.grayMiddle}/>
 				</TouchableOpacity>
 				<FlatList
 				showsVerticalScrollIndicator={false}
@@ -166,7 +171,9 @@ export default class ListScreen extends React.Component {
 	}
 
 	componentWillUnmount(){
-		console.log(TAG, 'componentWillUnmount')
+		console.log(TAG, 'componentWillUnmount');
+		console.log("dancerList:", this.state.dancerList);
+		console.log("allPosList:", this.allPosList);
 		this.props.route.params.changeDancerList(this.state.dancerList, this.allPosList);
 	}
 }
