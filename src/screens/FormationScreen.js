@@ -7,12 +7,13 @@ import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
 
 // custom library
-import Dancer from '../components/Dancer'
-import Positionbox from '../components/Positionbox'
-import { COLORS } from '../values/Colors'
-import { FONTS } from '../values/Fonts'
+import Dancer from '../components/Dancer';
+import Positionbox from '../components/Positionbox';
+import { COLORS } from '../values/Colors';
+import { FONTS } from '../values/Fonts';
 import DancerScreen from './DancerScreen';
 import DatabaseScreen from './DatabaseScreen';
+import Menu from '../components/Menu';
 
 let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
@@ -699,6 +700,10 @@ export default class FormationScreen extends React.Component {
 		);
 		this.setDancer();
 	}
+	
+	closeDBScreen = () => {
+		this.setState({isDBPop: false});
+	}
 
 	/** 초(sec) => "분:초" 변환한다.
 	 * - re-render: NO
@@ -785,16 +790,10 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
-	// componentDidUpdate() { }
-
 	componentWillUnmount() {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
 		this.props.route.params.updateNoteList();
-	}
-
-	closeDBScreen = () => {
-		this.setState({isDBPop: false});
 	}
 
 	render() {
@@ -868,99 +867,38 @@ export default class FormationScreen extends React.Component {
 					</View>
 				</ScrollView>
 
-				{this.state.isMenuPop ?
-				<View style={styles.menuProvider}>
-
-					<TouchableOpacity 
-					style={{width: '100%', height: '100%', position: 'absolute'}}
-					onPress={()=>{this.setState({isMenuPop: false})}}/>
-
-					<View style={styles.menu}>
-
-						<View style={styles.menuItem}>
-							<Text style={styles.menuText}>댄서 크기</Text>
-							<TouchableOpacity onPress={()=>this.resizeDancer('down')}>
-								<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
-							</TouchableOpacity>
-							<Text>{this.radiusLevel}</Text>
-							<TouchableOpacity onPress={()=>this.resizeDancer('up')}>
-								<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
-							</TouchableOpacity>
-						</View>
-
-						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
-
-						<View style={styles.menuItem}>
-							<Text style={styles.menuText}>좌표 간격</Text>
-							<TouchableOpacity onPress={()=>this.resizeCoordinate('down')}>
-								<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
-							</TouchableOpacity>
-							<Text>{this.coordinateLevel}</Text>
-							<TouchableOpacity onPress={()=>this.resizeCoordinate('up')}>
-								<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
-							</TouchableOpacity>
-						</View>
-
-						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
-
-						<View style={styles.menuItem}>
-							<Text style={styles.menuText}>표 너비</Text>
-							<TouchableOpacity onPress={()=>this.resizeMusicList('reduce')}>
-								<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
-							</TouchableOpacity>
-							<Text>{this.boxWidth}</Text>
-							<TouchableOpacity onPress={()=>this.resizeMusicList('expand')}>
-								<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
-							</TouchableOpacity>
-						</View>
-
-						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
-
-						<View style={styles.menuItem}>
-							<Text style={styles.menuText}>좌표 맞춤</Text>
-							<Switch
-							trackColor={{true: COLORS.red}}
-							thumbColor={COLORS.white}
-							ios_backgroundColor={COLORS.grayDark}
-							onValueChange={() => {this.changeAlignWithCoordinate()}}
-							value={this.alignWithCoordinate}/>
-						</View>
-
-						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
-
-						<TouchableOpacity 
-						style={styles.menuItem}
-						onPress={()=>{
-							if(this.state.isPlay) this.setState({isPlay: false});
-							this.props.navigation.navigate('Dancer', {
-								noteId: this.state.noteInfo.nid, 
-								dancerList: this.dancerList, 
-								allPosList: this.allPosList, 
-								changeDancerList: this.changeDancerList
-							})
-							this.setState({isMenuPop: false});
-						}}>
-							<Text style={styles.menuText}>댄서 편집</Text>
-						</TouchableOpacity>
-
-						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
-
-						<TouchableOpacity 
-						style={styles.menuItem}
-						onPress={()=>{this.setState({isMenuPop: false, isDBPop: true});
-						}}>
-							<Text style={styles.menuText}>DB</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-				: <View/>
+				{ this.state.isMenuPop ? 
+				<Menu
+				closeMenu={()=>{this.setState({isMenuPop: false})}}
+				resizeDancer={this.resizeDancer}
+				radiusLevel={this.radiusLevel}
+				resizeCoordinate={this.resizeCoordinate}
+				coordinateLevel={this.coordinateLevel}
+				resizeMusicList={this.resizeMusicList}
+				boxWidth={this.boxWidth}
+				alignWithCoordinate={this.alignWithCoordinate}
+				changeAlignWithCoordinate={this.changeAlignWithCoordinate}
+				moveToDancer={() => {
+					if(this.state.isPlay) this.setState({isPlay: false});
+						this.props.navigation.navigate('Dancer', {
+							noteId: this.state.noteInfo.nid, 
+							dancerList: this.dancerList, 
+							allPosList: this.allPosList, 
+							changeDancerList: this.changeDancerList
+						})
+						this.setState({isMenuPop: false});
+				}}
+				openDBScreen={()=>{this.setState({isMenuPop: false, isDBPop: true});}}/> 
+				: 
+				<View/> 
 				}
 
 				{this.state.isDBPop ?
 				<DatabaseScreen 
 				nid={this.state.noteInfo.nid}
 				closeDBScreen={this.closeDBScreen}/>
-				: <View/>
+				: 
+				<View/>
 				}
 				
 			</View>
@@ -1009,29 +947,5 @@ const styles = StyleSheet.create({
 	toolbarTitle: {
 		color:COLORS.white, 
 		fontSize: 15,
-	},
-	menuProvider: {
-		width: '100%',
-		height: '100%',
-		position: 'absolute', 
-		alignItems: 'flex-end',
-		top: 50, 
-		right: 0,
-	},
-	menu: {
-		flexDirection: 'column', 
-		backgroundColor:COLORS.grayLight, 
-		borderWidth: 1,
-		borderColor: COLORS.grayMiddle,
-		paddingHorizontal: 10,
-	},
-	menuItem: {
-		height: 50,
-		flexDirection: 'row',
-		alignItems: 'center',
-	},
-	menuText: {
-		width: 80,
-		color: COLORS.blackDark,
 	},
 })
