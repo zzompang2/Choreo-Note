@@ -36,7 +36,7 @@ export default class Positionbox extends React.Component {
 				// this.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
 				// _changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
-				const _changedDuration = this.duration + Math.round(gesture.dx / this.props.boxSize);
+				const _changedDuration = this.duration + Math.round(gesture.dx / this.props.boxWidth);
 
 				if(this.props.duration != _changedDuration && _changedDuration >= 0){
 					this.props.changeDuration(_changedDuration, true);	// this.props.duration = _changedDuration

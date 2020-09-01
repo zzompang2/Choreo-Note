@@ -14,8 +14,6 @@ import { FONTS } from '../values/Fonts'
 
 let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
-const boxSize = 25;
-const positionboxSize = 15;
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
 
 // 화면의 가로, 세로 길이 받아오기
@@ -42,6 +40,9 @@ export default class FormationScreen extends React.Component {
 		this.timeText = [];
 		this.musicbox = [];	
 		this.selectedPositionIdx = -1;	// unselect: -1, select: >=0
+		this.boxWidth = 26,
+		this.boxHeight = 26,
+		this.positionboxSize = 15;
 
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
 		this.radiusLevel = this.state.noteInfo.radiusLevel;
@@ -138,7 +139,7 @@ export default class FormationScreen extends React.Component {
 				this.timeText.push(
 					<TouchableOpacity
 					key={this.timeText.length}
-					style={[styles.boxSize, {justifyContent: 'center', alignItems: 'center'}]}
+					style={this.styles('timeBox')}
 					onPress={()=>{
 						this.setTimebox(time);
 						this.setState({time: time}, () => {
@@ -161,7 +162,10 @@ export default class FormationScreen extends React.Component {
 		_timeText[markedTime] = 
 		<View
 		key={markedTime}
-		style={[styles.boxSize, {justifyContent: 'center', alignItems: 'center', borderColor: COLORS.grayMiddle, borderRadius: boxSize/2, borderWidth: 1}]}>
+		style={[this.styles('timeBox'), {
+			borderColor: COLORS.grayMiddle, 
+			borderRadius: this.boxHeight/2, 
+			borderWidth: 1}]}>
 			<Text style={{fontSize: 11}}>{markedTime}</Text>
 		</View>
 		
@@ -189,7 +193,7 @@ export default class FormationScreen extends React.Component {
 			for(let time=prevTime+1; time<curTime; time++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, time)}>
-						<View style={styles.uncheckedBox}></View>
+						<View style={this.styles('uncheckedBox')}></View>
 					 </TouchableOpacity>
 				)
 			}
@@ -202,35 +206,37 @@ export default class FormationScreen extends React.Component {
 				activeOpacity={.8}
 				disabled={isSelected}
 				style={{alignItems: 'center', justifyContent: 'center'}}>
-					<View style={[styles.uncheckedBox, {marginRight: (boxSize-1)/2 + boxSize*duration}]}/>
+					<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration}]}/>
 					{ 
 					isSelected ?
 					<Positionbox
-					boxSize={boxSize}
-					positionboxSize={positionboxSize}
+					boxWidth={this.boxWidth}
+					positionboxSize={this.positionboxSize}
 					duration={duration}
 					setScrollEnable={this.setScrollEnable}
 					changeDuration={this.changeDuration}
 					unselectPosition={this.unselectPosition}
 					containerStyle={{
-						height: boxSize, 
-						width: boxSize * (1+duration), 
+						height: this.boxHeight, 
+						width: this.boxWidth * (1+duration), 
 						position: 'absolute', 
 						alignItems: 'center',
 						justifyContent: 'center',
 						borderWidth: 2,
 						borderColor: COLORS.green,
 					}}
-					style={[styles.checkedBox, {
-						width: positionboxSize + boxSize * duration,
+					style={[this.styles('checkedBox'), {
+						width: this.positionboxSize + this.boxWidth * duration,
 						backgroundColor: dancerColor[this.dancerList[did].color],
+						// margin: (this.boxWidth-this.positionboxSize)/2,
 					}]}
 					/>
 					:
-					<View style={[styles.checkedBox, {
+					<View style={[this.styles('checkedBox'), {
 						position: 'absolute',
-						width: positionboxSize + boxSize * duration, 
+						width: this.positionboxSize + this.boxWidth * duration, 
 						backgroundColor: dancerColor[this.dancerList[did].color],
+						// margin: (this.boxWidth-this.positionboxSize)/2,
 					}]}/>
 					}
 				</TouchableOpacity>
@@ -242,7 +248,7 @@ export default class FormationScreen extends React.Component {
 		for(let i=prevTime+1; i<=this.state.musicLength; i++){
 			rowView.push(
 				<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
-					<View style={styles.uncheckedBox}></View>
+					<View style={this.styles('uncheckedBox')}></View>
 				</TouchableOpacity>
 			)
 		}
@@ -273,7 +279,7 @@ export default class FormationScreen extends React.Component {
 			let rowView = [];
 			// 마지막 대열~노래 끝부분까지 회색박스 채우기
 			for(let i=0; i<=this.state.musicLength; i++){
-				rowView.push( <View style={styles.uncheckedBox}/> )
+				rowView.push( <View style={this.styles('uncheckedBox')}/> )
 			}
 			this.musicbox.splice(1, 1,
 				<View 
@@ -327,7 +333,7 @@ export default class FormationScreen extends React.Component {
 		const radiusLength = 10 + this.radiusLevel * 2;
 
 		let _dancers = [];
-		let _nameColumn = [ <Text key={0} style={{height: boxSize, width: 60}}/> ];
+		let _nameColumn = [ <Text key={0} style={{height: this.boxHeight, width: 60}}/> ];
 
 		for(let i=0; i<dancerNum; i++){
       _dancers.push(
@@ -345,7 +351,7 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 			_nameColumn.push(
-				<Text key={_nameColumn.length} style={{height: boxSize, width: 60, fontSize: 11, textAlignVertical: 'center'}}>
+				<Text key={_nameColumn.length} style={{height: this.boxHeight, width: 60, fontSize: 11, textAlignVertical: 'center'}}>
 					{i+1}. {this.dancerList[i].name}
 				</Text>
 			)
@@ -521,6 +527,35 @@ export default class FormationScreen extends React.Component {
 		this.setDancer();
 	}
 
+	resizeMusicList = (type) => {
+		console.log(TAG, 'resizeMusicList');
+
+		switch(type){
+			case 'expand':
+				if(this.boxWidth < 30){
+					this.boxWidth += 2;
+					this.positionboxSize += 1;
+					this.setMusicboxs();
+					this.forceUpdate();
+					break;
+				}
+				return;
+				
+			case 'reduce':
+				if(this.boxWidth > 16){
+					this.boxWidth -= 2;
+					this.positionboxSize -= 1;
+					this.setMusicboxs();
+					this.forceUpdate();
+					break;
+				}
+				return;
+				
+			default:
+				console.log('Wrong parameter...');
+		}
+	}
+
 	/** <DancerScreen>에서 수정된 정보를 적용한다.
 	 * - re-render: YES ( setDancer() )
 	 * - update: this.dancerList, this.allPosList / this.musicbox / dancers, nameColumn
@@ -630,7 +665,7 @@ export default class FormationScreen extends React.Component {
 		this.interval = setInterval(() => {
 			this.setTimebox(this.state.time+1);
 			// time에 맞게 scroll view를 강제 scroll하기
-			this.scrollView.scrollTo({x: (this.state.time-5)*boxSize, animated: false});
+			this.scrollView.scrollTo({x: (this.state.time-5)*this.boxWidth, animated: false});
 			this.setState({time: this.state.time+1});
 		}, 1000);
 
@@ -815,6 +850,19 @@ export default class FormationScreen extends React.Component {
 						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
 
 						<View style={styles.menuItem}>
+							<Text style={styles.menuText}>표 너비</Text>
+							<TouchableOpacity onPress={()=>this.resizeMusicList('reduce')}>
+								<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
+							</TouchableOpacity>
+							<Text>{this.boxWidth}</Text>
+							<TouchableOpacity onPress={()=>this.resizeMusicList('expand')}>
+								<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
+							</TouchableOpacity>
+						</View>
+
+						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
+
+						<View style={styles.menuItem}>
 							<Text style={styles.menuText}>좌표 맞춤</Text>
 							<Switch
 							trackColor={{true: COLORS.red}}
@@ -848,6 +896,33 @@ export default class FormationScreen extends React.Component {
 			</View>
 			</SafeAreaView>
 		)
+	}
+
+	styles = (name) => {
+		switch(name){
+			case 'uncheckedBox':
+				return({
+					height: this.boxHeight, 
+					width: 1, 
+					marginHorizontal: (this.boxWidth-1)/2, 
+					backgroundColor: COLORS.grayMiddle,
+				})
+			case 'checkedBox':
+				return({
+					height: this.positionboxSize, 
+					width: this.positionboxSize, 
+					borderRadius: 10,
+				})
+			case 'timeBox': 
+				return({
+					height: this.boxHeight, 
+					width: this.boxWidth,
+					justifyContent: 'center', 
+					alignItems: 'center'
+				})
+			default:
+				console.log('Wrong parameter...');
+		}
 	}
 }
 
@@ -889,20 +964,4 @@ const styles = StyleSheet.create({
 		color:COLORS.white, 
 		fontSize: 15,
 	},
-	uncheckedBox: {
-		height: boxSize, 
-		width: 1, 
-		marginHorizontal: (boxSize-1)/2, 
-		backgroundColor: COLORS.grayMiddle
-	},
-	checkedBox: {
-		height: positionboxSize, 
-		width: positionboxSize, 
-		margin: (boxSize-positionboxSize)/2,
-		borderRadius: 10,
-	},
-	boxSize: {
-		height: boxSize, 
-		width: boxSize,
-	}
 })
