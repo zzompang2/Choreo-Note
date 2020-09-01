@@ -11,6 +11,8 @@ import Dancer from '../components/Dancer'
 import Positionbox from '../components/Positionbox'
 import { COLORS } from '../values/Colors'
 import { FONTS } from '../values/Fonts'
+import DancerScreen from './DancerScreen';
+import DatabaseScreen from './DatabaseScreen';
 
 let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
@@ -30,6 +32,7 @@ export default class FormationScreen extends React.Component {
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
+			isDBPop: true,		// DB 스크린이 켜져 있는가?
 			dancers: [],
 			nameColumn: [],
 		}
@@ -40,9 +43,10 @@ export default class FormationScreen extends React.Component {
 		this.timeText = [];
 		this.musicbox = [];	
 		this.selectedPositionIdx = -1;	// unselect: -1, select: >=0
-		this.boxWidth = 26,
-		this.boxHeight = 26,
+		this.boxWidth = 26;
+		this.boxHeight = 26;
 		this.positionboxSize = 15;
+		this.stageHeight = 250;
 
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
 		this.radiusLevel = this.state.noteInfo.radiusLevel;
@@ -61,7 +65,7 @@ export default class FormationScreen extends React.Component {
 			setString += ", " + key + "=" + set[key];
 		
 		for(let key in where)
-			whereString += " AND " + key + "=" + where[key];
+			whereString += " AND " + key + where[key][0] + where[key][1];
 		
 		setString = setString.replace("*, ", "");
 		whereString = whereString.replace("* AND ", "");
@@ -83,9 +87,10 @@ export default class FormationScreen extends React.Component {
 		let whereString = "*";
 
 		for(let key in where)
-			whereString += " AND " + key + "=" + where[key];
+			whereString += " AND " + key + where[key][0] + where[key][1];
 		
 		whereString = whereString.replace("* AND ", "");
+		console.log('where:', whereString);
 
 		this.state.db.transaction(txn => {
       txn.executeSql(
@@ -164,7 +169,7 @@ export default class FormationScreen extends React.Component {
 		key={markedTime}
 		style={[this.styles('timeBox'), {
 			borderColor: COLORS.grayMiddle, 
-			borderRadius: this.boxHeight/2, 
+			borderRadius: 99, 
 			borderWidth: 1}]}>
 			<Text style={{fontSize: 11}}>{markedTime}</Text>
 		</View>
@@ -182,7 +187,7 @@ export default class FormationScreen extends React.Component {
 	 * @param did 
 	 */
 	setMusicbox = (did) => {
-		let prevTime = 0;
+		let prevTime = -1;
 		let rowView = [];
 		
 		for(let i=0; i<this.allPosList[did].length; i++){
@@ -190,6 +195,12 @@ export default class FormationScreen extends React.Component {
 			const curTime = this.allPosList[did][i].time;
 			const duration = this.allPosList[did][i].duration;
 
+			// duration으로 인해 이전 checked box에 덮어진 경우
+			if(curTime <= prevTime){
+				continue;
+			}
+
+			// 이전 좌표의 시간 ~ 다음 좌표의 시간까지 unchecked box 채우기
 			for(let time=prevTime+1; time<curTime; time++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, time)}>
@@ -197,6 +208,8 @@ export default class FormationScreen extends React.Component {
 					 </TouchableOpacity>
 				)
 			}
+
+			// checked box 넣기
 			const isSelected = did == this.selectedDid && i == this.selectedPositionIdx;
 			rowView.push(
 				<TouchableOpacity 
@@ -228,7 +241,6 @@ export default class FormationScreen extends React.Component {
 					style={[this.styles('checkedBox'), {
 						width: this.positionboxSize + this.boxWidth * duration,
 						backgroundColor: dancerColor[this.dancerList[did].color],
-						// margin: (this.boxWidth-this.positionboxSize)/2,
 					}]}
 					/>
 					:
@@ -236,7 +248,6 @@ export default class FormationScreen extends React.Component {
 						position: 'absolute',
 						width: this.positionboxSize + this.boxWidth * duration, 
 						backgroundColor: dancerColor[this.dancerList[did].color],
-						// margin: (this.boxWidth-this.positionboxSize)/2,
 					}]}/>
 					}
 				</TouchableOpacity>
@@ -307,7 +318,7 @@ export default class FormationScreen extends React.Component {
 		const coordinateSpace = 15 + this.coordinateLevel*5;
 		this.coordinate = [];
 		for(let x=Math.round((-width/2)/coordinateSpace)*coordinateSpace; x<width/2; x=x+coordinateSpace){
-			for(let y=Math.ceil((-height/5)/coordinateSpace)*coordinateSpace; y<height/5; y=y+coordinateSpace){
+			for(let y=Math.ceil((-this.stageHeight/2+1)/coordinateSpace)*coordinateSpace; y<this.stageHeight/2; y=y+coordinateSpace){
 				this.coordinate.push(
 				<View 
 				key={this.coordinate.length} 
@@ -337,7 +348,7 @@ export default class FormationScreen extends React.Component {
 
 		for(let i=0; i<dancerNum; i++){
       _dancers.push(
-				<Dancer 
+				<Dancer
 				key={_dancers.length}
 				did={i} 
 				position={this.allPosList[i]} 
@@ -384,7 +395,7 @@ export default class FormationScreen extends React.Component {
 				}
 				newPos = {...newPos, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
-				this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: this.state.noteInfo.nid, did: did, time: time});
+				this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: ['=',this.state.noteInfo.nid], did: ['=',did], time: ['=',time]});
 				this.setMusicbox(did);
 				this.forceUpdate();
 				return;
@@ -460,7 +471,14 @@ export default class FormationScreen extends React.Component {
 			}
 		}
 
-		this.DB_DELETE('position', {nid: this.state.noteInfo.nid, did: did, time: time})
+		this.DB_DELETE(
+			'position', 
+			{
+				nid: ['=',this.state.noteInfo.nid], 
+				did: ['=',did], 
+				time: ['=',time]
+			}
+		)
 		this.setMusicbox(did);
 		this.setDancer();
 	}
@@ -492,9 +510,9 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: this.state.noteInfo.nid});
+		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: ['=',this.state.noteInfo.nid]});
 		this.setCoordinate();
-		this.forceUpdate();
+		this.setDancer();	// dancer에게 coordinateLevel 전달하기 위해
 	}
 
 	/** <Dancer>의 크기를 변경한다.
@@ -523,7 +541,7 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: this.state.noteInfo.nid});
+		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: ['=',this.state.noteInfo.nid]});
 		this.setDancer();
 	}
 
@@ -641,13 +659,44 @@ export default class FormationScreen extends React.Component {
 		this.forceUpdate();
 
 		// 수정이 끝났다면 DB 업데이트
-		if(!isEditing)
-			this.DB_UPDATE('position', {duration: changedDuration}, {nid: this.state.noteInfo.nid, did: this.selectedDid, time: this.selectedTime});
+		if(!isEditing){
+			const time = this.selectedTime;
+			this.DB_UPDATE(
+				'position', 
+				{duration: changedDuration},
+				{
+					nid: ['=',this.state.noteInfo.nid], 
+					did: ['=',did], 
+					time: ['=',time]
+				}
+			);
+			// duration을 늘린 결과로 덮여진 box를 지운다.
+			this.DB_DELETE(
+				'position', 
+				{
+					nid: ['=',this.state.noteInfo.nid], 
+					did: ['=',did], 
+					time: ['>',time],
+					time: ['<=',time+changedDuration]
+				}
+			)
+			// duration을 늘린 결과로 덮여진 box를 지운다.
+			for(let i=this.selectedPositionIdx+1; i<this.allPosList[did].length; i++){
+				if(this.allPosList[did][i].time <= time+changedDuration){
+					this.allPosList[did].splice(i, 1);
+				}
+				else break;
+			}
+		}
 	}
 
 	changeAlignWithCoordinate = () => {
 		this.alignWithCoordinate = !this.alignWithCoordinate;
-		this.DB_UPDATE('note', {alignWithCoordinate: this.alignWithCoordinate}, {nid: this.state.noteInfo.nid});
+		this.DB_UPDATE(
+			'note', 
+			{alignWithCoordinate: this.alignWithCoordinate}, 
+			{nid: ['=',this.state.noteInfo.nid]}
+		);
 		this.setDancer();
 	}
 
@@ -744,11 +793,15 @@ export default class FormationScreen extends React.Component {
 		this.props.route.params.updateNoteList();
 	}
 
+	closeDBScreen = () => {
+		this.setState({isDBPop: false});
+	}
+
 	render() {
 		console.log(TAG, "render");
 
 		return(
-			<SafeAreaView style={{flexDirection: 'column', flex: 1, paddingHorizontal: 5}}>
+			<SafeAreaView style={{flex: 1, flexDirection: 'column'}}>
 			<View style={{flex: 1}}>
 
 				<View style={styles.toolbar}>
@@ -763,8 +816,8 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 				
-				<View style={{height: height*2/5, alignItems: 'center', justifyContent: 'center'}}>
-					<View style={{width: width, height: height*2/5, backgroundColor: COLORS.white}}/>
+				<View style={{height: this.stageHeight, alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{width: width, height: this.stageHeight, backgroundColor: COLORS.white}}/>
 					{ this.coordinate }
 					{ this.state.dancers }
 				</View>
@@ -797,7 +850,8 @@ export default class FormationScreen extends React.Component {
 					}
 				</View>
 
-				<ScrollView style={{flex: 1}} scrollEnabled={!this.state.isEditing}>
+				<ScrollView 
+				scrollEnabled={!this.state.isEditing}>
 					<View style={{flexDirection: 'row'}}>
 						<View style={{flexDirection: 'column'}}>
 							{ this.state.nameColumn }
@@ -888,11 +942,27 @@ export default class FormationScreen extends React.Component {
 						}}>
 							<Text style={styles.menuText}>댄서 편집</Text>
 						</TouchableOpacity>
+
+						<View style={{ height: 0.5, backgroundColor: COLORS.grayMiddle }}/>
+
+						<TouchableOpacity 
+						style={styles.menuItem}
+						onPress={()=>{this.setState({isMenuPop: false, isDBPop: true});
+						}}>
+							<Text style={styles.menuText}>DB</Text>
+						</TouchableOpacity>
 					</View>
 				</View>
-				:
-				<View/>
+				: <View/>
 				}
+
+				{this.state.isDBPop ?
+				<DatabaseScreen 
+				nid={this.state.noteInfo.nid}
+				closeDBScreen={this.closeDBScreen}/>
+				: <View/>
+				}
+				
 			</View>
 			</SafeAreaView>
 		)
@@ -936,6 +1006,10 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between', 
 		paddingHorizontal: 20,
 	},
+	toolbarTitle: {
+		color:COLORS.white, 
+		fontSize: 15,
+	},
 	menuProvider: {
 		width: '100%',
 		height: '100%',
@@ -959,9 +1033,5 @@ const styles = StyleSheet.create({
 	menuText: {
 		width: 80,
 		color: COLORS.blackDark,
-	},
-	toolbarTitle: {
-		color:COLORS.white, 
-		fontSize: 15,
 	},
 })

@@ -65,7 +65,7 @@ class ListScreen extends React.Component {
 			);
 
 			// txn.executeSql(
-			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.1.1", "사람들이 움직이는 게", 3, 3, 0);', []
+			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.1.1", "사람들이 움직이는 게", 3, 3, 1);', []
 			// );
 
 			// txn.executeSql(
@@ -134,13 +134,13 @@ class ListScreen extends React.Component {
 	addNote = () => {
 		const newNid = this.state.noteList.length;
 		const randomValue = Math.floor(Math.random() * randomCouple.length);
-		const randomColor = Math.floor(Math.random() * dancerColor.length);
+		const randomColor = Math.floor(Math.random() * (dancerColor.length-1));
 
 		console.log(TAG, "addNote", newNid, randomValue);
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 3, 3, 0);', 
+				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 3, 3, 1);', 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
 				() => {this.updateNoteList();},
 				() => {console.log('ERROR');}
@@ -151,7 +151,7 @@ class ListScreen extends React.Component {
 			);
 			txn.executeSql(
 				"INSERT INTO dancer VALUES (?, 1, ?, ?);",
-				[newNid, randomCouple[randomValue][2], randomColor]
+				[newNid, randomCouple[randomValue][2], randomColor+1]
 			);
 			txn.executeSql(
 				"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
@@ -260,8 +260,7 @@ class ListScreen extends React.Component {
 		});
 	}
 
-	listViewItemSeparator = () => 
-		<View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
+	listViewItemSeparator = () => <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 
 	render() {
 		console.log(TAG, "render");

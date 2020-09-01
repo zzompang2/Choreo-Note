@@ -50,7 +50,7 @@ export default class ListScreen extends React.Component {
 
 		this.state.db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, ?, '');",
+				"INSERT INTO dancer VALUES (?, ?, '', 0);",
 				[this.state.noteId, dancerNum]
 			);
 			txn.executeSql(
@@ -60,7 +60,7 @@ export default class ListScreen extends React.Component {
 		});
 
 		let _dancerList = [...this.state.dancerList];
-		_dancerList.push({did: dancerNum, name: ""}); // {did, name}
+		_dancerList.push({did: dancerNum, name: "", color: 0}); // {did, name}
 		this.allPosList.push([{time: 0, posx: 0, posy: 0, duration: 0}]);
 		this.setState({dancerList: _dancerList});
 	}
@@ -88,6 +88,14 @@ export default class ListScreen extends React.Component {
 								"DELETE FROM dancer " +
 								"WHERE nid=? " +
 								"AND did=? ;",
+								[this.state.noteId, did]
+							);
+
+							txn.executeSql(
+								"UPDATE position " +
+								"SET did=did-1 " +
+								"WHERE nid=? " +
+								"AND did>?;",
 								[this.state.noteId, did]
 							);
 
