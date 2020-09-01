@@ -56,10 +56,6 @@ export default class DatabaseScreen extends React.Component {
 		});
 	}
 
-	componentDidUpdate() {
-		console.log(TAG, "componentDidUpdate");
-	}
-
 	render() {
 		console.log(TAG, "render");
 		return(

@@ -76,29 +76,29 @@ export default class FormationScreen extends React.Component {
 				"SET " + setString + " " +
 				"WHERE " + whereString + ";",
 				[],
-				() => {console.log('update good')},
-				(error) => {console.log('ERROR:', error)}
+				() => {console.log(TAG, 'DB UPDATE SUCCESS!')},
+				(error) => {console.log(TAG, 'DB UPDATE ERROR:', error)}
 			);
 		});
 	}
 
 	DB_DELETE = (table, where) => {
-		console.log(TAG, 'DB_DELETE');
 		let whereString = "*";
 
-		for(let key in where)
-			whereString += " AND " + key + where[key][0] + where[key][1];
-		
+		where.forEach(cond => { whereString += " AND " + cond; });
 		whereString = whereString.replace("* AND ", "");
-		console.log('where:', whereString);
+		
+		console.log(TAG, 'DB_DELETE:', "DELETE FROM " + table + " " + "WHERE " + whereString);
 
 		this.state.db.transaction(txn => {
       txn.executeSql(
 				"DELETE FROM " + table + " " +
 				"WHERE " + whereString,
 				[],
-				() => {console.log('delete good')},
-				(error) => {console.log('ERROR:', error)}
+				() => {
+					console.log(TAG, 'DB DELETE SUCCESS!');
+				},
+				(error) => {console.log(TAG, 'DB DELETE ERROR:', error)}
 			);
 		});
 	}
@@ -473,11 +473,11 @@ export default class FormationScreen extends React.Component {
 
 		this.DB_DELETE(
 			'position', 
-			{
-				nid: ['=',this.state.noteInfo.nid], 
-				did: ['=',did], 
-				time: ['=',time]
-			}
+			[
+				'nid='  + this.state.noteInfo.nid, 
+				'did='  + did,
+				'time=' + time
+			]
 		)
 		this.setMusicbox(did);
 		this.setDancer();
@@ -673,12 +673,12 @@ export default class FormationScreen extends React.Component {
 			// duration을 늘린 결과로 덮여진 box를 지운다.
 			this.DB_DELETE(
 				'position', 
-				{
-					nid: ['=',this.state.noteInfo.nid], 
-					did: ['=',did], 
-					time: ['>',time],
-					time: ['<=',time+changedDuration]
-				}
+				[
+					'nid='  + this.state.noteInfo.nid, 
+					'did='  + did,
+					'time>' + time,
+					'time<='+ time+changedDuration
+				]
 			)
 			// duration을 늘린 결과로 덮여진 box를 지운다.
 			for(let i=this.selectedPositionIdx+1; i<this.allPosList[did].length; i++){
