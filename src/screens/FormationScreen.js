@@ -29,7 +29,7 @@ export default class FormationScreen extends React.Component {
       db,
 			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
 			time: 0,
-			musicLength: 20,
+			musicLength: 120,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
@@ -56,7 +56,7 @@ export default class FormationScreen extends React.Component {
 		this.setCoordinate();
 	}
 
-	DB_UPDATE = (table, set, where) => {
+	DB_UPDATE = (table, set, where, callback = ()=>{}) => {
 		console.log(TAG, 'DB_UPDATE');
 
 		let setString = "*";
@@ -77,7 +77,8 @@ export default class FormationScreen extends React.Component {
 				"SET " + setString + " " +
 				"WHERE " + whereString + ";",
 				[],
-				() => {console.log(TAG, 'DB UPDATE SUCCESS!')},
+				callback,
+				// () => {console.log(TAG, 'DB UPDATE SUCCESS!')},
 				(error) => {console.log(TAG, 'DB UPDATE ERROR:', error)}
 			);
 		});
@@ -190,6 +191,7 @@ export default class FormationScreen extends React.Component {
 	setMusicbox = (did) => {
 		let prevTime = -1;
 		let rowView = [];
+		let selectedIdxInRowView = -1;
 		
 		for(let i=0; i<this.allPosList[did].length; i++){
 
@@ -210,8 +212,11 @@ export default class FormationScreen extends React.Component {
 				)
 			}
 
-			// checked box 넣기
+			// 선택된 블럭인 경우
 			const isSelected = did == this.selectedDid && i == this.selectedPositionIdx;
+			if(isSelected) selectedIdxInRowView = curTime;
+
+			// checked box 넣기
 			rowView.push(
 				<TouchableOpacity 
 				key={rowView.length}
@@ -219,38 +224,13 @@ export default class FormationScreen extends React.Component {
 				onLongPress={()=>this.deletePosition(did, curTime)}
 				activeOpacity={.8}
 				disabled={isSelected}
-				style={{alignItems: 'center', justifyContent: 'center'}}>
-					<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration}]}/>
-					{ 
-					isSelected ?
-					<Positionbox
-					boxWidth={this.boxWidth}
-					positionboxSize={this.positionboxSize}
-					duration={duration}
-					setScrollEnable={this.setScrollEnable}
-					changeDuration={this.changeDuration}
-					unselectPosition={this.unselectPosition}
-					containerStyle={{
-						height: this.boxHeight, 
-						width: this.boxWidth * (1+duration), 
-						position: 'absolute', 
-						alignItems: 'center',
-						justifyContent: 'center',
-						borderWidth: 2,
-						borderColor: COLORS.green,
-					}}
-					style={[this.styles('checkedBox'), {
-						width: this.positionboxSize + this.boxWidth * duration,
-						backgroundColor: dancerColor[this.dancerList[did].color],
-					}]}
-					/>
-					:
+				style={{alignItems: 'center', justifyContent: 'center',}}>
+					<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration,}]}/>
 					<View style={[this.styles('checkedBox'), {
 						position: 'absolute',
 						width: this.positionboxSize + this.boxWidth * duration, 
 						backgroundColor: dancerColor[this.dancerList[did].color],
 					}]}/>
-					}
 				</TouchableOpacity>
 			)
 			prevTime = curTime + duration;
@@ -265,10 +245,42 @@ export default class FormationScreen extends React.Component {
 			)
 		}
 
+		if(selectedIdxInRowView != -1)
+			rowView.push(
+			<Positionbox
+			key={-1}
+			boxWidth={this.boxWidth}
+			positionboxSize={this.positionboxSize}
+			time={this.selectedTime}
+			duration={this.selectedDuration}
+			setScrollEnable={this.setScrollEnable}
+			changeDuration={this.changeDuration}
+			resizePositionboxLeft={this.resizePositionboxLeft}
+			resizePositionboxRight={this.resizePositionboxRight}
+			unselectPosition={this.unselectPosition}
+			containerStyle={{
+				height: this.boxHeight, 
+				width: this.boxWidth * (this.selectedDuration+2), 
+				position: 'absolute',
+				flexDirection: 'row',
+				alignItems: 'center',
+				justifyContent: 'space-between',
+				borderWidth: 2,
+				borderColor: COLORS.green,
+				left: this.boxWidth * this.selectedTime - this.boxWidth/2,
+			}}
+			boxStyle={[this.styles('checkedBox'), {
+				width: this.positionboxSize + this.boxWidth * this.selectedDuration,
+				backgroundColor: dancerColor[this.dancerList[did].color],
+			}]}
+			buttonStyle={{height: this.boxHeight, width: 10, backgroundColor: COLORS.green}}
+			/>
+			);
+
 		this.musicbox.splice(1+did, 1,
 			<View 
 			key={1+did}
-			flexDirection='row'>
+			style={{flexDirection: 'row', alignItems: 'center'}}>
 				{rowView}
 			</View>
 		)
@@ -640,6 +652,104 @@ export default class FormationScreen extends React.Component {
 		this.setState({isEditing: isEditing});
 	}
 
+	resizePositionboxLeft = (mode, change) => {
+		const did = this.selectedDid;
+		const time = this.selectedTime;
+
+		switch(mode){
+			case 'edit':
+				
+				console.log("resizePositionbox left");
+				// 화면에 보이는 선택된 값 업데이트를 위해
+				this.selectedDuration += change;
+				this.selectedTime -= change;
+				// position box 길이 변화를 위해
+				this.allPosList[did][this.selectedPositionIdx].duration += change;
+				// this.allPosList[did][this.selectedPositionIdx].time -= change;
+				
+				this.setMusicbox(did);
+				this.forceUpdate();
+				break;
+		
+			case 'update':
+				const originTime = this.allPosList[did][this.selectedPositionIdx].time;
+				this.DB_UPDATE(
+					'position', 
+					{
+						duration: this.selectedDuration, 
+						time: time
+					},
+					{
+						nid: ['=',this.state.noteInfo.nid],
+						did: ['=',did], 
+						time: ['=',originTime]
+					},
+					() => {
+						this.DB_DELETE(
+							'position', 
+							[
+								'nid='  + this.state.noteInfo.nid, 
+								'did='  + did,
+								'time>' + time,
+								'time<='+ (time+this.selectedDuration)
+							]
+						)
+					}
+				);
+				// duration을 늘린 결과로 덮여진 box를 지운다.
+				for(let i=this.selectedPositionIdx+1; i<this.allPosList[did].length; i++){
+					if(this.allPosList[did][i].time <= time+this.selectedDuration){
+						this.allPosList[did].splice(i, 1);
+					}
+					else break;
+				}
+		}
+	}
+	resizePositionboxRight = (mode, change) => {
+		const did = this.selectedDid;
+		const time = this.selectedTime;
+
+		switch(mode){
+			case 'edit':
+				console.log("resizePositionbox right");
+				// 화면에 보이는 선택된 값 업데이트를 위해
+				this.selectedDuration += change;
+				// position box 길이 변화를 위해
+				this.allPosList[did][this.selectedPositionIdx].duration += change;
+
+				this.setMusicbox(did);
+				this.forceUpdate();
+				break;
+		
+			case 'update':
+				this.DB_UPDATE(
+					'position', 
+					{ duration: this.selectedDuration },
+					{
+						nid: ['=',this.state.noteInfo.nid],
+						did: ['=',did], 
+						time: ['=',time]
+					}
+				);
+				this.DB_DELETE(
+					'position', 
+					[
+						'nid='  + this.state.noteInfo.nid, 
+						'did='  + did,
+						'time>' + time,
+						'time<='+ (time+this.selectedDuration)
+					]
+				)
+				// duration을 늘린 결과로 덮여진 box를 지운다.
+				for(let i=this.selectedPositionIdx+1; i<this.allPosList[did].length; i++){
+					if(this.allPosList[did][i].time <= time+this.selectedDuration){
+						this.allPosList[did].splice(i, 1);
+					}
+					else break;
+				}
+		}
+	}
+
 	/** 변경된 duration을 적용하고, 편집이 끝난 경우 DB를 업데이트 한다.
 	 * - re-render: YES ( forceUpdate )
 	 * - update: musicbox, allPosList, selectedDuration
@@ -647,14 +757,21 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} changedDuration 
 	 * @param {boolean} isEditing 
 	 */
-	changeDuration = (changedDuration, isEditing) => {
+	changeDuration = (type, time, changedDuration, isEditing) => {
 		console.log(TAG, 'changeDuration', changedDuration);
-
-		// 변경된 duration으로 수정
 		const did = this.selectedDid;
-		this.allPosList[did][this.selectedPositionIdx].duration = changedDuration;
-		this.selectedDuration = changedDuration;
-		
+
+		if(type=='right'){
+			// 변경된 duration으로 수정
+			this.allPosList[did][this.selectedPositionIdx].duration = changedDuration;
+			this.selectedDuration = changedDuration;
+		}
+		else if(type=='left'){
+			this.allPosList[did][this.selectedPositionIdx].time = time - changedDuration;
+			this.allPosList[did][this.selectedPositionIdx].duration = changedDuration;
+			this.selectedTime = time - changedDuration;
+			this.selectedDuration = changedDuration;
+		}
 		// box 수정
 		this.setMusicbox(did);
 		this.forceUpdate();
@@ -678,7 +795,7 @@ export default class FormationScreen extends React.Component {
 					'nid='  + this.state.noteInfo.nid, 
 					'did='  + did,
 					'time>' + time,
-					'time<='+ time+changedDuration
+					'time<='+ (time+changedDuration)
 				]
 			)
 			// duration을 늘린 결과로 덮여진 box를 지운다.
