@@ -15,6 +15,8 @@ export default class Positionbox extends React.Component {
 			pan: new Animated.ValueXY(),
 		}
 
+		console.log(this.props.style);
+
 		this.duration = this.props.duration;
 	
 		this.panResponder = PanResponder.create({
@@ -67,14 +69,7 @@ export default class Positionbox extends React.Component {
 		return(
 			<Animated.View
 			{...this.panResponder.panHandlers}
-			style={{
-				height: this.props.positionboxSize, 
-				width: this.props.positionboxSize + this.props.boxSize * this.props.duration, 
-				marginHorizontal: this.props.boxSize/2 - 5,
-				backgroundColor: COLORS.blue,
-				borderRadius: 5,
-				position: 'absolute'
-			}}/>
+			style={[this.props.style]}/>
 		)
 	}
 }

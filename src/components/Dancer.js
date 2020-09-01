@@ -8,6 +8,7 @@ import {COLORS} from '../values/Colors';
 const {width,height} = Dimensions.get('window');
 
 const TAG = "Dancer/";
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
 
 export default class Dancer extends React.Component {
   constructor(props) {
@@ -172,8 +173,6 @@ export default class Dancer extends React.Component {
 
   render() {
     //console.log(TAG, "render");
-
-    const radiusLength = 10 + this.props.radiusLevel * 2;
     const curPosition = this.getCurPosition();
     
     // cur position 적용
@@ -186,8 +185,13 @@ export default class Dancer extends React.Component {
     return (
       <Animated.View
       {...this.panResponder.panHandlers}
-      style={[panStyle, styles.circle, {width: radiusLength*2, height: radiusLength*2, borderRadius: radiusLength}]}>
-      <Text style={[styles.number, {fontSize: radiusLength}]}>{this.props.did+1}</Text>
+      style={[panStyle, styles.circle, {
+        width: this.props.radiusLength*2, 
+        height: this.props.radiusLength*2, 
+        borderRadius: this.props.radiusLength,
+        backgroundColor: dancerColor[this.props.color],
+        }]}>
+      <Text style={[styles.number, {fontSize: this.props.radiusLength}]}>{this.props.did+1}</Text>
       {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
       </Animated.View>
     );
@@ -203,18 +207,11 @@ let styles = StyleSheet.create({
   // 모양 정의를 위한 스타일
   circle: {
     backgroundColor: COLORS.yellow,
-    // width: CIRCLE_RADIUS * 2,
-    // height: CIRCLE_RADIUS * 2,
-    // borderRadius: CIRCLE_RADIUS,
     position: 'absolute',
     alignItems: 'center'
   },
   number: {
-    // fontSize: 20,
-    // justifyContent: 'center',
-    // alignItems: 'center',
     marginTop: 5,
     textAlign: 'center',
-    // backgroundColor: 'red'
   }
 });

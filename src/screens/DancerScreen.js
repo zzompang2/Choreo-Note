@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput, Image, Alert
+  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput, Image, Alert,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -11,6 +11,7 @@ import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 TAG = "ListScreen";
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
 
 export default class ListScreen extends React.Component {
 	constructor(props){
@@ -115,9 +116,27 @@ export default class ListScreen extends React.Component {
 		);
 	}
 
+	// flatList 구분선
 	listViewItemSeparator = () => 
 		<View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 	
+	changeColor = (did) => {
+		let _dancerList = [...this.state.dancerList];
+		const newColor = (_dancerList[did].color + 1) % dancerColor.length;
+		_dancerList[did].color = newColor;
+		this.setState({dancerList: _dancerList})
+
+		this.state.db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE dancer " +
+				"SET color=? " +
+				"WHERE nid=? " +
+				"AND did=?;",
+				[newColor, this.state.noteId, did]
+			);
+		});
+	}
+
 	listItemView = (item) => 
 		<View style={styles.dancerItem}>
 
@@ -133,6 +152,15 @@ export default class ListScreen extends React.Component {
 			onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}>
 				{item.name}
 			</TextInput>
+
+			<TouchableOpacity activeOpacity={1} onPress={()=>this.changeColor(item.did)}>
+				<View style={{
+					width: 20, 
+					height: 20,
+					borderRadius: 10,
+					backgroundColor: dancerColor[item.color],
+					marginHorizontal: 15}}/>
+				</TouchableOpacity>
 
 			<TouchableOpacity
 			onPress={()=>this.deleteDancer(item.did)}>
@@ -159,7 +187,6 @@ export default class ListScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 
-				
 				<FlatList
 				showsVerticalScrollIndicator={false}
 				data={this.state.dancerList}

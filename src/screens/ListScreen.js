@@ -15,7 +15,8 @@ const randomCouple = [
 	['콩팥', '콩쥐', '팥쥐'],
 	['겨울왕국', '엘사', '안나'],
 	['긴머리 휘날리며', '라푼젤', '파스칼'],
-]
+];
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
 
 class ListScreen extends React.Component {
 	constructor(props){
@@ -27,7 +28,10 @@ class ListScreen extends React.Component {
 		}
 
 		db.transaction(txn => {
-			// txn.executeSql('DROP TABLE IF EXISTS note;', []);
+			txn.executeSql('DROP TABLE IF EXISTS note;');
+			txn.executeSql('DROP TABLE IF EXISTS dancer');
+			txn.executeSql('DROP TABLE IF EXISTS position');
+
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS note(' +
 					'nid INTEGER NOT NULL, ' +
@@ -37,22 +41,33 @@ class ListScreen extends React.Component {
 					'radiusLevel INTEGER NOT NULL, ' +
 					'coordinateLevel INTEGER NOT NULL, ' +
 					'alignWithCoordinate TINYINT(1) NOT NULL, ' +
-					'PRIMARY KEY("nid") );',
-				[]
+					'PRIMARY KEY("nid") );'
+			);
+
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS dancer(' +
+					'nid INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'name	TEXT NOT NULL, ' +
+					'color INTEGER NOT NULL, ' +
+					'PRIMARY KEY(did, nid) );'
+			);
+
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS position(' +
+					'nid INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'time INTEGER NOT NULL, ' +
+					'posx INTEGER NOT NULL, ' +
+					'posy INTEGER NOT NULL, ' +
+					'duration INTEGER NOT NULL, ' +
+					'PRIMARY KEY(nid, did, time) );'
 			);
 
 			// txn.executeSql(
 			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.1.1", "사람들이 움직이는 게", 3, 3, 0);', []
 			// );
 
-			// txn.executeSql('DROP TABLE IF EXISTS dancer', []);
-			txn.executeSql(
-				'CREATE TABLE IF NOT EXISTS dancer(' +
-					'nid INTEGER NOT NULL, ' +
-					'did INTEGER NOT NULL, ' +
-					'name	TEXT NOT NULL, ' +
-					'PRIMARY KEY(did, nid) );'
-			);
 			// txn.executeSql(
 			// 	'INSERT INTO dancer VALUES (0, 0, "ham");'
 			// );
@@ -72,17 +87,6 @@ class ListScreen extends React.Component {
 			// 	'INSERT INTO dancer VALUES (0, 5, "aff");'
 			// );
 
-			// txn.executeSql('DROP TABLE IF EXISTS position', []);
-			txn.executeSql(
-				'CREATE TABLE IF NOT EXISTS position(' +
-					'nid INTEGER NOT NULL, ' +
-					'did INTEGER NOT NULL, ' +
-					'time INTEGER NOT NULL, ' +
-					'posx INTEGER NOT NULL, ' +
-					'posy INTEGER NOT NULL, ' +
-					'duration INTEGER NOT NULL, ' +
-					'PRIMARY KEY(nid, did, time) );'
-			);
 			// txn.executeSql(
 			// 	'INSERT INTO position VALUES (0, 0, 0, -160, -100, 0);'
 			// );
@@ -130,6 +134,7 @@ class ListScreen extends React.Component {
 	addNote = () => {
 		const newNid = this.state.noteList.length;
 		const randomValue = Math.floor(Math.random() * randomCouple.length);
+		const randomColor = Math.floor(Math.random() * dancerColor.length);
 
 		console.log(TAG, "addNote", newNid, randomValue);
 
@@ -141,12 +146,12 @@ class ListScreen extends React.Component {
 				() => {console.log('ERROR');}
 			);
 			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, 0, ?);",
-				[newNid, randomCouple[randomValue][1]]
+				"INSERT INTO dancer VALUES (?, 0, ?, ?);",
+				[newNid, randomCouple[randomValue][1], randomColor]
 			);
 			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, 1, ?);",
-				[newNid, randomCouple[randomValue][2]]
+				"INSERT INTO dancer VALUES (?, 1, ?, ?);",
+				[newNid, randomCouple[randomValue][2], randomColor]
 			);
 			txn.executeSql(
 				"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
@@ -286,9 +291,13 @@ class ListScreen extends React.Component {
 					ItemSeparatorComponent={this.listViewItemSeparator}
 					renderItem={({item, index}) => 
 					<View style={styles.noteItem}>
-						<TouchableOpacity style={{flex: 1}} 
+						<TouchableOpacity style={{flex: 1}}
 						onPress={()=>{
-							this.props.navigation.navigate('Formation', {noteInfo: this.state.noteList[item.nid], updateNoteList: this.updateNoteList});
+							!this.state.isEditMode &&
+							this.props.navigation.navigate('Formation', {
+								noteInfo: this.state.noteList[item.nid], 
+								updateNoteList: this.updateNoteList
+							});
 						}}>
 							<View style={styles.columnContainer}>
 								{this.state.isEditMode ?

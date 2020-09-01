@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView, StyleSheet, ScrollView, View, Text, TextInput, Dimensions, Image, TouchableOpacity, Alert, Switch,
+	SafeAreaView, StyleSheet, ScrollView, View, Text, Dimensions, TouchableOpacity, Alert, Switch,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -16,6 +16,7 @@ let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
 const boxSize = 25;
 const positionboxSize = 15;
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
 
 // 화면의 가로, 세로 길이 받아오기
 const {width,height} = Dimensions.get('window');
@@ -192,38 +193,36 @@ export default class FormationScreen extends React.Component {
 					 </TouchableOpacity>
 				)
 			}
-
+			const isSelected = did == this.selectedDid && i == this.selectedPositionIdx;
 			rowView.push(
 				<TouchableOpacity 
 				key={rowView.length} 
 				onPress={()=>this.selectPosition(did, i)}
 				onLongPress={()=>this.deletePosition(did, curTime)}
+				disabled={isSelected}
 				style={{alignItems: 'center', justifyContent: 'center'}}>
-					<View style={{
-						height: boxSize, 
-						width: 1, 
-						marginLeft: (boxSize-1)/2,
-						marginRight: (boxSize-1)/2 + boxSize*duration,
-						backgroundColor: COLORS.grayMiddle,
-					}}/>
-					{ did == this.selectedDid && i == this.selectedPositionIdx ?
+					<View style={[styles.uncheckedBox, {marginRight: (boxSize-1)/2 + boxSize*duration}]}/>
+					{ 
+					isSelected ?
 					<Positionbox
 					boxSize={boxSize}
 					positionboxSize={positionboxSize}
 					duration={duration}
 					setScrollEnable={this.setScrollEnable}
 					changeDuration={this.changeDuration}
-					unselectPosition={this.unselectPosition}/>
-					:
-					<View style={{
-						height: positionboxSize, 
+					unselectPosition={this.unselectPosition}
+					style={[styles.checkedBox, {
 						width: positionboxSize + boxSize * duration, 
-						marginHorizontal: boxSize/2 - 5,
-						backgroundColor: COLORS.red,
-						borderRadius: 5,
-						position: 'absolute'
-					}}/>
-				}
+						backgroundColor: dancerColor[this.dancerList[did].color],
+						borderWidth: 2,
+						borderColor: COLORS.green,
+					}]}/>
+					:
+					<View style={[styles.checkedBox, {
+						width: positionboxSize + boxSize * duration, 
+						backgroundColor: dancerColor[this.dancerList[did].color],
+					}]}/>
+					}
 				</TouchableOpacity>
 			)
 
@@ -316,6 +315,7 @@ export default class FormationScreen extends React.Component {
 	setDancer = () => {
 		console.log(TAG, "setDancer: " + this.allPosList.length);
 		const dancerNum = this.allPosList.length;
+		const radiusLength = 10 + this.radiusLevel * 2;
 
 		let _dancers = [];
 		let _nameColumn = [ <Text key={0} style={{height: boxSize, width: 60}}/> ];
@@ -329,10 +329,10 @@ export default class FormationScreen extends React.Component {
 				dropPosition={this.dropPosition} 
 				curTime={this.state.time}
 				isPlay={this.state.isPlay}
-				radiusLevel={this.radiusLevel}
+				radiusLength={radiusLength}
 				alignWithCoordinate={this.alignWithCoordinate}
 				coordinateLevel={this.coordinateLevel}
-				// elevation={100}
+				color={this.dancerList[i].color}
 				/>
 			)
 			_nameColumn.push(
@@ -541,7 +541,7 @@ export default class FormationScreen extends React.Component {
 			this.unselectPosition();
 		}
 		
-		this.selectedDid = did;
+		this.selectedDid = did;	
 		this.selectedPositionIdx = positionIdx;
 
 		this.selectedDancer = (did+1) + '. ' + '함창수';
@@ -601,6 +601,12 @@ export default class FormationScreen extends React.Component {
 			this.DB_UPDATE('position', {duration: changedDuration}, {nid: this.state.noteInfo.nid, did: this.selectedDid, time: this.selectedTime});
 	}
 
+	changeAlignWithCoordinate = () => {
+		this.alignWithCoordinate = !this.alignWithCoordinate;
+		this.DB_UPDATE('note', {alignWithCoordinate: this.alignWithCoordinate}, {nid: this.state.noteInfo.nid});
+		this.setDancer();
+	}
+
 	/** 초(sec) => "분:초" 변환한다.
 	 * - re-render: NO
 	 * @param {number} sec 
@@ -637,7 +643,7 @@ export default class FormationScreen extends React.Component {
 
 		this.state.db.transaction(txn => {
       txn.executeSql(
-				"SELECT DISTINCT d.did, d.name " +
+				"SELECT DISTINCT d.did, d.name, d.color " +
 				"FROM position AS p, dancer AS d " +
 				"WHERE p.nid=? " +
 				"AND p.nid=d.nid " +
@@ -645,7 +651,7 @@ export default class FormationScreen extends React.Component {
         [this.state.noteInfo.nid],
         (tx, dancerResult) => {
 					for (let i = 0; i < dancerResult.rows.length; i++) {
-						this.dancerList.push(dancerResult.rows.item(i)); // {did, name}
+						this.dancerList.push(dancerResult.rows.item(i)); // {did, name, color}
 					}
 				}
 			)
@@ -692,12 +698,6 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
 		this.props.route.params.updateNoteList();
-	}
-
-	changeAlignWithCoordinate = () => {
-		this.alignWithCoordinate = !this.alignWithCoordinate;
-		this.DB_UPDATE('note', {alignWithCoordinate: this.alignWithCoordinate}, {nid: this.state.noteInfo.nid});
-		this.setDancer();
 	}
 
 	render() {
@@ -885,6 +885,14 @@ const styles = StyleSheet.create({
 		width: 1, 
 		marginHorizontal: (boxSize-1)/2, 
 		backgroundColor: COLORS.grayMiddle
+	},
+	checkedBox: {
+		height: positionboxSize, 
+		width: positionboxSize, 
+		margin: (boxSize-positionboxSize)/2,
+		backgroundColor: COLORS.red,
+		borderRadius: 10,
+		position: 'absolute'
 	},
 	boxSize: {
 		height: boxSize, 
