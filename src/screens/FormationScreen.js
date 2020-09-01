@@ -188,7 +188,7 @@ export default class FormationScreen extends React.Component {
 
 			for(let time=prevTime+1; time<curTime; time++){
 				rowView.push(
-					<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, time)}>
+					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, time)}>
 						<View style={styles.uncheckedBox}></View>
 					 </TouchableOpacity>
 				)
@@ -196,9 +196,10 @@ export default class FormationScreen extends React.Component {
 			const isSelected = did == this.selectedDid && i == this.selectedPositionIdx;
 			rowView.push(
 				<TouchableOpacity 
-				key={rowView.length} 
+				key={rowView.length}
 				onPress={()=>this.selectPosition(did, i)}
 				onLongPress={()=>this.deletePosition(did, curTime)}
+				activeOpacity={.8}
 				disabled={isSelected}
 				style={{alignItems: 'center', justifyContent: 'center'}}>
 					<View style={[styles.uncheckedBox, {marginRight: (boxSize-1)/2 + boxSize*duration}]}/>
@@ -211,28 +212,36 @@ export default class FormationScreen extends React.Component {
 					setScrollEnable={this.setScrollEnable}
 					changeDuration={this.changeDuration}
 					unselectPosition={this.unselectPosition}
-					style={[styles.checkedBox, {
-						width: positionboxSize + boxSize * duration, 
-						backgroundColor: dancerColor[this.dancerList[did].color],
+					containerStyle={{
+						height: boxSize, 
+						width: boxSize * (1+duration), 
+						position: 'absolute', 
+						alignItems: 'center',
+						justifyContent: 'center',
 						borderWidth: 2,
 						borderColor: COLORS.green,
-					}]}/>
+					}}
+					style={[styles.checkedBox, {
+						width: positionboxSize + boxSize * duration,
+						backgroundColor: dancerColor[this.dancerList[did].color],
+					}]}
+					/>
 					:
 					<View style={[styles.checkedBox, {
+						position: 'absolute',
 						width: positionboxSize + boxSize * duration, 
 						backgroundColor: dancerColor[this.dancerList[did].color],
 					}]}/>
 					}
 				</TouchableOpacity>
 			)
-
 			prevTime = curTime + duration;
 		}
 
 		// 마지막 대열~노래 끝부분까지 회색박스 채우기
 		for(let i=prevTime+1; i<=this.state.musicLength; i++){
 			rowView.push(
-				<TouchableOpacity key={rowView.length} onLongPress={()=>this.addPosition(did, i)}>
+				<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
 					<View style={styles.uncheckedBox}></View>
 				</TouchableOpacity>
 			)
@@ -890,9 +899,7 @@ const styles = StyleSheet.create({
 		height: positionboxSize, 
 		width: positionboxSize, 
 		margin: (boxSize-positionboxSize)/2,
-		backgroundColor: COLORS.red,
 		borderRadius: 10,
-		position: 'absolute'
 	},
 	boxSize: {
 		height: boxSize, 

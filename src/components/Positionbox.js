@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-	PanResponder, Animated,
+	PanResponder, Animated, View,
 } from "react-native";
 import { COLORS } from '../values/Colors'
 
@@ -67,9 +67,10 @@ export default class Positionbox extends React.Component {
 		console.log(TAG, 'render');
 
 		return(
-			<Animated.View
-			{...this.panResponder.panHandlers}
-			style={[this.props.style]}/>
+			<Animated.View {...this.panResponder.panHandlers}
+			style={this.props.containerStyle}>
+				<View style={this.props.style}/>
+			</Animated.View>
 		)
 	}
 }
