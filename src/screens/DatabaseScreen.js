@@ -32,7 +32,7 @@ export default class DatabaseScreen extends React.Component {
         (tx, res) => {
 					console.log(TAG, "DB SELECT SUCCESS!");
 					for (let i = 0; i < res.rows.length; i++) {
-						this.dancerList.push(res.rows.item(i)); // {nid, did, name, color}
+						this.dancerList.push({...res.rows.item(i), key: this.dancerList.length}); // {nid, did, name, color}
 					}
 					this.forceUpdate();
 				},
@@ -47,7 +47,7 @@ export default class DatabaseScreen extends React.Component {
         (tx, res) => {
 					console.log(TAG, "DB SELECT SUCCESS!");
 					for (let i = 0; i < res.rows.length; i++) {
-						this.positionList.push(res.rows.item(i)); // {nid, did, time, posx, posy, duration}
+						this.positionList.push({...res.rows.item(i), key: this.positionList.length}); // {nid, did, time, posx, posy, duration}
 					}
 					this.forceUpdate();
 				},
@@ -58,6 +58,14 @@ export default class DatabaseScreen extends React.Component {
 
 	render() {
 		console.log(TAG, "render");
+		let positionList = [];
+
+		this.props.allPosList.forEach(posList => {
+			posList.forEach(pos => {
+				positionList.push({...pos, key: positionList.length});
+			});
+		});
+		
 		return(
 			<View style={{flexDirection: 'column', height: '40%', backgroundColor: COLORS.blackLight}}>
 				<View style={styles.toolbar}>
@@ -73,6 +81,7 @@ export default class DatabaseScreen extends React.Component {
 				<View style={{flex: 1, flexDirection: 'row'}}>
 					<View 
 					style={{flexDirection: 'column', width: '40%', padding: 5}}>
+
 						<View style={{flexDirection: 'row'}}>
 							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
@@ -81,6 +90,7 @@ export default class DatabaseScreen extends React.Component {
 						</View>
 						<FlatList
 						data={this.dancerList}
+						keyExtractor={(item, index) => index.toString()}
 						renderItem={({item, index}) => 
 						<View style={{flexDirection: 'row'}}>
 							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
@@ -89,10 +99,30 @@ export default class DatabaseScreen extends React.Component {
 							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.color}</Text>
 						</View>
 						}/>
+
+						<View style={{flexDirection: 'row'}}>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>name</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>color</Text>
+						</View>
+						<FlatList
+						data={this.props.dancerList}
+						keyExtractor={(item, index) => index.toString()}
+						renderItem={({item, index}) => 
+						<View style={{flexDirection: 'row'}}>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.name}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.color}</Text>
+						</View>
+						}/>
+						
 					</View>
 
 					<View style={{flexDirection: 'column', width: '60%', padding: 5}}>
-					<View style={{flexDirection: 'row'}}>
+
+						<View style={{flexDirection: 'row'}}>
 							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
 							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
@@ -103,6 +133,7 @@ export default class DatabaseScreen extends React.Component {
 						<FlatList
 						ItemSeparatorComponent={this.listViewItemSeparator}
 						data={this.positionList}
+						keyExtractor={(item, index) => index.toString()}
 						renderItem={({item, index}) => 
 						<View style={{flexDirection: 'row'}}>
 							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
@@ -113,6 +144,30 @@ export default class DatabaseScreen extends React.Component {
 							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
 						</View>
 						}/>
+
+						<View style={{flexDirection: 'row'}}>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
+							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
+						</View>
+						<FlatList
+						ItemSeparatorComponent={this.listViewItemSeparator}
+						data={positionList}
+						keyExtractor={(item, index) => index.toString()}
+						renderItem={({item, index}) => 
+						<View style={{flexDirection: 'row'}}>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.time}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
+							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
+						</View>
+						}/>
+
 					</View>
 				</View>
 

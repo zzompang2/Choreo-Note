@@ -9,6 +9,7 @@ const TAG = "Positionbox/";
 export default class Positionbox extends React.Component {
 	constructor(props) {
 		super(props);
+		this.time = this.props.time;
 		this.duration = this.props.duration;
 	
 		this.leftResponder = PanResponder.create({
@@ -28,10 +29,10 @@ export default class Positionbox extends React.Component {
 				// this.props.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
 				// _changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
-				const _changedDuration = this.duration + Math.round(-gesture.dx / this.props.boxWidth);
+				const _changedDuration = this.duration - Math.round(gesture.dx / this.props.boxWidth);
 
 				if(this.props.duration != _changedDuration)
-					this.props.resizePositionboxLeft('edit', _changedDuration - this.props.duration);
+					this.props.resizePositionboxLeft(false, _changedDuration, this.time);
 			},
 
       // 터치이벤트 끝날 때.
@@ -41,8 +42,10 @@ export default class Positionbox extends React.Component {
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
-				this.duration = this.props.duration;
-				this.props.resizePositionboxLeft('update');
+				this.props.resizePositionboxLeft(true, this.props.duration, this.time);
+				
+				this.time = this.props.time;					// 바뀐 time 값 저장
+				this.duration = this.props.duration;	// 바뀐 duration 값 저장
       }
 		})
 
