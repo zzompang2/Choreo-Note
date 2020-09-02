@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput, Image, Alert,
+  SafeAreaView, FlatList, Text, StyleSheet, TouchableOpacity, View, TextInput, Alert,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -157,7 +157,8 @@ export default class ListScreen extends React.Component {
 			maxLength={10}
 			style={{flex: 1, fontSize: 16, color: COLORS.blackDark, padding: 10,}}
 			placeholder="이름을 입력해 주세요."
-			onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}>
+			onEndEditing={(e)=>this.changeName(e.nativeEvent.text, item.did)}
+			autoCorrect={false}>
 				{item.name}
 			</TextInput>
 

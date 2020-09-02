@@ -934,15 +934,6 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
-	editDuration = (text) => {
-		text = text.replaceAll(' ', '');
-
-		if(!isNaN(Number(text)) && text != '' && Number(text) >= 0)
-			this.resizePositionboxRight(true, Number(text));
-		else
-			Alert.alert("취소", "올바르지 않은 형식입니다.");
-	}
-
 	editTime = (text) => {
 		text = text.replaceAll(' ', '').split(':');
 
@@ -954,21 +945,24 @@ export default class FormationScreen extends React.Component {
 			case 2:
 				min = Number(text[0]);
 				sec = Number(text[1]);
-				if(!isNaN(min) && !isNaN(sec) && text[0]!='' && text[1]!='')
-					time = min * 60 + sec;
+				if(!isNaN(min) && !isNaN(sec) && text[0]!='' && text[1]!=''){
+					if(min == Math.round(min) && sec == Math.round(sec) && min>=0 && sec>=0 && sec<60){
+						time = min * 60 + sec;
+					}
+				}
 				break;
 
 			case 1:
 				sec = Number(text[0]);
-				if(!isNaN(sec) && text[0]!='')
-					time = sec;
+				if(!isNaN(sec) && text[0]!=''){
+					if(sec == Math.round(sec)){
+						time = sec;
+					}
+				}
 				break;
-
-			default:
-				return -1;
 		}
-		console.log(min + ':' + sec);
 		if(time >= 0) {
+			time = time > this.state.musicLength ? this.state.musicLength : time;
 			// UPDATE DB
 			// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
 			this.DB_UPDATE(
@@ -990,6 +984,59 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	editDuration = (text) => {
+		text = text.replaceAll(' ', '');
+
+		if(!isNaN(Number(text)) && text != '' && Number(text) >= 0)
+			this.resizePositionboxRight(true, Math.round( Number(text) ));
+		else
+			Alert.alert("취소", "올바르지 않은 형식입니다.");
+	}
+
+	editX = (text) => {
+		text = text.replaceAll(' ', '');
+		if(!isNaN(Number(text)) && text != ''){
+			let posx = Math.round(Number(text));
+			posx = Math.abs(posx) > Math.floor(width/2) ? Math.floor(width/2) * Math.sign(posx) : posx;
+			this.DB_UPDATE(
+				'position', 
+				{ posx: posx },
+				{
+					nid: ['=', this.state.noteInfo.nid],
+					did: ['=', this.selectedBoxInfo.did], 
+					time: ['=', this.selectedBoxInfo.time]
+				}
+			);
+			this.selectedBoxInfo.posx = posx;
+			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].posx = posx;
+			this.setDancer();
+		}
+		else
+			Alert.alert("취소", "올바르지 않은 형식입니다.");
+	}
+
+	editY = (text) => {
+		text = text.replaceAll(' ', '');
+		if(!isNaN(Number(text)) && text != ''){
+			let posy = Math.round(Number(text));
+			posy = Math.abs(posy) > Math.floor(this.stageHeight/2) ? Math.floor(this.stageHeight/2) * Math.sign(posy) : posy;
+			this.DB_UPDATE(
+				'position', 
+				{ posy: posy },
+				{
+					nid: ['=', this.state.noteInfo.nid],
+					did: ['=', this.selectedBoxInfo.did], 
+					time: ['=', this.selectedBoxInfo.time]
+				}
+			);
+			this.selectedBoxInfo.posy = posy;
+			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].posy = posy;
+			this.setDancer();
+		}
+		else
+			Alert.alert("취소", "올바르지 않은 형식입니다.");
+	}
+
 	selectView = () => {
 		const isSelected = this.selectedBoxInfo.posIndex == -1 ? false : true;
 
@@ -1003,9 +1050,11 @@ export default class FormationScreen extends React.Component {
 					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
 						{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
 					<Text style={styles.selectText}>X</Text>
-					<TextInput style={styles.selectTextInput} editable={isSelected}>{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
+					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editX(event.nativeEvent.text)}>
+						{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
 					<Text style={styles.selectText}>Y</Text>
-					<TextInput style={styles.selectTextInput} editable={isSelected}>{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
+					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editY(event.nativeEvent.text)}>
+						{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
 					{/* <TouchableOpacity onPress={()=>{}} disabled={!isSelected || this.state.isPlay} style={styles.button} activeOpacity={.7}>
 						<Text style={{color: COLORS.white}}>수정</Text>
 					</TouchableOpacity>
