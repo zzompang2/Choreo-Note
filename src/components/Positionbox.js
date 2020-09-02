@@ -9,6 +9,7 @@ const TAG = "Positionbox/";
 export default class Positionbox extends React.Component {
 	constructor(props) {
 		super(props);
+		console.log(TAG, 'constructor', 'arkghaijldfjasdngfjladsnfjawenfjlawglfeaw')
 		this.time = this.props.time;
 		this.duration = this.props.duration;
 	
@@ -105,7 +106,7 @@ export default class Positionbox extends React.Component {
 				const _changedDuration = this.duration + Math.round(gesture.dx / this.props.boxWidth);
 
 				if(this.props.duration != _changedDuration)
-					this.props.resizePositionboxRight('edit', _changedDuration - this.props.duration);
+					this.props.resizePositionboxRight(false, _changedDuration);
 			},
 
       // 터치이벤트 끝날 때.
@@ -115,9 +116,8 @@ export default class Positionbox extends React.Component {
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
-				this.duration = this.props.duration;
-				this.props.resizePositionboxRight('update');
-				//this.props.changeDuration('right', this.props.time, this.duration, false);
+				this.duration = this.props.duration;	// 바뀐 duration 값 저장
+				this.props.resizePositionboxRight(true);
       }
 		})
 	}
