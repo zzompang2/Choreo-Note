@@ -11,7 +11,7 @@ import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 TAG = "ListScreen";
-const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
 export default class ListScreen extends React.Component {
 	constructor(props){
@@ -61,7 +61,7 @@ export default class ListScreen extends React.Component {
 
 		let _dancerList = [...this.state.dancerList];
 		_dancerList.push({did: dancerNum, name: "", color: 0}); // {did, name}
-		this.allPosList.push([{time: 0, posx: 0, posy: 0, duration: 0}]);
+		this.allPosList.push([{did: dancerNum, time: 0, posx: 0, posy: 0, duration: 0}]);
 		this.setState({dancerList: _dancerList});
 	}
 

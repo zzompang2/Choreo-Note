@@ -113,10 +113,11 @@ const styles = StyleSheet.create({
 		backgroundColor:COLORS.grayLight, 
 		borderWidth: 1,
 		borderColor: COLORS.grayMiddle,
-		paddingHorizontal: 10,
+		paddingHorizontal: 15,
 	},
 	menuItem: {
-		height: 50,
+		flex: 1,
+		maxHeight: 50,
 		flexDirection: 'row',
 		alignItems: 'center',
 	},

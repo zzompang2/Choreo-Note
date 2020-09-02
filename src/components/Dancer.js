@@ -8,7 +8,7 @@ import {COLORS} from '../values/Colors';
 const {width,height} = Dimensions.get('window');
 
 const TAG = "Dancer/";
-const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
 export default class Dancer extends React.Component {
   constructor(props) {

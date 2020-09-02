@@ -16,7 +16,7 @@ const randomCouple = [
 	['겨울왕국', '엘사', '안나'],
 	['긴머리 휘날리며', '라푼젤', '파스칼'],
 ];
-const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
+const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
 class ListScreen extends React.Component {
 	constructor(props){
@@ -154,13 +154,19 @@ class ListScreen extends React.Component {
 				[newNid, randomCouple[randomValue][2], randomColor+1]
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
+				"INSERT INTO position VALUES (?, 0, 0, -60, 0, 0);",
 				[newNid],
 				() => {console.log('success!');},
 				(e) => {console.log('ERROR', e);}
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, 1, 0, 30, 0, 0);",
+				"INSERT INTO position VALUES (?, 0, 2, -30, 0, 0);",
+				[newNid],
+				() => {console.log('success!');},
+				(e) => {console.log('ERROR', e);}
+			);
+			txn.executeSql(
+				"INSERT INTO position VALUES (?, 1, 0, 30, 0, 2);",
 				[newNid],
 				() => {console.log('success!');},
 				(e) => {console.log('ERROR');}

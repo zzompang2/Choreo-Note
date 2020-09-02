@@ -34,7 +34,7 @@ export default class Positionbox extends React.Component {
 
 				const changedDuration = this.initialValue.duration - Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.duration != changedDuration)
+				if(this.props.duration != changedDuration && changedDuration >= 0)
 					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.time);
 			},
 
@@ -108,7 +108,7 @@ export default class Positionbox extends React.Component {
 
 				const changedDuration = this.initialValue.duration + Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.duration != changedDuration)
+				if(this.props.duration != changedDuration && changedDuration >= 0)
 					this.props.resizePositionboxRight(false, changedDuration);
 			},
 
