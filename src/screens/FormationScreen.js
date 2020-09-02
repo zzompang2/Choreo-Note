@@ -42,7 +42,7 @@ export default class FormationScreen extends React.Component {
 		this.scrollViewStyle;
 		this.timeText = [];
 		this.musicbox = [];	
-		this.selectedPositionIdx = -1;	// unselect: -1, select: >=0
+		this.selectedBoxInfo = {posIndex: -1};
 		this.boxWidth = 26;
 		this.boxHeight = 26;
 		this.positionboxSize = 15;
@@ -215,7 +215,7 @@ export default class FormationScreen extends React.Component {
 			}
 
 			// 선택된 블럭인 경우
-			const isSelected = (did == this.selectedDid) && (i == this.selectedPositionIdx);
+			const isSelected = (i == this.selectedBoxInfo.posIndex) && (did == this.selectedBoxInfo.did);
 			if(isSelected) selectedIdxInRowView = curTime;
 
 			// checked box 넣기
@@ -253,8 +253,8 @@ export default class FormationScreen extends React.Component {
 			key={-1}
 			boxWidth={this.boxWidth}
 			positionboxSize={this.positionboxSize}
-			time={this.selectedTime}
-			duration={this.selectedDuration}
+			time={this.selectedBoxInfo.time}
+			duration={this.selectedBoxInfo.duration}
 			setScrollEnable={this.setScrollEnable}
 			changeDuration={this.changeDuration}
 			resizePositionboxLeft={this.resizePositionboxLeft}
@@ -262,17 +262,17 @@ export default class FormationScreen extends React.Component {
 			unselectPosition={this.unselectPosition}
 			containerStyle={{
 				height: this.boxHeight, 
-				width: this.boxWidth * (this.selectedDuration+2), 
+				width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
 				position: 'absolute',
 				flexDirection: 'row',
 				alignItems: 'center',
 				justifyContent: 'space-between',
 				borderWidth: 2,
 				borderColor: COLORS.green,
-				left: this.boxWidth * this.selectedTime - this.boxWidth/2,
+				left: this.boxWidth * this.selectedBoxInfo.time - this.boxWidth/2,
 			}}
 			boxStyle={[this.styles('checkedBox'), {
-				width: this.positionboxSize + this.boxWidth * this.selectedDuration,
+				width: this.positionboxSize + this.boxWidth * this.selectedBoxInfo.duration,
 				backgroundColor: dancerColor[this.dancerList[did].color],
 			}]}
 			buttonStyle={{height: this.boxHeight, width: 10, backgroundColor: COLORS.green}}
@@ -404,9 +404,9 @@ export default class FormationScreen extends React.Component {
 			// 이미 존재하는 시간인 경우: UPDATE
 			if(time == posList[i].time){
 				// selected position이 바뀐 경우
-				if(this.selectedPositionIdx != -1 && this.selectedDid == did && this.selectedTime == time){
-					this.selectedPosx = posx;
-					this.selectedPosy = posy;
+				if(this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == did && this.selectedBoxInfo.time == time){
+					this.selectedBoxInfo.posx = posx;
+					this.selectedBoxInfo.posy = posy;
 				}
 				newPos = {...newPos, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
@@ -605,27 +605,28 @@ export default class FormationScreen extends React.Component {
 	
 	/** position box 하나를 선택한다.
 	 * - re-render: YES ( forceUpdate )
-	 * - update: this.selected~, musicbox
+	 * - update: this.selectedBoxInfo, musicbox
 	 * - setMusicbox()
 	 * @param {number} did 
-	 * @param {number} positionIdx 
+	 * @param {number} posIndex 
 	 */
-	selectPosition = (did, positionIdx) => {
-		console.log(TAG, 'selectPosition(', did, positionIdx, ')');
+	selectPosition = (did, posIndex) => {
+		console.log(TAG, 'selectPosition(', did, posIndex, ')');
 
 		// 선택되어 있던 것 제거
-		if(this.selectedPositionIdx != -1){
+		if(this.selectedBoxInfo.posIndex != -1){
 			this.unselectPosition();
 		}
-		
-		this.selectedDid = did;	
-		this.selectedPositionIdx = positionIdx;
+		// {color: 1, did: 0, duration: 11, name: 견우, posx: -30, posy: 0, time: 0}
+		this.selectedBoxInfo = {...this.dancerList[did], ...this.allPosList[did][posIndex], posIndex: posIndex}
 
-		this.selectedDancer = (did+1) + '. ' + '함창수';
-		this.selectedTime = this.allPosList[did][positionIdx].time;
-		this.selectedPosx = this.allPosList[did][positionIdx].posx;
-		this.selectedPosy = this.allPosList[did][positionIdx].posy;
-		this.selectedDuration = this.allPosList[did][positionIdx].duration;
+		// this.selectedBoxInfo.did = did;	
+		// this.selectedBoxInfo.posIndex = positionIdx;
+		// this.selectedBoxInfo.name = (did+1) + '. ' + '함창수';
+		// this.selectedBoxInfo.time = this.allPosList[did][positionIdx].time;
+		// this.selectedBoxInfo.posx = this.allPosList[did][positionIdx].posx;
+		// this.selectedBoxInfo.posy = this.allPosList[did][positionIdx].posy;
+		// this.selectedBoxInfo.duration = this.allPosList[did][positionIdx].duration;
 
 		this.setMusicbox(did);
 		this.forceUpdate();
@@ -639,9 +640,9 @@ export default class FormationScreen extends React.Component {
 	 */
 	unselectPosition = () => {
 		console.log(TAG, 'unselectPosition');
-		this.selectedPositionIdx = -1;
+		this.selectedBoxInfo.posIndex = -1;
 
-		this.setMusicbox(this.selectedDid);
+		this.setMusicbox(this.selectedBoxInfo.did);
 		this.forceUpdate();
 	}
 
@@ -662,7 +663,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} time 
 	 * @param {number} did 
 	 */
-	resizePositionboxLeft = (doUpdate, duration, time = this.selectedTime, did = this.selectedDid) => {
+	resizePositionboxLeft = (doUpdate, duration, time = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, "resizePositionboxLeft(", doUpdate, duration, time, did, ')');
 		
 		if(!doUpdate){
@@ -677,34 +678,34 @@ export default class FormationScreen extends React.Component {
 			let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 
 			// 화면에 보이는 선택된 값 업데이트를 위해
-			this.selectedTime -= (duration - this.selectedDuration);	// ++ or --
-			this.selectedDuration = duration;
+			this.selectedBoxInfo,time -= (duration - this.selectedBoxInfo.duration);	// ++ or --
+			this.selectedBoxInfo.duration = duration;
 			
 			// 댄서의 각 checked box 에 대해서...
 			let i = 0;
 			for(; ; i++){
-				console.log(this.selectedTime, '<=', posList[i].time, '<', time);
+				console.log(this.selectedBoxInfo.time, '<=', posList[i].time, '<', time);
 
 				// 바뀌기 전 시간 이상인 경우: 무시 (break)
 				// [i]번째 == 선택된 positionbox의 정보
 				if(time <= posList[i].time) break;
 
 				// 바뀐 시간보다 작은 경우: 무시 (continue)
-				if(posList[i].time + posList[i].duration < this.selectedTime) continue;
+				if(posList[i].time + posList[i].duration < this.selectedBoxInfo.time) continue;
 
 				// 바뀐 시간보다 크지만 duration 을 줄이면 되는 경우: duration 줄이기
-				if(posList[i].time < this.selectedTime) {
-					posList[i].duration = this.selectedTime - posList[i].time - 1;
+				if(posList[i].time < this.selectedBoxInfo.time) {
+					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
 					continue;
 				}
 				// 바뀐 시간 이상 && 바뀌가 전 시간보다 작은 경우: 삭제 (splice)
 				posList.splice(i, 1);
 				i--;
 			}
-			this.selectedPositionIdx = i;
-			console.log(TAG, 'selectedPositionIdx Update! ' + this.selectedPositionIdx);
+			this.selectedBoxInfo.posIndex = i;
+			console.log(TAG, 'selectedPositionIdx Update! ' + this.selectedBoxInfo.posIndex);
 
-			posList[i] = {...posList[i], time: this.selectedTime, duration: duration};
+			posList[i] = {...posList[i], time: this.selectedBoxInfo.time, duration: duration};
 
 			this.setMusicbox(did, posList);
 			this.forceUpdate();
@@ -717,7 +718,7 @@ export default class FormationScreen extends React.Component {
 				[
 					'nid='   + this.state.noteInfo.nid, 
 					'did='   + did,
-					'time>=' + this.selectedTime,
+					'time>=' + this.selectedBoxInfo.time,
 					'time<'  + time
 				],
 				()=>{
@@ -725,7 +726,7 @@ export default class FormationScreen extends React.Component {
 						'position', 
 						{
 							duration: duration, 
-							time: this.selectedTime
+							time: this.selectedBoxInfo.time
 						},
 						{
 							nid: ['=',this.state.noteInfo.nid],
@@ -737,18 +738,18 @@ export default class FormationScreen extends React.Component {
 			);
 			let i = 0;
 			for(; ; i++){
-				console.log(this.selectedTime, '<=', this.allPosList[did][i].time, '<', time)
+				console.log(this.selectedBoxInfo.time, '<=', this.allPosList[did][i].time, '<', time)
 
 				// 바뀌기 전 시간 이상인 경우: 무시 (break)
 				// [i]번째 == 선택된 positionbox의 정보
 				if(this.allPosList[did][i].time >= time) break;
 
 				// 바뀐 시간보다 작은 경우: 무시 (continue)
-				if(this.allPosList[did][i].time + this.allPosList[did][i].duration < this.selectedTime) continue;
+				if(this.allPosList[did][i].time + this.allPosList[did][i].duration < this.selectedBoxInfo.time) continue;
 
 				// 바뀐 시간보다 크지만 duration 을 줄이면 되는 경우: duration 줄이기
-				if(this.allPosList[did][i].time < this.selectedTime) {
-					const reducedDuration = this.selectedTime - this.allPosList[did][i].time - 1;
+				if(this.allPosList[did][i].time < this.selectedBoxInfo.time) {
+					const reducedDuration = this.selectedBoxInfo.time - this.allPosList[did][i].time - 1;
 					this.allPosList[did][i].duration = reducedDuration;
 					this.DB_UPDATE(
 						'position', 
@@ -765,25 +766,26 @@ export default class FormationScreen extends React.Component {
 				i--;
 			}	
 			console.log(i, '번째에 선택된 정보가 있다!');
-			this.allPosList[did][i].time = this.selectedTime;
+			this.allPosList[did][i].time = this.selectedBoxInfo.time;
 			this.allPosList[did][i].duration = duration;
+			this.setDancer();
 		}
 	}
 
-	resizePositionboxRight = (doUpdate, duration = this.selectedDuration, did = this.selectedDid) => {
+	resizePositionboxRight = (doUpdate, duration = this.selectedBoxInfo.duration, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, "resizePositionboxRight(", doUpdate, duration, did, ')');
 		
 		if(!doUpdate){
 			let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
-			posList[this.selectedPositionIdx].duration = duration;
+			posList[this.selectedBoxInfo.posIndex].duration = duration;
 
 			// 화면에 보이는 선택된 값 업데이트를 위해
-			this.selectedDuration = duration;
+			this.selectedBoxInfo.duration = duration;
 			
 			// 댄서의 각 checked box 에 대해서...
-			const rightEndTime = this.selectedTime + this.selectedDuration;
+			const rightEndTime = this.selectedBoxInfo.time + this.selectedBoxInfo.duration;
 
-			for(let i = this.selectedPositionIdx + 1; i<posList.length; i++){
+			for(let i = this.selectedBoxInfo.posIndex + 1; i<posList.length; i++){
 				// 시간이 바뀐 길이보다 큰 경우: 무시 (break)
 				if(rightEndTime < posList[i].time) break;
 
@@ -803,8 +805,8 @@ export default class FormationScreen extends React.Component {
 
 		// update DB & allPosList
 		else{
-			const rightEndTime = this.selectedTime + duration;
-			this.allPosList[did][this.selectedPositionIdx].duration = duration;
+			const rightEndTime = this.selectedBoxInfo.time + duration;
+			this.allPosList[did][this.selectedBoxInfo.posIndex].duration = duration;
 
 			this.DB_UPDATE(
 				'position', 
@@ -812,7 +814,7 @@ export default class FormationScreen extends React.Component {
 				{
 					nid: ['=', this.state.noteInfo.nid],
 					did: ['=', did], 
-					time: ['=', this.selectedTime]
+					time: ['=', this.selectedBoxInfo.time]
 				}
 			);
 			this.DB_DELETE(
@@ -820,14 +822,14 @@ export default class FormationScreen extends React.Component {
 				[
 					'nid='  + this.state.noteInfo.nid, 
 					'did='  + did,
-					'time>'	+ this.selectedTime,
+					'time>'	+ this.selectedBoxInfo.time,
 					'time+duration<=' + rightEndTime
 				]
 			);
 
-			console.log('selectedPositionIdx', this.selectedPositionIdx, this.allPosList[did].length);
+			console.log('selectedPositionIdx', this.selectedBoxInfo.posIndex, this.allPosList[did].length);
 			// 댄서의 각 checked box 에 대해서...
-			for(let i = this.selectedPositionIdx + 1; i<this.allPosList[did].length; i++){
+			for(let i = this.selectedBoxInfo.posIndex + 1; i<this.allPosList[did].length; i++){
 
 				console.log(rightEndTime, '\n', this.allPosList[did][i].time, '\n', this.allPosList[did][i].duration)
 
@@ -861,6 +863,7 @@ export default class FormationScreen extends React.Component {
 				this.allPosList[did].splice(i, 1);
 				i--;
 			}
+			this.setDancer();
 		}
 	}
 
@@ -873,18 +876,18 @@ export default class FormationScreen extends React.Component {
 	 */
 	changeDuration = (type, time, changedDuration, isEditing) => {
 		console.log(TAG, 'changeDuration', changedDuration);
-		const did = this.selectedDid;
+		const did = this.selectedBoxInfo.did;
 
 		if(type=='right'){
 			// 변경된 duration으로 수정
-			this.allPosList[did][this.selectedPositionIdx].duration = changedDuration;
-			this.selectedDuration = changedDuration;
+			this.allPosList[did][this.selectedBoxInfo.posIndex].duration = changedDuration;
+			this.selectedBoxInfo.duration = changedDuration;
 		}
 		else if(type=='left'){
-			this.allPosList[did][this.selectedPositionIdx].time = time - changedDuration;
-			this.allPosList[did][this.selectedPositionIdx].duration = changedDuration;
-			this.selectedTime = time - changedDuration;
-			this.selectedDuration = changedDuration;
+			this.allPosList[did][this.selectedBoxInfo.posIndex].time = time - changedDuration;
+			this.allPosList[did][this.selectedBoxInfo.posIndex].duration = changedDuration;
+			this.selectedBoxInfo.time = time - changedDuration;
+			this.selectedBoxInfo.duration = changedDuration;
 		}
 		// box 수정
 		this.setMusicbox(did);
@@ -892,7 +895,7 @@ export default class FormationScreen extends React.Component {
 
 		// 수정이 끝났다면 DB 업데이트
 		if(!isEditing){
-			const time = this.selectedTime;
+			const time = this.selectedBoxInfo.time;
 			this.DB_UPDATE(
 				'position', 
 				{duration: changedDuration},
@@ -913,7 +916,7 @@ export default class FormationScreen extends React.Component {
 				]
 			)
 			// duration을 늘린 결과로 덮여진 box를 지운다.
-			for(let i=this.selectedPositionIdx+1; i<this.allPosList[did].length; i++){
+			for(let i=this.selectedBoxInfo.posIndex+1; i<this.allPosList[did].length; i++){
 				if(this.allPosList[did][i].time <= time+changedDuration){
 					this.allPosList[did].splice(i, 1);
 				}
@@ -1063,17 +1066,18 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 					}
 					<Text style={{width: 40, fontSize: 14, textAlign: 'left'}}>{this.timeFormat(this.state.time)}</Text>
-					{ this.selectedPositionIdx != -1 ? 
+					{ this.selectedBoxInfo.posIndex != -1 ? 
 						<View style={{flexDirection: 'column'}}>
 							<View style={{flexDirection: 'row'}}>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>선택된 댄서: {this.selectedDancer}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedTime}  </Text>
+							<Text style={{fontSize: 14, textAlign: 'left'}}>{this.selectedBoxInfo.did}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>{this.selectedBoxInfo.name}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>time: {this.selectedBoxInfo.time}  </Text>
 							</View>
 							<View style={{flexDirection: 'row'}}>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedPosx}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedPosy}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedDuration}  </Text>
-								<Text style={{fontSize: 14, textAlign: 'left'}}>index: {this.selectedPositionIdx}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>posx: {this.selectedBoxInfo.posx}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>posy: {this.selectedBoxInfo.posy}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>duration: {this.selectedBoxInfo.duration}  </Text>
+								<Text style={{fontSize: 14, textAlign: 'left'}}>index: {this.selectedBoxInfo.posIndex}  </Text>
 								
 							</View>
 						</View>
