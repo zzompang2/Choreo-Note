@@ -41,14 +41,10 @@ export default class Positionbox extends React.Component {
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
 				console.log(TAG, 'leftResponder/', "터치 끝");
-				
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
 				this.props.resizePositionboxLeft(true, this.props.duration, this.initialValue.time);
-				
-				// this.time = this.props.time;					// 바뀐 time 값 저장
-				// this.duration = this.props.duration;	// 바뀐 duration 값 저장
       }
 		})
 
@@ -59,30 +55,32 @@ export default class Positionbox extends React.Component {
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
 				console.log(TAG, 'centerResponder/', "터치 시작");
-
 				// scroll lock
 				this.props.setScrollEnable(true);
+				// 초기 상태 저장
+				this.initialValue = {time: this.time, duration: this.duration};
       },
 
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
-				
+				const changedTime = this.initialValue.time + Math.round(gesture.dx / this.props.boxWidth);
+
+				if(this.props.time != changedTime)
+					this.props.movePositionbox(false, changedTime, this.initialValue.time);
 			},
 
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
 				console.log(TAG, 'centerResponder/', "터치 끝");
-				
 				// scroll unlock
 				this.props.setScrollEnable(false);
-
 				// 그냥 클릭한 경우: select 취소
 				if(gesture.dx == 0){
 					this.props.unselectPosition();
 					return;
 				}
 				else{
-					
+					// 이동!
 				}
       }
 		})

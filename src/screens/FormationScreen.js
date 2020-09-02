@@ -257,12 +257,12 @@ export default class FormationScreen extends React.Component {
 			<Positionbox
 			key={-1}
 			boxWidth={this.boxWidth}
-			positionboxSize={this.positionboxSize}
 			time={this.selectedBoxInfo.time}
 			duration={this.selectedBoxInfo.duration}
 			setScrollEnable={this.setScrollEnable}
 			resizePositionboxLeft={this.resizePositionboxLeft}
 			resizePositionboxRight={this.resizePositionboxRight}
+			movePositionbox={this.movePositionbox}
 			unselectPosition={this.unselectPosition}
 			containerStyle={{
 				height: this.boxHeight, 
@@ -273,13 +273,14 @@ export default class FormationScreen extends React.Component {
 				justifyContent: 'space-between',
 				borderWidth: 2,
 				borderColor: COLORS.green,
+				borderRadius: this.boxWidth/4,
 				left: this.boxWidth * this.selectedBoxInfo.time - this.boxWidth/2,
 			}}
 			boxStyle={[this.styles('checkedBox'), {
 				width: this.positionboxSize + this.boxWidth * this.selectedBoxInfo.duration,
 				backgroundColor: dancerColor[this.dancerList[did].color],
 			}]}
-			buttonStyle={{height: this.boxHeight, width: 10, backgroundColor: COLORS.green}}
+			buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: this.boxWidth/4}}
 			/>
 			);
 
@@ -874,6 +875,91 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
+		console.log(TAG, 'movePositionbox (', doUpdate, to, from, did, ')');
+
+		if(to < 0 || this.state.musicLength < to) return;
+
+		if(!doUpdate){
+			let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
+			
+			// 자기 자신 빼놓기
+			const temp = {...posList[this.selectedBoxInfo.posIndex], time: to};
+
+			// 화면에 보이는 선택된 값 업데이트를 위해
+			this.selectedBoxInfo.time = to;
+
+			// 댄서의 각 checked box 에 대해서...
+			const rightEndTime = this.selectedBoxInfo.time + this.selectedBoxInfo.duration;
+
+			let findIndex = false;
+
+			for(let i=0; i<posList.length; i++){
+				console.log('FOR-LOOP::', i);
+				// 자기 자신 제거
+				if(posList[i].time == from){
+					console.log('case 1');
+					posList.splice(i, 1);
+					i--;
+					continue;
+				}
+
+				// selected box 왼쪽 끝보다 뒤에 있는 경우: 무시 (continue)
+				if(posList[i].time + posList[i].duration < this.selectedBoxInfo.time) {
+					console.log('case 2');
+					continue;
+				}
+
+				// 시작 시간은 뒤에 있으나 조금 잘리는 경우: duration 줄이기
+				if(posList[i].time < this.selectedBoxInfo.time){
+					console.log('case 3');
+					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
+					continue;
+				}
+
+				// 완전히 포개진 경우: 삭제
+				if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time + posList[i].duration <= rightEndTime){
+					console.log('case 4');
+					posList.splice(i, 1);
+					i--;
+					continue;
+				}
+
+				// 시작 시간은 포함되지만 duration을 줄이면 되는 경우: time 증가 && duration 감소
+				// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
+				if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time <= rightEndTime  && rightEndTime < posList[i].time + posList[i].duration){
+					console.log('case 5');
+					posList[i].duration -= (rightEndTime + 1 - posList[i].time);
+					posList[i].time = rightEndTime + 1;
+					if(!findIndex) {
+						console.log('FIND INDEX::', i);
+						this.selectedBoxInfo.posIndex = i;
+						findIndex = true;
+					}
+					continue;
+				}
+
+				// 시간이 바뀐 길이보다 큰 경우: 무시 (continue)
+				// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
+				if(rightEndTime < posList[i].time) {
+					console.log('case 6');
+					if(!findIndex) {
+						console.log('FIND INDEX::', i);
+						this.selectedBoxInfo.posIndex = i;
+						findIndex = true;
+					}
+					continue;
+				}
+			}
+			if(!findIndex) {
+				this.selectedBoxInfo.posIndex = posList.length;
+			}
+			posList.splice(this.selectedBoxInfo.posIndex, 0, temp);
+			this.setMusicbox(did, posList);
+			this.forceUpdate();
+		}
+	}
+
 	changeAlignWithCoordinate = () => {
 		this.alignWithCoordinate = !this.alignWithCoordinate;
 		this.DB_UPDATE(
@@ -1055,12 +1141,6 @@ export default class FormationScreen extends React.Component {
 					<Text style={styles.selectText}>Y</Text>
 					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editY(event.nativeEvent.text)}>
 						{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
-					{/* <TouchableOpacity onPress={()=>{}} disabled={!isSelected || this.state.isPlay} style={styles.button} activeOpacity={.7}>
-						<Text style={{color: COLORS.white}}>수정</Text>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={()=>{}} disabled={!isSelected || this.state.isPlay} style={styles.button} activeOpacity={.7}>
-						<Text style={{color: COLORS.white}}>취소</Text>
-					</TouchableOpacity> */}
 				</View>
 			</View>
 		)
@@ -1232,7 +1312,7 @@ export default class FormationScreen extends React.Component {
 					})
 					this.setState({isMenuPop: false});
 				}}
-				openDBScreen={()=>{this.setState({isMenuPop: false, isDBPop: true});}}/> 
+				openDBScreen={()=>{console.log('open DB'); this.setState({isMenuPop: false, isDBPop: true});}}/> 
 				: 
 				<View/> 
 				}
