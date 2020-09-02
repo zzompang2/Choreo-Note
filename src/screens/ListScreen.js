@@ -22,7 +22,6 @@ class ListScreen extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
-      db,
 			noteList: [],		// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
 			isEditMode: false,
 		}
@@ -184,7 +183,7 @@ class ListScreen extends React.Component {
 				{
 					text: "예!",
 					onPress: () => {
-						this.state.db.transaction(txn => {
+						db.transaction(txn => {
 							txn.executeSql(
 								"DELETE FROM note " +
 								"WHERE nid=?;",
@@ -256,7 +255,7 @@ class ListScreen extends React.Component {
 		// text가 비어있는 경우
 
 		// SQLite DB에서 업데이트
-		this.state.db.transaction(txn => {
+		db.transaction(txn => {
       txn.executeSql(
 				"UPDATE note " +
 				"SET title=? " +
@@ -264,6 +263,27 @@ class ListScreen extends React.Component {
 				[text, nid],
 			);
 		});
+	}
+
+	updateNoteList = () => {
+		console.log(TAG, "updateNoteList");
+
+		let _noteList = [];
+
+		db.transaction(txn => {
+      txn.executeSql(
+				"SELECT * FROM note",
+        [],
+        (tx, result) => {
+					for (let i = 0; i < result.rows.length; i++) {
+						console.log("item:", result.rows.item(i));
+						_noteList.push(result.rows.item(i));
+					}		
+					this.setState({noteList: _noteList});
+				}
+			);
+		});
+		return true;
 	}
 
 	listViewItemSeparator = () => <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
@@ -354,26 +374,6 @@ class ListScreen extends React.Component {
 	componentDidMount() {
 		console.log(TAG, "componentDidMount");
 		this.updateNoteList();
-	}
-
-	updateNoteList = () => {
-		console.log(TAG, "updateNoteList");
-
-		let _noteList = [];
-
-		this.state.db.transaction(txn => {
-      txn.executeSql(
-				"SELECT * FROM note",
-        [],
-        (tx, result) => {
-					for (let i = 0; i < result.rows.length; i++) {
-						console.log("item:", result.rows.item(i));
-						_noteList.push(result.rows.item(i));
-					}		
-					this.setState({noteList: _noteList})
-				}
-			);
-		});
 	}
 }
 

@@ -304,26 +304,25 @@ export default class FormationScreen extends React.Component {
 
 		this.setTimebox(markedTime);
 
+		for(let did=0; did<this.dancerList.length; did++)
+			this.setMusicbox(did);
+
 		// 댄서 0명일 경우: 비어있는 row 하나 추가
-		if(this.dancerList.length == 0){
+		if(this.dancerList.length < 10){
 			let rowView = [];
 			// 마지막 대열~노래 끝부분까지 회색박스 채우기
 			for(let i=0; i<=this.state.musicLength; i++){
-				rowView.push( <View style={this.styles('uncheckedBox')}/> )
+				rowView.push( <View key={rowView.length} style={[this.styles('uncheckedBox'), {height: this.boxHeight * (10-this.dancerList.length)}]}/> )
 			}
-			this.musicbox.splice(1, 1,
+			this.musicbox.push(
 				<View 
-				key={1}
+				key={-1}
 				flexDirection='row'>
 					{rowView}
 				</View>
 			)
 		}
-		// 댄서가 존재하는 경우
-		else{
-			for(let did=0; did<this.dancerList.length; did++)
-			this.setMusicbox(did);
-		}
+			
 	}
 
 	/** coordinate를 설정한다.
@@ -381,7 +380,7 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 			_nameColumn.push(
-				<View key={_nameColumn.length} style={{flex: 1, flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60}}>
+				<View key={_nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60}}>
 					<Text style={{fontSize: 11}}>{i+1}. {this.dancerList[i].name}</Text>
 				</View>
 			)
@@ -772,6 +771,7 @@ export default class FormationScreen extends React.Component {
 			console.log(i, '번째에 선택된 정보가 있다!');
 			this.allPosList[did][i].time = this.selectedBoxInfo.time;
 			this.allPosList[did][i].duration = duration;
+			this.setMusicbox(did);
 			this.setDancer();
 		}
 	}
@@ -809,6 +809,8 @@ export default class FormationScreen extends React.Component {
 
 		// update DB & allPosList
 		else{
+			this.selectedBoxInfo.duration = duration;
+
 			const rightEndTime = this.selectedBoxInfo.time + duration;
 			this.allPosList[did][this.selectedBoxInfo.posIndex].duration = duration;
 
@@ -867,6 +869,7 @@ export default class FormationScreen extends React.Component {
 				this.allPosList[did].splice(i, 1);
 				i--;
 			}
+			this.setMusicbox(did);
 			this.setDancer();
 		}
 	}
@@ -931,6 +934,89 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
+	editDuration = (text) => {
+		text = text.replaceAll(' ', '');
+
+		if(!isNaN(Number(text)) && text != '' && Number(text) >= 0)
+			this.resizePositionboxRight(true, Number(text));
+		else
+			Alert.alert("취소", "올바르지 않은 형식입니다.");
+	}
+
+	editTime = (text) => {
+		text = text.replaceAll(' ', '').split(':');
+
+		let min = 0;
+		let sec;
+		let time = -1;
+		
+		switch(text.length){
+			case 2:
+				min = Number(text[0]);
+				sec = Number(text[1]);
+				if(!isNaN(min) && !isNaN(sec) && text[0]!='' && text[1]!='')
+					time = min * 60 + sec;
+				break;
+
+			case 1:
+				sec = Number(text[0]);
+				if(!isNaN(sec) && text[0]!='')
+					time = sec;
+				break;
+
+			default:
+				return -1;
+		}
+		console.log(min + ':' + sec);
+		if(time >= 0) {
+			// UPDATE DB
+			// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
+			this.DB_UPDATE(
+				'position', 
+				{ time: time },
+				{
+					nid: ['=', this.state.noteInfo.nid],
+					did: ['=', this.selectedBoxInfo.did], 
+					time: ['=', this.selectedBoxInfo.time]
+				}
+			);
+			this.selectedBoxInfo.time = time;
+			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].time = time;
+			this.setMusicbox(this.selectedBoxInfo.did);
+			this.setDancer();
+		}
+		else{
+			Alert.alert("취소", "올바르지 않은 형식입니다.");
+		}
+	}
+
+	selectView = () => {
+		const isSelected = this.selectedBoxInfo.posIndex == -1 ? false : true;
+
+		return (
+			<View style={styles.selectContainer}>
+				<View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
+					<Text style={styles.selectText}>시작</Text>
+					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editTime(event.nativeEvent.text)}>
+						{isSelected ? this.timeFormat(this.selectedBoxInfo.time) : ''}</TextInput>
+					<Text style={styles.selectText}>길이</Text>
+					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
+						{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
+					<Text style={styles.selectText}>X</Text>
+					<TextInput style={styles.selectTextInput} editable={isSelected}>{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
+					<Text style={styles.selectText}>Y</Text>
+					<TextInput style={styles.selectTextInput} editable={isSelected}>{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
+					{/* <TouchableOpacity onPress={()=>{}} disabled={!isSelected || this.state.isPlay} style={styles.button} activeOpacity={.7}>
+						<Text style={{color: COLORS.white}}>수정</Text>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={()=>{}} disabled={!isSelected || this.state.isPlay} style={styles.button} activeOpacity={.7}>
+						<Text style={{color: COLORS.white}}>취소</Text>
+					</TouchableOpacity> */}
+				</View>
+			</View>
+		)
+	}
+
 	componentDidMount() {
 		console.log(TAG, "componentDidMount");
 
@@ -989,6 +1075,7 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
 		this.props.route.params.updateNoteList();
+		// this.props.route.params.updateNoteList();
 	}
 
 	render() {
@@ -1001,7 +1088,7 @@ export default class FormationScreen extends React.Component {
 			<View style={{flex: 1}}>
 
 				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('List');}}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 
@@ -1018,27 +1105,7 @@ export default class FormationScreen extends React.Component {
 					{ this.state.dancers }
 				</View>
 
-				<View style={styles.selectContainer}>
-					{/* { this.selectedBoxInfo.posIndex != -1 ? : } */}
-					<View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
-						<Text style={styles.selectText}>시작 시간</Text>
-						<TextInput style={styles.selectTextInput}>{this.selectedBoxInfo.time}</TextInput>
-						<Text style={styles.selectText}>지속 시간</Text>
-						<TextInput style={styles.selectTextInput}>{this.selectedBoxInfo.duration}</TextInput>
-						<TouchableOpacity onPress={()=>{}} disabled={this.state.isPlay} style={styles.button} activeOpacity={.7}>
-							<Text style={{color: COLORS.white}}>수정</Text>
-						</TouchableOpacity>
-					</View>
-					<View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
-						<Text style={styles.selectText}>X좌표</Text>
-						<TextInput style={styles.selectTextInput}>{this.selectedBoxInfo.posx}</TextInput>
-						<Text style={styles.selectText}>Y좌표</Text>
-						<TextInput style={styles.selectTextInput}>{this.selectedBoxInfo.posy}</TextInput>
-						<TouchableOpacity onPress={()=>{}} disabled={this.state.isPlay} style={styles.button} activeOpacity={.7}>
-							<Text style={{color: COLORS.white}}>취소</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
+				{this.selectView()}
 
 				<View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
 
@@ -1107,14 +1174,14 @@ export default class FormationScreen extends React.Component {
 				alignWithCoordinate={this.alignWithCoordinate}
 				changeAlignWithCoordinate={this.changeAlignWithCoordinate}
 				moveToDancer={() => {
-					if(this.state.isPlay) this.setState({isPlay: false});
-						this.props.navigation.navigate('Dancer', {
-							noteId: this.state.noteInfo.nid, 
-							dancerList: this.dancerList, 
-							allPosList: this.allPosList, 
-							changeDancerList: this.changeDancerList
-						})
-						this.setState({isMenuPop: false});
+					if(this.state.isPlay) { this.setState({isPlay: false}); }
+					this.props.navigation.navigate('Dancer', {
+						noteId: this.state.noteInfo.nid, 
+						dancerList: this.dancerList, 
+						allPosList: this.allPosList, 
+						changeDancerList: this.changeDancerList,
+					})
+					this.setState({isMenuPop: false});
 				}}
 				openDBScreen={()=>{this.setState({isMenuPop: false, isDBPop: true});}}/> 
 				: 
@@ -1180,40 +1247,37 @@ const styles = StyleSheet.create({
 	},
 	selectContainer: {
 		width:'100%', 
-		height:80,
+		height:50,
 		flexDirection: 'column',
 		backgroundColor:COLORS.grayLight, 
 		padding: 10,
 	},
 	selectText: {
-		flex: 1,
 		fontSize: 12,
 		textAlign: 'left',
 		color: COLORS.grayMiddle,
-		padding: 5,
+		padding: 3,
 	},
 	selectTextInput: {
 		flex: 1,
 		fontSize: 14,
-		textAlign: 'left',
-		color: COLORS.blackDark,
-		paddingVertical: 5,
-		paddingHorizontal: 15,
-		margin: 2,
+		textAlign: 'center',
+		color: COLORS.grayDark,
+		padding: 3,
+		margin: 3,
 		backgroundColor: COLORS.grayLight,
 		borderRadius: 5,
 		borderColor: COLORS.grayMiddle,
-		borderWidth: 2,
+		borderWidth: 1,
 	},
 	button: {
 		flex: 1,
 		fontSize: 14,
 		textAlign: 'center',
 		color: COLORS.white,
-		paddingVertical: 5,
-		paddingHorizontal: 15,
-		backgroundColor: COLORS.red,
-		marginLeft: 15,
+		padding: 5,
+		marginLeft: 5,
+		backgroundColor: COLORS.grayMiddle,
 		borderRadius: 20,
 		borderColor: COLORS.white,
 		borderWidth: 1,

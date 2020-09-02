@@ -184,7 +184,7 @@ export default class ListScreen extends React.Component {
 			<SafeAreaView style={{flex: 1, flexDirection: 'column', backgroundColor: COLORS.white}}>
 
 				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('Formation');}}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 
