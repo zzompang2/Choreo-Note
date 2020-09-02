@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView, StyleSheet, ScrollView, View, Text, Dimensions, TouchableOpacity, Alert, Switch,
+	SafeAreaView, StyleSheet, ScrollView, View, Text, Dimensions, TouchableOpacity, Alert,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -11,7 +11,6 @@ import Dancer from '../components/Dancer';
 import Positionbox from '../components/Positionbox';
 import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
-import DancerScreen from './DancerScreen';
 import DatabaseScreen from './DatabaseScreen';
 import Menu from '../components/Menu';
 
@@ -20,7 +19,7 @@ const TAG = "FormationScreen/";
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue];
 
 // 화면의 가로, 세로 길이 받아오기
-const {width,height} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 export default class FormationScreen extends React.Component {
 	constructor(props){
@@ -37,8 +36,8 @@ export default class FormationScreen extends React.Component {
 			dancers: [],
 			nameColumn: [],
 		}
-		this.allPosList=[];
-		this.dancerList=[];	// nid, did, name
+		this.allPosList = [];
+		this.dancerList = [];	// nid, did, name
 		this.scrollView;
 		this.scrollViewStyle;
 		this.timeText = [];
@@ -218,7 +217,6 @@ export default class FormationScreen extends React.Component {
 			// 선택된 블럭인 경우
 			const isSelected = (did == this.selectedDid) && (i == this.selectedPositionIdx);
 			if(isSelected) selectedIdxInRowView = curTime;
-			console.log(TAG, 'isSelected: ' + isSelected, '::', did, '==', this.selectedDid, '&&', i, '==', this.selectedPositionIdx);
 
 			// checked box 넣기
 			rowView.push(
@@ -249,7 +247,6 @@ export default class FormationScreen extends React.Component {
 			)
 		}
 
-		console.log(TAG, "selectedIdxInRowView:", selectedIdxInRowView);
 		if(selectedIdxInRowView != -1)
 			rowView.push(
 			<Positionbox
@@ -827,21 +824,31 @@ export default class FormationScreen extends React.Component {
 					'time+duration<=' + rightEndTime
 				]
 			);
+
+			console.log('selectedPositionIdx', this.selectedPositionIdx, this.allPosList[did].length);
 			// 댄서의 각 checked box 에 대해서...
-			for(let i = this.selectedPositionIdx + 1; i<this.allPosList.length; i++){
+			for(let i = this.selectedPositionIdx + 1; i<this.allPosList[did].length; i++){
+
+				console.log(rightEndTime, '\n', this.allPosList[did][i].time, '\n', this.allPosList[did][i].duration)
+
 				// 시간이 바뀐 길이보다 큰 경우: 무시 (break)
-				if(rightEndTime < this.allPosList[i].time) break;
+				if(rightEndTime < this.allPosList[did][i].time) break;
 
 				// 시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우: time++ && duration--
-				if(rightEndTime < this.allPosList[i].time + this.allPosList[i].duration){
-					const originTime = this.allPosList[i].time;
-					this.allPosList[i].duration -= (rightEndTime + 1 - originTime);
-					this.allPosList[i].time = rightEndTime + 1;
+				if(rightEndTime < this.allPosList[did][i].time + this.allPosList[did][i].duration){
+					console.log('시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우');
+					
+					const originTime = this.allPosList[did][i].time;
+					this.allPosList[did][i].duration -= (rightEndTime + 1 - originTime);
+					this.allPosList[did][i].time = rightEndTime + 1;
+
+					console.log(originTime, '->', this.allPosList[did][i].time, this.allPosList[did][i].time)
+
 					this.DB_UPDATE(
 						'position', 
 						{ 
-							duration: this.allPosList[i].duration,
-							time: this.allPosList[i].time 
+							duration: this.allPosList[did][i].duration,
+							time: this.allPosList[did][i].time 
 						},{
 							nid: ['=', this.state.noteInfo.nid],
 							did: ['=', did], 
@@ -851,7 +858,7 @@ export default class FormationScreen extends React.Component {
 					break;
 				}
 				// 바뀐 길이에 완전히 덮여버린 경우: 삭제 (splice)
-				this.allPosList.splice(i, 1);
+				this.allPosList[did].splice(i, 1);
 				i--;
 			}
 		}

@@ -10,8 +10,8 @@ export default class Positionbox extends React.Component {
 	constructor(props) {
 		super(props);
 		console.log(TAG, 'constructor', 'arkghaijldfjasdngfjladsnfjawenfjlawglfeaw')
-		this.time = this.props.time;
-		this.duration = this.props.duration;
+		this.time;
+		this.duration;
 	
 		this.leftResponder = PanResponder.create({
 			// 주어진 터치 이벤트에 반응할지를 결정(return T/F)
@@ -22,18 +22,20 @@ export default class Positionbox extends React.Component {
 				console.log(TAG, 'leftResponder/', "터치 시작");
 				// scroll lock
 				this.props.setScrollEnable(true);
+				// 초기 상태 저장
+				this.initialValue = {time: this.time, duration: this.duration};
       },
 
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
-				// this.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
+				// this.initialValue.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
 				// this.props.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
-				// _changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
+				// changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
-				const _changedDuration = this.duration - Math.round(gesture.dx / this.props.boxWidth);
+				const changedDuration = this.initialValue.duration - Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.duration != _changedDuration)
-					this.props.resizePositionboxLeft(false, _changedDuration, this.time);
+				if(this.props.duration != changedDuration)
+					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.time);
 			},
 
       // 터치이벤트 끝날 때.
@@ -43,10 +45,10 @@ export default class Positionbox extends React.Component {
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
-				this.props.resizePositionboxLeft(true, this.props.duration, this.time);
+				this.props.resizePositionboxLeft(true, this.props.duration, this.initialValue.time);
 				
-				this.time = this.props.time;					// 바뀐 time 값 저장
-				this.duration = this.props.duration;	// 바뀐 duration 값 저장
+				// this.time = this.props.time;					// 바뀐 time 값 저장
+				// this.duration = this.props.duration;	// 바뀐 duration 값 저장
       }
 		})
 
@@ -92,21 +94,22 @@ export default class Positionbox extends React.Component {
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
 				console.log(TAG, 'rightResponder/', "터치 시작");
-
 				// scroll lock
 				this.props.setScrollEnable(true);
+				// 초기 상태 저장
+				this.initialValue = {time: this.time, duration: this.duration};
       },
 
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
-				// this.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
+				// this.initialValue.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
 				// this.props.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
-				// _changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
+				// changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
-				const _changedDuration = this.duration + Math.round(gesture.dx / this.props.boxWidth);
+				const changedDuration = this.initialValue.duration + Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.duration != _changedDuration)
-					this.props.resizePositionboxRight(false, _changedDuration);
+				if(this.props.duration != changedDuration)
+					this.props.resizePositionboxRight(false, changedDuration);
 			},
 
       // 터치이벤트 끝날 때.
@@ -116,7 +119,7 @@ export default class Positionbox extends React.Component {
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
-				this.duration = this.props.duration;	// 바뀐 duration 값 저장
+				// this.duration = this.props.duration;	// 바뀐 duration 값 저장
 				this.props.resizePositionboxRight(true);
       }
 		})
@@ -124,6 +127,9 @@ export default class Positionbox extends React.Component {
 
 	render(){
 		console.log(TAG, 'render');
+
+		this.time = this.props.time;
+		this.duration = this.props.duration;
 
 		return(
 			<View style={this.props.containerStyle}>
