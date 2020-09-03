@@ -1346,13 +1346,6 @@ export default class FormationScreen extends React.Component {
 					
 					<View flexDirection='column'>
 
-						{/* <TouchableOpacity onPress={() => {
-							this.scrollOffset -= this.boxHeight;
-							this.nameScroll.scrollTo({y: this.scrollOffset});
-							this.musicboxScrollVertical.scrollTo({y: this.scrollOffset}); 
-							console.log('this.scrollOffset:', this.scrollOffset)}}>
-							<Text style={{height: this.boxHeight + 10, width: 60}}>up</Text>
-						</TouchableOpacity> */}
 						<View style={{height: this.boxHeight + 10}}/>
 
 						<ScrollView
@@ -1380,14 +1373,8 @@ export default class FormationScreen extends React.Component {
 					decelerationRate={0.5}		// 스크롤 속도 (iOS)
 					scrollEnabled={!this.state.isEditing}
 					showsHorizontalScrollIndicator={false}
-					ref={ref => (this.musicboxScrollHorizontal = ref)}
-					// scrollEventThrottle={16}					// onScroll 실행 간격(?)
-					// onScroll={event=>{}}							// 스크롤 중
-					// onScrollEndDrag={event=>{}}			// 손가락 떼었을 때
-					// onMomentumScrollEnd={event=>{}}	// 스크롤 움직임이 아예 멈췄을 때
-					// pagingEnabled={false} 						// 스크롤이 되어도 넘어가지는 못하도록 막음
-					// alwaysBounceVertical={true} 			// 상하, 좌우를 동시에!
-					>
+					ref={ref => (this.musicboxScrollHorizontal = ref)}>
+						
 						<ScrollView
 						bounces={false} 						// 오버스크롤 막기 (iOS)
 						stickyHeaderIndices={[0]}		// 0번째 View 고정
@@ -1413,14 +1400,6 @@ export default class FormationScreen extends React.Component {
 
 					</ScrollView>
 				</View>
-
-				{/* <TouchableOpacity onPress={() => {
-					this.scrollOffset += this.boxHeight;
-					this.nameScroll.scrollTo({y: this.scrollOffset});
-					this.musicboxScrollVertical.scrollTo({y: this.scrollOffset}); 
-					console.log('this.scrollOffset:', this.scrollOffset)}}>
-					<Text style={{height: this.boxHeight + 10, width: 60}}>down</Text>
-				</TouchableOpacity> */}
 
 				{ this.state.isMenuPop ? 
 				<Menu

@@ -202,6 +202,8 @@ export default class Dancer extends React.Component {
     const panStyle = { transform: this.state.pan.getTranslateTransform() }
     
     return (
+      // 플레이 중이거나 불투명도가 1(on stage)이라면 댄스 아이콘을 띄운다.
+      this.props.isPlay || this.fadeAnim._value != 0 ?
       <Animated.View
       {...this.panResponder.panHandlers}
       style={[panStyle, {
@@ -220,6 +222,9 @@ export default class Dancer extends React.Component {
       <Text style={[styles.number, {fontSize: this.props.radiusLength}]}>{this.props.did+1}</Text>
       {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
       </Animated.View>
+      :
+      // 플레이 중이 아니라면 불투명도가 0이라도 아이콘을 없애야 다른 댄서 아이콘의 터치를 막지 않는다.
+      <View/>
     )
   }
 
