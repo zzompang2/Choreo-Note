@@ -449,7 +449,7 @@ export default class FormationScreen extends React.Component {
     console.log(TAG + "dropPosition");
 		
 		// state 업데이트
-		let newPos = {posx: posx, posy: posy, time: time, duration: 0};
+		let newPos = {did: did, posx: posx, posy: posy, time: time, duration: 0};
 		let posList = this.allPosList[did];	// 참조 형식
 
 		for(var i=0; i<posList.length; i++){	// for문 밖에서도 사용하므로 let이 아닌 var
@@ -462,7 +462,7 @@ export default class FormationScreen extends React.Component {
 					this.selectedBoxInfo.posx = posx;
 					this.selectedBoxInfo.posy = posy;
 				}
-				newPos = {...newPos, duration: posList[i].duration};
+				newPos = {...newPos, time: posList[i].time, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
 				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, posList[i].time]);
 				this.setMusicbox(did);
@@ -920,6 +920,13 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	/**
+	 * 
+	 * @param {boolean} doUpdate 
+	 * @param {number} to 
+	 * @param {number} from 
+	 * @param {number} did 
+	 */
 	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, 'movePositionbox (', doUpdate, to, from, did, ')');
 
@@ -1118,12 +1125,22 @@ export default class FormationScreen extends React.Component {
 	}
 
 	editTime = (text) => {
-		text = text.replaceAll(' ', '').split(':');
+		/**
+		 * JavaScript에는 replaceAll 함수가 없다. 
+		 * 따라서 정규식을 사용해 replace으로 replaceAll의 효과를 사용했다.
+		 * 
+		 * text.replaceAll(' ', '') => text.replace(/ /gi, '')
+		 * g: 발생할 모든 pattern에 대한 전역 검색
+		 * i: 대/소문자 구분 안함
+		 * m: 여러 줄 검색
+		 */
+		text = text.replace(/ /gi, '').split(':');
 
 		let min = 0;
 		let sec;
 		let time = -1;
 		
+		// time 구하기
 		switch(text.length){
 			case 2:
 				min = Number(text[0]);
@@ -1144,18 +1161,22 @@ export default class FormationScreen extends React.Component {
 				}
 				break;
 		}
+
+		// 변경
 		if(time >= 0) {
-			time = time > this.state.musicLength ? this.state.musicLength : time;
-			// UPDATE DB
-			// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
-			this.DB_UPDATE('position', 
-				{time: time}, 
-				['nid=?', 'did=?', 'time=?'], 
-				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
-			this.selectedBoxInfo.time = time;
-			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].time = time;
-			this.setMusicbox(this.selectedBoxInfo.did);
-			this.setDancer();
+			this.movePositionbox(true, time);
+		
+		// 	time = time > this.state.musicLength ? this.state.musicLength : time;
+		// 	// UPDATE DB
+		// 	// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
+		// 	this.DB_UPDATE('position', 
+		// 		{time: time}, 
+		// 		['nid=?', 'did=?', 'time=?'], 
+		// 		[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
+		// 	this.selectedBoxInfo.time = time;
+		// 	this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].time = time;
+		// 	this.setMusicbox(this.selectedBoxInfo.did);
+		// 	this.setDancer();
 		}
 		else{
 			Alert.alert("취소", "올바르지 않은 형식입니다.");
@@ -1163,7 +1184,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	editDuration = (text) => {
-		text = text.replaceAll(' ', '');
+		text = text.replace(/ /gi, '');
 
 		if(!isNaN(Number(text)) && text != '' && Number(text) >= 0)
 			this.resizePositionboxRight(true, Math.round( Number(text) ));
@@ -1172,7 +1193,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	editX = (text) => {
-		text = text.replaceAll(' ', '');
+		text = text.replace(/ /gi, '');
 		if(!isNaN(Number(text)) && text != ''){
 			let posx = Math.round(Number(text));
 			posx = Math.abs(posx) > Math.floor(width/2) ? Math.floor(width/2) * Math.sign(posx) : posx;
@@ -1189,7 +1210,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	editY = (text) => {
-		text = text.replaceAll(' ', '');
+		text = text.replace(/ /gi, '');
 		if(!isNaN(Number(text)) && text != ''){
 			let posy = Math.round(Number(text));
 			posy = Math.abs(posy) > Math.floor(this.stageHeight/2) ? Math.floor(this.stageHeight/2) * Math.sign(posy) : posy;
