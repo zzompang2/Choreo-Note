@@ -377,7 +377,7 @@ export default class FormationScreen extends React.Component {
 	 */
 	setDancer = () => {
 		console.log(TAG, "setDancer: " + this.allPosList.length);
-		const dancerNum = this.allPosList.length;
+		const dancerNum = this.dancerList.length;
 		const radiusLength = 10 + this.radiusLevel * 2;
 
 		let _dancers = [];
@@ -388,9 +388,9 @@ export default class FormationScreen extends React.Component {
 				<Dancer
 				key={_dancers.length}
 				did={i} 
-				position={this.allPosList[i]} 
-				dropPosition={this.dropPosition} 
 				curTime={this.state.time}
+				posList={[...this.allPosList[i]]} 
+				dropPosition={this.dropPosition}
 				isPlay={this.state.isPlay}
 				radiusLength={radiusLength}
 				alignWithCoordinate={this.alignWithCoordinate}
@@ -408,7 +408,7 @@ export default class FormationScreen extends React.Component {
 	}
 	
 	/** <Dancer>에서 드래그 후 드랍한 위치 정보로 position DB에 추가/수정한다.
-	 * - re-render: YES ( forceUpdate() )
+	 * - re-render: YES ( setDancer() )
 	 * - update: this.allPosList, this.musicbox
 	 * @param did  dancer id
 	 * @param posx 드랍한 x 좌표
@@ -435,7 +435,7 @@ export default class FormationScreen extends React.Component {
 				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
 				// this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: ['=',this.state.noteInfo.nid], did: ['=',did], time: ['=',time]});
 				this.setMusicbox(did);
-				this.forceUpdate();
+				this.setDancer();
 				return;
 			}
 			// 존재하지 않는 시간인 경우: INSERT
@@ -445,7 +445,7 @@ export default class FormationScreen extends React.Component {
 		posList.splice(i, 0, newPos);
 		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0})
 		this.setMusicbox(did);
-		this.forceUpdate();
+		this.setDancer();
 	}
 
 	/** 기존 저장되어 있는 값들을 기반으로 position DB에 좌표를 추가한다.
@@ -496,10 +496,10 @@ export default class FormationScreen extends React.Component {
 	deletePosition = (did, time) => {
 		console.log(TAG, "deletePosition(",did,time,")");
 
-		if(time == 0) {
-			Alert.alert("경고", "초기 상태는 지울 수 없어요!");
-			return;
-		}
+		// if(this.posList[did].length == 1) {
+		// 	Alert.alert("경고", "댄서당 최소 하나의 위치는 표시해야 합니다!");
+		// 	return;
+		// }
 
 		let posList = this.allPosList[did];
 		for(let i=0; i<posList.length; i++){
