@@ -29,11 +29,10 @@ export default class FormationScreen extends React.Component {
       db,
 			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
 			time: 0,
-			musicLength: 120,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
-			isDBPop: true,		// DB 스크린이 켜져 있는가?
+			isDBPop: false,		// DB 스크린이 켜져 있는가?
 			dancers: [],
 		}
 		this.allPosList = [];	// nid, did, time, posx, posy, duration
@@ -160,7 +159,7 @@ export default class FormationScreen extends React.Component {
 		if(markedTime == undefined){
 			markedTime = 0;	// default로 0초를 마크
 			this.timeText = [];
-			for(let time=0; time <= this.state.musicLength; time++){
+			for(let time=0; time <= this.state.noteInfo.musicLength; time++){
 				this.timeText.push(
 					<View key={this.timeText.length} style={{flexDirection: 'column'}}>
 						<TouchableOpacity
@@ -222,7 +221,7 @@ export default class FormationScreen extends React.Component {
 		
 		// did번째 댄서에 대한 position이 하나도 없는 경우
 		if(posList.length == 0){
-			for(let time=0; time<=this.state.musicLength; time++){
+			for(let time=0; time<=this.state.noteInfo.musicLength; time++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, time)}>
 						<View style={this.styles('uncheckedBox')}></View>
@@ -281,7 +280,7 @@ export default class FormationScreen extends React.Component {
 			}
 
 			// 마지막 대열~노래 끝부분까지 회색박스 채우기
-			for(let i=prevTime+1; i<=this.state.musicLength; i++){
+			for(let i=prevTime+1; i<=this.state.noteInfo.musicLength; i++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
 						<View style={this.styles('uncheckedBox')}></View>
@@ -351,7 +350,7 @@ export default class FormationScreen extends React.Component {
 		if(this.dancerList.length < 10){
 			let rowView = [];
 			// 마지막 대열~노래 끝부분까지 회색박스 채우기
-			for(let i=0; i<=this.state.musicLength; i++){
+			for(let i=0; i<=this.state.noteInfo.musicLength; i++){
 				rowView.push( <View key={rowView.length} style={[this.styles('uncheckedBox'), {height: this.boxHeight * (10-this.dancerList.length)}]}/> )
 			}
 			this.musicbox.push(
@@ -841,7 +840,7 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "resizePositionboxRight(", doUpdate, duration, did, ')');
 		
 		const rightEndTime = this.selectedBoxInfo.time + duration;
-		if(this.state.musicLength < rightEndTime) {
+		if(this.state.noteInfo.musicLength < rightEndTime) {
 			console.log(TAG, '오른쪽 끝이에요.');
 			return;
 		}
@@ -930,7 +929,7 @@ export default class FormationScreen extends React.Component {
 	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, 'movePositionbox (', doUpdate, to, from, did, ')');
 
-		if(to < 0 || this.state.musicLength < to) return;
+		if(to < 0 || this.state.noteInfo.musicLength < to) return;
 
 		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 		let myPosInfo;
@@ -1094,7 +1093,7 @@ export default class FormationScreen extends React.Component {
 			// time에 맞게 scroll view를 강제 scroll하기
 			this.musicboxScrollHorizontal.scrollTo({x: (this.state.time+1)*this.boxWidth, animated: false});
 			this.setState({time: this.state.time+1}, () => {
-				if(this.state.time == this.state.musicLength)
+				if(this.state.time == this.state.noteInfo.musicLength)
 					this.pause();
 			});
 		}, 1000);
@@ -1115,7 +1114,7 @@ export default class FormationScreen extends React.Component {
 	jumpTo = (time) => {
 		let dest = this.state.time + time;
 		if(dest < 0) dest = 0;
-		else if (dest > this.state.musicLength) dest = this.state.musicLength;
+		else if (dest > this.state.noteInfo.musicLength) dest = this.state.noteInfo.musicLength;
 
 		this.setTimebox(dest);
 		this.musicboxScrollHorizontal.scrollTo({x: (dest)*this.boxWidth, animated: false});
@@ -1166,7 +1165,7 @@ export default class FormationScreen extends React.Component {
 		if(time >= 0) {
 			this.movePositionbox(true, time);
 		
-		// 	time = time > this.state.musicLength ? this.state.musicLength : time;
+		// 	time = time > this.state.noteInfo.musicLength ? this.state.noteInfo.musicLength : time;
 		// 	// UPDATE DB
 		// 	// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
 		// 	this.DB_UPDATE('position', 
@@ -1295,25 +1294,6 @@ export default class FormationScreen extends React.Component {
 									// 다음 댄서로 넘어가기 전, 정보들을 저장한다.
 									this.allPosList.push(posList);
 								}
-								// if(posResult.rows.length != 0){
-								// 	let posList = [];
-								// 	let did = 0;
-								// 	for(let i=0; i < posResult.rows.length; i++){
-								// 		// did번째 댄서의 position을 하나씩 push
-								// 		if(posResult.rows.item(i).did == did)
-								// 			posList.push(posResult.rows.item(i));
-								// 		// did번째 댄서의 position을 모두 넣은 경우: did++
-								// 		else{
-								// 			this.allPosList.push(posList);
-								// 			did++;
-								// 			i--;
-								// 			posList = [];
-								// 		}
-								// 	}
-								// 	// 마지막 댄서의 posList
-								// 	this.allPosList.push(posList);
-								// }
-
 								this.setMusicboxs();
 								this.setDancer();
 							},
@@ -1393,7 +1373,7 @@ export default class FormationScreen extends React.Component {
 						<MaterialCommunityIcons name='fast-forward-30' size={28} color={buttonColor}/>
 					</TouchableOpacity>
 
-					<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.musicLength)}</Text>
+					<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.noteInfo.musicLength)}</Text>
 
 				</View>
 

@@ -27,20 +27,21 @@ class ListScreen extends React.Component {
 		}
 
 		db.transaction(txn => {
-			txn.executeSql('DROP TABLE IF EXISTS note;');
-			txn.executeSql('DROP TABLE IF EXISTS dancer');
-			txn.executeSql('DROP TABLE IF EXISTS position');
+			// txn.executeSql('DROP TABLE IF EXISTS note;');
+			// txn.executeSql('DROP TABLE IF EXISTS dancer');
+			// txn.executeSql('DROP TABLE IF EXISTS position');
 
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS note(' +
-					'nid INTEGER NOT NULL, ' +
-					'title TEXT NOT NULL, ' +
-					'date TEXT NOT NULL, ' +
-					'music TEXT NOT NULL, ' +
-					'radiusLevel INTEGER NOT NULL, ' +
-					'coordinateLevel INTEGER NOT NULL, ' +
-					'alignWithCoordinate TINYINT(1) NOT NULL, ' +
-					'PRIMARY KEY("nid") );'
+				'nid INTEGER NOT NULL, ' +
+				'title TEXT NOT NULL, ' +
+				'date TEXT NOT NULL, ' +
+				'music TEXT NOT NULL, ' +
+				'musicLength INTEGER NOT NULL, ' +
+				'radiusLevel INTEGER NOT NULL, ' +
+				'coordinateLevel INTEGER NOT NULL, ' +
+				'alignWithCoordinate TINYINT(1) NOT NULL, ' +
+				'PRIMARY KEY("nid") );'
 			);
 
 			txn.executeSql(
@@ -63,83 +64,102 @@ class ListScreen extends React.Component {
 					'PRIMARY KEY(nid, did, time) );'
 			);
 
-			// txn.executeSql(
-			// 	'INSERT INTO note VALUES (0, "2016 가을 정기공연!!", "2016.1.1", "사람들이 움직이는 게", 3, 3, 1);', []
-			// );
-
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 0, "ham");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 1, "zzom");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 2, "jin");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 3, "gogo");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 4, "tuu");'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO dancer VALUES (0, 5, "aff");'
-			// );
-
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 0, -160, -100, 0);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 1, 0, -160, -60, 1);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 2, 0, -160, -20, 2);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 3, 0, -160, 20, 3);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 4, 0, -160, 60, 4);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 5, 0, -160, 100, 5);'
-			// );
-
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 0, 10, 160, -100, 0);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 1, 10, 160, -60, 0);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 2, 10, 160, -20, 0);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 3, 10, 160, 20, 0);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 4, 10, 160, 60, 0);'
-			// );
-			// txn.executeSql(
-			// 	'INSERT INTO position VALUES (0, 5, 10, 160, 100, 0);'
-			// );
+			// 앱을 시작할 때 노트가 하나도 없다면 test note를 만든다.
+			txn.executeSql(
+				"SELECT * FROM note", 
+				[],
+        (txn, result) => {
+					if(result.rows.length == 0)
+						this.addTestNote();
+				}
+			);
+			
+			// table 정보 검색
+			// txn.executeSql( "SELECT * FROM sqlite_master",);	// {name, sql, type, ...}
 		})
 	}
 
-	dateFormat(date) {
-		return date.getFullYear() + "." + (date.getMonth()+1) + "." + date.getDate();
+	dateFormat(date) { return date.getFullYear() + "." + (date.getMonth()+1) + "." + date.getDate(); }
+
+	addTestNote = () => {
+		console.log(TAG, "addTestNote");
+		const randomColor = Math.floor(Math.random() * (dancerColor.length-1));
+
+		db.transaction(txn => {
+			txn.executeSql(
+				'INSERT INTO note VALUES (0, "Choreo Note에 오신걸 환영해요!", ?, "노래 없음", 30, 3, 3, 1);', 
+				[this.dateFormat(new Date())],
+				this.updateNoteList,
+				(e) => {console.log('ERROR:', e);}
+			);
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (0, 0, ?, ?);",
+				['수제', randomColor]
+			);
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (0, 1, ?, ?);",
+				['창작', randomColor]
+			);
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (0, 2, ?, ?);",
+				['함자', randomColor+1]
+			);
+			txn.executeSql(
+				"INSERT INTO dancer VALUES (0, 3, ?, ?);",
+				['름이', randomColor+1]
+			);
+			txn.executeSql("INSERT INTO position VALUES (0, 0,  0, -30,  90, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0,  2, -30,   0, 4);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0,  8,   0,  30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 10,  30,  30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 12,  30, -30, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 15,  30,   0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 18,   0, -30, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 21, -60, -30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 22, -30,   0, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 23, -60,  30, 0);");
+			
+			txn.executeSql("INSERT INTO position VALUES (0, 1,  0,  30,  90, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1,  5,  30,   0, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1,  8,   0, -30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 10, -30, -30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 12, -30, -30, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 15, -30,   0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 18,   0,  30, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 21,  60,  30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 22,  30,   0, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 23,  60, -30, 0);");
+
+			txn.executeSql("INSERT INTO position VALUES (0, 2,  8, -180, 90, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 10,  -90, 90, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 12,  -90, 30, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 15,  -90,  0, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 18,  -30,  0, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 21,  -30, 60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 22,    0, 30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 23,   30, 60, 0);");
+
+			txn.executeSql("INSERT INTO position VALUES (0, 3,  8, 180,  90, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 10,  90,  90, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 12,  90,  30, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 15,  90,   0, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 18,  30,   0, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 21,  30, -60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 22,   0, -30, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 23, -30, -60, 0);");
+		});
 	}
 
 	addNote = () => {
 		const newNid = this.state.noteList.length;
 		const randomValue = Math.floor(Math.random() * randomCouple.length);
-		const randomColor = Math.floor(Math.random() * (dancerColor.length-1));
+		const randomColor = Math.floor(Math.random() * (dancerColor.length));
 
 		console.log(TAG, "addNote", newNid, randomValue);
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 3, 3, 1);', 
+				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 60, 3, 3, 1);', 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
 				() => {this.updateNoteList();},
 				() => {console.log('ERROR');}
@@ -150,10 +170,10 @@ class ListScreen extends React.Component {
 			);
 			txn.executeSql(
 				"INSERT INTO dancer VALUES (?, 1, ?, ?);",
-				[newNid, randomCouple[randomValue][2], randomColor+1]
+				[newNid, randomCouple[randomValue][2], randomColor]
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, 0, 0, -60, 0, 0);",
+				"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
 				[newNid],
 				() => {console.log('success!');},
 				(e) => {console.log('ERROR', e);}
@@ -163,12 +183,6 @@ class ListScreen extends React.Component {
 				[newNid],
 				() => {console.log('success!');},
 				(e) => {console.log('ERROR', e);}
-			);
-			txn.executeSql(
-				"INSERT INTO position VALUES (?, 1, 0, 30, 0, 2);",
-				[newNid],
-				() => {console.log('success!');},
-				(e) => {console.log('ERROR');}
 			);
 		});
 	}
@@ -188,14 +202,33 @@ class ListScreen extends React.Component {
 								"DELETE FROM note " +
 								"WHERE nid=?;",
 								[nid],
-								() => {console.log('success!');},
+								() => {
+									txn.executeSql(
+										"UPDATE note " +
+										"SET nid=nid-1 " +
+										"WHERE nid>?;",
+										[nid],
+										() => {console.log('success!');},
+										() => {console.log('ERROR4', e);}
+									);
+								},
 								(e) => {console.log('ERROR1', e);}
 							);
+
 							txn.executeSql(
 								"DELETE FROM position " +
 								"WHERE nid=?;",
 								[nid],
-								() => {console.log('success!');},
+								() => {
+									txn.executeSql(
+										"UPDATE position " +
+										"SET nid=nid-1 " +
+										"WHERE nid>?;",
+										[nid],
+										() => {console.log('success!');},
+										() => {console.log('ERROR6', e);}
+									);
+								},
 								(e) => {console.log('ERROR2', e);}
 							);
 
@@ -203,35 +236,17 @@ class ListScreen extends React.Component {
 								"DELETE FROM dancer " +
 								"WHERE nid=?;",
 								[nid],
-								() => {console.log('success!');},
+								() => {
+									txn.executeSql(
+										"UPDATE dancer " +
+										"SET nid=nid-1 " +
+										"WHERE nid>?;",
+										[nid],
+										() => {console.log('success!');},
+										() => {console.log('ERROR5', e);}
+									);
+								},
 								(e) => {console.log('ERROR3', e);}
-							);
-
-							txn.executeSql(
-								"UPDATE note " +
-								"SET nid=nid-1 " +
-								"WHERE nid>?;",
-								[nid],
-								() => {console.log('success!');},
-								() => {console.log('ERROR4', e);}
-							);
-
-							txn.executeSql(
-								"UPDATE dancer " +
-								"SET nid=nid-1 " +
-								"WHERE nid>?;",
-								[nid],
-								() => {console.log('success!');},
-								() => {console.log('ERROR5', e);}
-							);
-
-							txn.executeSql(
-								"UPDATE position " +
-								"SET nid=nid-1 " +
-								"WHERE nid>?;",
-								[nid],
-								() => {console.log('success!');},
-								() => {console.log('ERROR6', e);}
 							);
 						});
 
@@ -275,10 +290,9 @@ class ListScreen extends React.Component {
 				"SELECT * FROM note",
         [],
         (tx, result) => {
-					for (let i = 0; i < result.rows.length; i++) {
-						console.log("item:", result.rows.item(i));
+					for (let i = 0; i < result.rows.length; i++)
 						_noteList.push(result.rows.item(i));
-					}		
+					
 					this.setState({noteList: _noteList});
 				}
 			);

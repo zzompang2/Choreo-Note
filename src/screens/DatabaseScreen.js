@@ -102,7 +102,7 @@ export default class DatabaseScreen extends React.Component {
 							</FlatList>
 						</View>
 
-						<View style={{flex: 0, padding: 5}}>
+						<View style={{flex: 1, padding: 5}}>
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
@@ -152,7 +152,7 @@ export default class DatabaseScreen extends React.Component {
 							</FlatList>
 						</View>
 
-						<View style={{flex: 0, padding: 5}}>
+						<View style={{flex: 1, padding: 5}}>
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
@@ -177,7 +177,7 @@ export default class DatabaseScreen extends React.Component {
 							</FlatList>
 						</View>
 
-						<View style={{flex: 0, padding: 5}}>
+						{/* <View style={{flex: 1, padding: 5}}>
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
@@ -200,7 +200,7 @@ export default class DatabaseScreen extends React.Component {
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
 							</View>}>
 							</FlatList>
-						</View>
+						</View> */}
 					
 					</View>
 				</View>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
 		fontSize: 15,
 	},
 	columnText: {
-		fontSize: 12,
+		fontSize: 10,
 		color: COLORS.yellow, 
 		borderWidth: 1, 
 		borderColor: COLORS.grayDark,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	rowText: {
-		fontSize: 12,
+		fontSize: 10,
 		color: COLORS.white, 
 		borderWidth: 1, 
 		borderColor: COLORS.grayDark,
