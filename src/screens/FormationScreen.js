@@ -33,11 +33,10 @@ export default class FormationScreen extends React.Component {
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
-			isDBPop: false,		// DB 스크린이 켜져 있는가?
+			isDBPop: true,		// DB 스크린이 켜져 있는가?
 			dancers: [],
-			
 		}
-		this.allPosList = [];
+		this.allPosList = [];	// nid, did, time, posx, posy, duration
 		this.dancerList = [];	// nid, did, name
 		this.nameColumn = [],
 		// this.scrollView;
@@ -218,96 +217,110 @@ export default class FormationScreen extends React.Component {
 	 * @param {array} posList (default) this.allPosList[did]
 	 */
 	setMusicbox = (did, posList = this.allPosList[did]) => {
-		let prevTime = -1;
+		console.log(TAG, 'setMusicbox (', did, posList, ')');
 		let rowView = [];
-		let selectedIdxInRowView = -1;
 		
-		for(let i=0; i<posList.length; i++){
-
-			const curTime = posList[i].time;
-			const duration = posList[i].duration;
-
-			// duration으로 인해 이전 checked box에 덮어진 경우
-			if(curTime <= prevTime){
-				continue;
+		// did번째 댄서에 대한 position이 하나도 없는 경우
+		if(posList.length == 0){
+			for(let time=0; time<=this.state.musicLength; time++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, time)}>
+						<View style={this.styles('uncheckedBox')}></View>
+					</TouchableOpacity>
+				)
 			}
+		}
+		else{
+			let prevTime = -1;
+			let selectedIdxInRowView = -1;
 
-			// 이전 좌표의 시간 ~ 다음 좌표의 시간까지 unchecked box 채우기
-			for(let time=prevTime+1; time<curTime; time++){
+			for(let i=0; i<posList.length; i++){
+
+				const curTime = posList[i].time;
+				const duration = posList[i].duration;
+
+				// duration으로 인해 이전 checked box에 덮어진 경우
+				if(curTime <= prevTime){
+					continue;
+				}
+
+				// 이전 좌표의 시간 ~ 다음 좌표의 시간까지 unchecked box 채우기
+				for(let time=prevTime+1; time<curTime; time++){
+					rowView.push(
+						<TouchableOpacity 
+						key={rowView.length} 
+						activeOpacity={1} 
+						onLongPress={()=>this.addPosition(did, time)}>
+							<View style={this.styles('uncheckedBox')}></View>
+						</TouchableOpacity>
+					)
+				}
+
+				// 선택된 블럭인 경우
+				const isSelected = (i == this.selectedBoxInfo.posIndex) && (did == this.selectedBoxInfo.did);
+				if(isSelected) selectedIdxInRowView = curTime;
+
+				// checked box 넣기
 				rowView.push(
 					<TouchableOpacity 
-					key={rowView.length} 
-					activeOpacity={1} 
-					onLongPress={()=>this.addPosition(did, time)}>
+					key={rowView.length}
+					onPress={()=>this.selectPosition(did, i)}
+					onLongPress={()=>this.deletePosition(did, curTime)}
+					activeOpacity={.8}
+					disabled={isSelected}
+					style={{alignItems: 'center', justifyContent: 'center',}}>
+						<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration,}]}/>
+						<View style={[this.styles('checkedBox'), {
+							position: 'absolute',
+							width: this.positionboxSize + this.boxWidth * duration, 
+							backgroundColor: dancerColor[this.dancerList[did].color],
+						}]}/>
+					</TouchableOpacity>
+				)
+				prevTime = curTime + duration;
+			}
+
+			// 마지막 대열~노래 끝부분까지 회색박스 채우기
+			for(let i=prevTime+1; i<=this.state.musicLength; i++){
+				rowView.push(
+					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
 						<View style={this.styles('uncheckedBox')}></View>
-					 </TouchableOpacity>
+					</TouchableOpacity>
 				)
 			}
 
-			// 선택된 블럭인 경우
-			const isSelected = (i == this.selectedBoxInfo.posIndex) && (did == this.selectedBoxInfo.did);
-			if(isSelected) selectedIdxInRowView = curTime;
-
-			// checked box 넣기
-			rowView.push(
-				<TouchableOpacity 
-				key={rowView.length}
-				onPress={()=>this.selectPosition(did, i)}
-				onLongPress={()=>this.deletePosition(did, curTime)}
-				activeOpacity={.8}
-				disabled={isSelected}
-				style={{alignItems: 'center', justifyContent: 'center',}}>
-					<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration,}]}/>
-					<View style={[this.styles('checkedBox'), {
+			if(selectedIdxInRowView != -1)
+				rowView.push(
+					<Positionbox
+					key={-1}
+					boxWidth={this.boxWidth}
+					time={this.selectedBoxInfo.time}
+					duration={this.selectedBoxInfo.duration}
+					setScrollEnable={this.setScrollEnable}
+					resizePositionboxLeft={this.resizePositionboxLeft}
+					resizePositionboxRight={this.resizePositionboxRight}
+					movePositionbox={this.movePositionbox}
+					unselectPosition={this.unselectPosition}
+					containerStyle={{
+						height: this.boxHeight, 
+						width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
 						position: 'absolute',
-						width: this.positionboxSize + this.boxWidth * duration, 
+						flexDirection: 'row',
+						alignItems: 'center',
+						justifyContent: 'space-between',
+						borderWidth: 2,
+						borderColor: COLORS.green,
+						borderRadius: this.boxWidth/4,
+						left: this.boxWidth * this.selectedBoxInfo.time - this.boxWidth/2,
+					}}
+					boxStyle={[this.styles('checkedBox'), {
+						width: this.positionboxSize + this.boxWidth * this.selectedBoxInfo.duration,
 						backgroundColor: dancerColor[this.dancerList[did].color],
-					}]}/>
-				</TouchableOpacity>
-			)
-			prevTime = curTime + duration;
+					}]}
+					buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: this.boxWidth/4}}
+					/>
+				);
 		}
-
-		// 마지막 대열~노래 끝부분까지 회색박스 채우기
-		for(let i=prevTime+1; i<=this.state.musicLength; i++){
-			rowView.push(
-				<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
-					<View style={this.styles('uncheckedBox')}></View>
-				</TouchableOpacity>
-			)
-		}
-
-		if(selectedIdxInRowView != -1)
-			rowView.push(
-			<Positionbox
-			key={-1}
-			boxWidth={this.boxWidth}
-			time={this.selectedBoxInfo.time}
-			duration={this.selectedBoxInfo.duration}
-			setScrollEnable={this.setScrollEnable}
-			resizePositionboxLeft={this.resizePositionboxLeft}
-			resizePositionboxRight={this.resizePositionboxRight}
-			movePositionbox={this.movePositionbox}
-			unselectPosition={this.unselectPosition}
-			containerStyle={{
-				height: this.boxHeight, 
-				width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
-				position: 'absolute',
-				flexDirection: 'row',
-				alignItems: 'center',
-				justifyContent: 'space-between',
-				borderWidth: 2,
-				borderColor: COLORS.green,
-				borderRadius: this.boxWidth/4,
-				left: this.boxWidth * this.selectedBoxInfo.time - this.boxWidth/2,
-			}}
-			boxStyle={[this.styles('checkedBox'), {
-				width: this.positionboxSize + this.boxWidth * this.selectedBoxInfo.duration,
-				backgroundColor: dancerColor[this.dancerList[did].color],
-			}]}
-			buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: this.boxWidth/4}}
-			/>
-			);
 
 		this.musicbox.splice(did, 1,
 			<View 
@@ -380,6 +393,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	setDancerName = () => {
+		console.log(TAG, "setDancerName: dancerNum = " + this.dancerList.length);
 		const dancerNum = this.dancerList.length;
 		this.nameColumn = [];	// +10 : timeBox에서 positionbox와의 간격
 		for(let i=0; i<dancerNum; i++){
@@ -396,7 +410,7 @@ export default class FormationScreen extends React.Component {
 	 * - update: dancers, nameColumn
 	 */
 	setDancer = () => {
-		console.log(TAG, "setDancer: " + this.allPosList.length);
+		console.log(TAG, "setDancer: dancerNum = " + this.dancerList.length);
 		
 		const dancerNum = this.dancerList.length;
 		const radiusLength = 10 + this.radiusLevel * 2;
@@ -420,7 +434,7 @@ export default class FormationScreen extends React.Component {
 				/>
 			)
 		}
-		this.setState({dancers: _dancers})
+		this.setState({dancers: _dancers});
 	}
 	
 	/** <Dancer>에서 드래그 후 드랍한 위치 정보로 position DB에 추가/수정한다.
@@ -436,28 +450,30 @@ export default class FormationScreen extends React.Component {
 		
 		// state 업데이트
 		let newPos = {posx: posx, posy: posy, time: time, duration: 0};
-		let posList = this.allPosList[did];
+		let posList = this.allPosList[did];	// 참조 형식
 
 		for(var i=0; i<posList.length; i++){	// for문 밖에서도 사용하므로 let이 아닌 var
-			// 이미 존재하는 시간인 경우: UPDATE
-			if(time == posList[i].time){
-				// selected position이 바뀐 경우
-				if(this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == did && this.selectedBoxInfo.time == time){
+			// 0번째보다 이전 시간인 경우는 존재하지 않는다. 드래그할 수 없게 막았기 때문.
+
+			// i번째 box에 속한 경우: UPDATE
+			if(posList[i].time <= time && time <= posList[i].time + posList[i].duration){
+				// selected box인 경우
+				if(this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == did && this.selectedBoxInfo.time == posList[i].time){
 					this.selectedBoxInfo.posx = posx;
 					this.selectedBoxInfo.posy = posy;
 				}
 				newPos = {...newPos, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
-				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
-				// this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: ['=',this.state.noteInfo.nid], did: ['=',did], time: ['=',time]});
+				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, posList[i].time]);
 				this.setMusicbox(did);
 				this.setDancer();
 				return;
 			}
-			// 존재하지 않는 시간인 경우: INSERT
+			// 어떤 box에도 속하지 않은 경우: INSERT
 			else if(time < posList[i].time)
 				break;
 		}
+		// 모든 박스를 확인하고 for문을 나온 경우: INSERT
 		posList.splice(i, 0, newPos);
 		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0})
 		this.setMusicbox(did);
@@ -1220,54 +1236,72 @@ export default class FormationScreen extends React.Component {
 	componentDidMount() {
 		console.log(TAG, "componentDidMount");
 
+		this.dancerList = [];
+		this.allPosList = [];
+
 		this.state.db.transaction(txn => {
       txn.executeSql(
-				"SELECT DISTINCT d.did, d.name, d.color " +
-				"FROM position AS p, dancer AS d " +
-				"WHERE p.nid=? " +
-				"AND p.nid=d.nid " +
-				"AND p.did=d.did;",
+				"SELECT * " +
+				"FROM dancer " +
+				"WHERE nid=?;",
         [this.state.noteInfo.nid],
         (tx, dancerResult) => {
+					console.log(TAG, 'DB SELECT SUCCESS!');
 					for (let i = 0; i < dancerResult.rows.length; i++) {
 						this.dancerList.push(dancerResult.rows.item(i)); // {did, name, color}
 					}
-				}
+
+					this.state.db.transaction(txn => {
+						txn.executeSql(
+							"SELECT * " +
+							"FROM position " +
+							"WHERE nid=? " +
+							"ORDER BY did, time;",
+							[this.state.noteInfo.nid],
+							(tx, posResult) => {
+								console.log(TAG, 'DB SELECT SUCCESS!');
+
+								let i=0; // i: posResult.rows 의 index
+								for(let did=0; did<this.dancerList.length; did++){
+									let posList = [];
+									for(; i<posResult.rows.length; i++){
+										// did가 같은 정보들을 가져온다.
+										if(posResult.rows.item(i).did == did)
+											posList.push(posResult.rows.item(i));
+										// 다음 댄서로 넘어간다.
+										else break;
+									}
+									// 다음 댄서로 넘어가기 전, 정보들을 저장한다.
+									this.allPosList.push(posList);
+								}
+								// if(posResult.rows.length != 0){
+								// 	let posList = [];
+								// 	let did = 0;
+								// 	for(let i=0; i < posResult.rows.length; i++){
+								// 		// did번째 댄서의 position을 하나씩 push
+								// 		if(posResult.rows.item(i).did == did)
+								// 			posList.push(posResult.rows.item(i));
+								// 		// did번째 댄서의 position을 모두 넣은 경우: did++
+								// 		else{
+								// 			this.allPosList.push(posList);
+								// 			did++;
+								// 			i--;
+								// 			posList = [];
+								// 		}
+								// 	}
+								// 	// 마지막 댄서의 posList
+								// 	this.allPosList.push(posList);
+								// }
+
+								this.setMusicboxs();
+								this.setDancer();
+							},
+							() => {console.log(TAG, 'DB SELECT ERROR');}
+						);
+					});
+				},
+				() => {console.log(TAG, 'DB SELECT ERROR');}
 			)
-		});
-
-		this.state.db.transaction(txn => {
-			txn.executeSql(
-				"SELECT did, time, posx, posy, duration " +
-				"FROM position " +
-				"WHERE nid=? " +
-				"ORDER BY did, time;",
-				[this.state.noteInfo.nid],
-				(tx, posResult) => {
-					if(posResult.rows.length != 0){
-						let posList = [];
-						let did = 0;
-						for(let i=0; i < posResult.rows.length; i++){
-							// did번째 댄서의 position을 하나씩 push
-							if(posResult.rows.item(i).did == did){
-								posList.push(posResult.rows.item(i));
-							}
-							// did번째 댄서의 position을 모두 넣은 경우
-							else{
-								this.allPosList.push(posList);
-								did++;
-								i--;
-								posList = [];
-							}
-						}
-						// 마지막 댄서의 posList
-						this.allPosList.push(posList);
-					}
-
-					this.setMusicboxs();
-					this.setDancer();
-				}
-			);
 		});
 	}
 
@@ -1374,7 +1408,7 @@ export default class FormationScreen extends React.Component {
 					scrollEnabled={!this.state.isEditing}
 					showsHorizontalScrollIndicator={false}
 					ref={ref => (this.musicboxScrollHorizontal = ref)}>
-						
+
 						<ScrollView
 						bounces={false} 						// 오버스크롤 막기 (iOS)
 						stickyHeaderIndices={[0]}		// 0번째 View 고정
