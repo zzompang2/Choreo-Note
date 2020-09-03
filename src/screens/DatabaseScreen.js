@@ -58,8 +58,9 @@ export default class DatabaseScreen extends React.Component {
 
 	render() {
 		console.log(TAG, "render");
-		let positionList = [];
 
+		// 댄서별로 묶여있는 배열을 풀어 하나의 배열로 만들기
+		let positionList = [];
 		this.props.allPosList.forEach(posList => {
 			posList.forEach(pos => {
 				positionList.push({...pos, key: positionList.length});
@@ -79,95 +80,128 @@ export default class DatabaseScreen extends React.Component {
 				</View>
 
 				<View style={{flex: 1, flexDirection: 'row'}}>
-					<View 
-					style={{flexDirection: 'column', width: '40%', padding: 5}}>
+					<View style={{flexDirection: 'column', width: '50%', justifyContent: 'flex-start'}}>
 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>name</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>color</Text>
+						<View style={{flex: 0, padding: 5}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>name</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>color</Text>
+							</View>
+							<FlatList
+							data={this.dancerList}
+							keyExtractor={(item, index) => index.toString()}
+							renderItem={({item, index}) => 
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.name}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.color}</Text>
+							</View>}>
+							</FlatList>
 						</View>
-						<FlatList
-						data={this.dancerList}
-						keyExtractor={(item, index) => index.toString()}
-						renderItem={({item, index}) => 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.name}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.color}</Text>
-						</View>
-						}/>
 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>name</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>color</Text>
+						<View style={{flex: 0, padding: 5}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
+							</View>
+							<FlatList
+							style={{height: 100}}
+							ItemSeparatorComponent={this.listViewItemSeparator}
+							data={this.positionList}
+							keyExtractor={(item, index) => index.toString()}
+							renderItem={({item, index}) => 
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.time}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
+							</View>}>
+							</FlatList>
 						</View>
-						<FlatList
-						data={this.props.dancerList}
-						keyExtractor={(item, index) => index.toString()}
-						renderItem={({item, index}) => 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.name}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.color}</Text>
-						</View>
-						}/>
-						
+
 					</View>
 
-					<View style={{flexDirection: 'column', width: '60%', padding: 5}}>
+					<View style={{flexDirection: 'column', width: '50%'}}>
 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
+						<View style={{flex: 0, padding: 5}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>name</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>color</Text>
+							</View>
+							<FlatList
+							data={this.props.dancerList}
+							keyExtractor={(item, index) => index.toString()}
+							renderItem={({item, index}) => 
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.name}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.color}</Text>
+							</View>}>
+							</FlatList>
 						</View>
-						<FlatList
-						ItemSeparatorComponent={this.listViewItemSeparator}
-						data={this.positionList}
-						keyExtractor={(item, index) => index.toString()}
-						renderItem={({item, index}) => 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.time}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
-						</View>
-						}/>
 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
-							<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
+						<View style={{flex: 0, padding: 5}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
+							</View>
+							<FlatList
+							ItemSeparatorComponent={this.listViewItemSeparator}
+							data={positionList}
+							keyExtractor={(item, index) => index.toString()}
+							renderItem={({item, index}) => 
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.time}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
+							</View>}>
+							</FlatList>
 						</View>
-						<FlatList
-						ItemSeparatorComponent={this.listViewItemSeparator}
-						data={positionList}
-						keyExtractor={(item, index) => index.toString()}
-						renderItem={({item, index}) => 
-						<View style={{flexDirection: 'row'}}>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.time}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
-							<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
-						</View>
-						}/>
 
+						<View style={{flex: 0, padding: 5}}>
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>time</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
+							</View>
+							<FlatList
+							ItemSeparatorComponent={this.listViewItemSeparator}
+							data={this.props.posList}
+							keyExtractor={(item, index) => index.toString()}
+							renderItem={({item, index}) => 
+							<View style={{flexDirection: 'row'}}>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.time}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
+							</View>}>
+							</FlatList>
+						</View>
+					
 					</View>
 				</View>
 

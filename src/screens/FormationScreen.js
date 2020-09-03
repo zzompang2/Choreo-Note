@@ -33,7 +33,7 @@ export default class FormationScreen extends React.Component {
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
-			isDBPop: false,		// DB 스크린이 켜져 있는가?
+			isDBPop: true,		// DB 스크린이 켜져 있는가?
 			dancers: [],
 			nameColumn: [],
 		}
@@ -56,7 +56,18 @@ export default class FormationScreen extends React.Component {
 		this.setCoordinate();
 	}
 
-	DB_UPDATE = (table, set, where, callback = ()=>{}) => {
+	/**
+	 * DB_UPDATE('position', 
+	 * 	{posx: posx, posy: posy}, 
+	 * 	['nid=?', 'did=?', 'time=?'], 
+	 * 	[nid, did, time]);
+	 * @param {string} table 
+	 * @param {JSX} set 
+	 * @param {array<string>} where 
+	 * @param {array} param
+	 * @param {*} callback 
+	 */
+	DB_UPDATE = (table, set, where, param = [], callback = ()=>{}) => {
 		console.log(TAG, 'DB_UPDATE');
 
 		let setString = "*";
@@ -65,8 +76,10 @@ export default class FormationScreen extends React.Component {
 		for(let key in set)
 			setString += ", " + key + "=" + set[key];
 		
-		for(let key in where)
-			whereString += " AND " + key + where[key][0] + where[key][1];
+		where.forEach(str => {
+			whereString += " AND " + str;
+		});
+			
 		
 		setString = setString.replace("*, ", "");
 		whereString = whereString.replace("* AND ", "");
@@ -76,52 +89,57 @@ export default class FormationScreen extends React.Component {
 				"UPDATE " + table + " " +
 				"SET " + setString + " " +
 				"WHERE " + whereString + ";",
-				[],
-				callback,
-				// () => {console.log(TAG, 'DB UPDATE SUCCESS!')},
+				param,
+				() => {console.log(TAG, 'DB UPDATE SUCCESS!'); callback()},
 				(error) => {console.log(TAG, 'DB UPDATE ERROR:', error)}
 			);
 		});
 	}
 
-	DB_DELETE = (table, where, callback = ()=>{}) => {
-		let whereString = "*";
+	/**
+	 * DB_DELETE('position', 
+	 * 	['nid=?', 'did=?', 'time=?'], 
+	 * 	[nid, did, time]);
+	 * @param {*} table 
+	 * @param {*} where 
+	 * @param {*} param 
+	 * @param {*} callback 
+	 */
+	DB_DELETE = (table, where, param = [], callback = ()=>{}) => {
+		let whereString = "";
 
-		where.forEach(cond => { whereString += " AND " + cond; });
-		whereString = whereString.replace("* AND ", "");
+		where.forEach(str => { whereString += " AND " + str; });
+		whereString = whereString.replace(" AND ", "");	// replace: 가장 처음 나타나는 것만 대체
 		
-		console.log(TAG, 'DB_DELETE:', "DELETE FROM " + table + " " + "WHERE " + whereString);
-
 		this.state.db.transaction(txn => {
       txn.executeSql(
 				"DELETE FROM " + table + " " +
 				"WHERE " + whereString,
-				[],
-				callback,
-				//() => {console.log(TAG, 'DB DELETE SUCCESS!');},
+				param,
+				() => {console.log(TAG, 'DB DELETE SUCCESS!'); callback();},
 				(error) => {console.log(TAG, 'DB DELETE ERROR:', error)}
 			);
 		});
 	}
 
-	DB_INSERT = (table, value) => {
+	DB_INSERT = (table, value, callback = () => {}) => {
 		console.log(TAG, 'DB_INSERT');
-		let keyString = "*";
-		let valueString = "*";
+		let keyString = "";
+		let valueString = "";
 
 		for(let key in value){
 			keyString += ", " + key;
 			valueString += ", " + value[key];
 		}
-		keyString = keyString.replace("*, ", "");
-		valueString = valueString.replace("*, ", "");
+		keyString = keyString.replace(", ", "");
+		valueString = valueString.replace(", ", "");
 
 		this.state.db.transaction(txn => {
 			txn.executeSql(
 				"INSERT INTO " + table + "(" + keyString + ")" + " VALUES (" + valueString + ");",
 				[],
-				() => {console.log('insert good')},
-				(error) => {console.log('ERROR:', error)}
+				() => {console.log(TAG, 'DB INSERT SUCCESS!'); callback();},
+				(error) => {console.log(TAG, 'DB INSERT ERROR:', error);}
 			);
 		})
 	}
@@ -414,7 +432,8 @@ export default class FormationScreen extends React.Component {
 				}
 				newPos = {...newPos, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
-				this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: ['=',this.state.noteInfo.nid], did: ['=',did], time: ['=',time]});
+				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
+				// this.DB_UPDATE('position', {posx: posx, posy: posy}, {nid: ['=',this.state.noteInfo.nid], did: ['=',did], time: ['=',time]});
 				this.setMusicbox(did);
 				this.forceUpdate();
 				return;
@@ -490,14 +509,17 @@ export default class FormationScreen extends React.Component {
 			}
 		}
 
-		this.DB_DELETE(
-			'position', 
-			[
-				'nid='  + this.state.noteInfo.nid, 
-				'did='  + did,
-				'time=' + time
-			]
-		)
+		this.DB_DELETE('position', 
+	  	['nid=?', 'did=?', 'time=?'], 
+	  	[this.state.noteInfo.nid, did, time]);
+		// this.DB_DELETE(
+		// 	'position', 
+		// 	[
+		// 		'nid='  + this.state.noteInfo.nid, 
+		// 		'did='  + did,
+		// 		'time=' + time
+		// 	]
+		// )
 		this.setMusicbox(did);
 		this.setDancer();
 	}
@@ -529,7 +551,8 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: ['=',this.state.noteInfo.nid]});
+		// this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: ['=',this.state.noteInfo.nid]});
+		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, ['nid=?'], [this.state.noteInfo.nid]);
 		this.setCoordinate();
 		this.setDancer();	// dancer에게 coordinateLevel 전달하기 위해
 	}
@@ -560,7 +583,8 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: ['=',this.state.noteInfo.nid]});
+		// this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: ['=',this.state.noteInfo.nid]});
+		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, ['nid=?'], [this.state.noteInfo.nid]);
 		this.setDancer();
 	}
 
@@ -711,33 +735,41 @@ export default class FormationScreen extends React.Component {
 
 			posList[i] = {...posList[i], time: this.selectedBoxInfo.time, duration: duration};
 
+			this.posList = posList; 	// for DB debug
 			this.setMusicbox(did, posList);
 			this.forceUpdate();
 		}
 
 		// update DB & allPosList
 		else{
-			this.DB_DELETE(
-				'position', 
-				[
-					'nid='   + this.state.noteInfo.nid, 
-					'did='   + did,
-					'time>=' + this.selectedBoxInfo.time,
-					'time<'  + time
-				],
+			this.DB_DELETE('position', 
+				['nid=?', 'did=?', 'time>=?', 'time<?'], 
+				[this.state.noteInfo.nid, did, this.selectedBoxInfo.time, time],
+			// this.DB_DELETE(
+			// 	'position', 
+			// 	[
+			// 		'nid='   + this.state.noteInfo.nid, 
+			// 		'did='   + did,
+			// 		'time>=' + this.selectedBoxInfo.time,
+			// 		'time<'  + time
+			// 	],
 				()=>{
-					this.DB_UPDATE(
-						'position', 
-						{
-							duration: duration, 
-							time: this.selectedBoxInfo.time
-						},
-						{
-							nid: ['=',this.state.noteInfo.nid],
-							did: ['=',did], 
-							time: ['=',time]
-						}
-					)
+					this.DB_UPDATE('position', 
+					{duration: duration, time: this.selectedBoxInfo.time}, 
+					['nid=?', 'did=?', 'time=?'], 
+					[this.state.noteInfo.nid, did, time]);
+					// this.DB_UPDATE(
+					// 	'position', 
+					// 	{
+					// 		duration: duration, 
+					// 		time: this.selectedBoxInfo.time
+					// 	},
+					// 	{
+					// 		nid: ['=',this.state.noteInfo.nid],
+					// 		did: ['=',did], 
+					// 		time: ['=',time]
+					// 	}
+					// )
 				}
 			);
 			let i = 0;
@@ -755,13 +787,17 @@ export default class FormationScreen extends React.Component {
 				if(this.allPosList[did][i].time < this.selectedBoxInfo.time) {
 					const reducedDuration = this.selectedBoxInfo.time - this.allPosList[did][i].time - 1;
 					this.allPosList[did][i].duration = reducedDuration;
-					this.DB_UPDATE(
-						'position', 
-						{ duration: reducedDuration },
-						{
-							nid: ['=',this.state.noteInfo.nid],
-							did: ['=',did], 
-							time: ['=',this.allPosList[did][i].time]})
+					this.DB_UPDATE('position', 
+					{duration: reducedDuration}, 
+					['nid=?', 'did=?', 'time=?'], 
+					[this.state.noteInfo.nid, did, this.allPosList[did][i].time]);
+					// this.DB_UPDATE(
+					// 	'position', 
+					// 	{ duration: reducedDuration },
+					// 	{
+					// 		nid: ['=',this.state.noteInfo.nid],
+					// 		did: ['=',did], 
+					// 		time: ['=',this.allPosList[did][i].time]})
 					continue;
 				}
 				// 바뀐 시간 이상 && 바뀌가 전 시간보다 작은 경우: 삭제 (splice)
@@ -804,6 +840,7 @@ export default class FormationScreen extends React.Component {
 				posList.splice(i, 1);
 				i--;
 			}
+			this.posList = posList; 	// for DB debug
 			this.setMusicbox(did, posList);
 			this.forceUpdate();
 		}
@@ -815,24 +852,32 @@ export default class FormationScreen extends React.Component {
 			const rightEndTime = this.selectedBoxInfo.time + duration;
 			this.allPosList[did][this.selectedBoxInfo.posIndex].duration = duration;
 
-			this.DB_UPDATE(
-				'position', 
-				{ duration: duration },
-				{
-					nid: ['=', this.state.noteInfo.nid],
-					did: ['=', did], 
-					time: ['=', this.selectedBoxInfo.time]
-				}
-			);
-			this.DB_DELETE(
-				'position', 
-				[
-					'nid='  + this.state.noteInfo.nid, 
-					'did='  + did,
-					'time>'	+ this.selectedBoxInfo.time,
-					'time+duration<=' + rightEndTime
-				]
-			);
+			this.DB_UPDATE('position', 
+				{duration: duration}, 
+				['nid=?', 'did=?', 'time=?'], 
+				[this.state.noteInfo.nid, did, this.selectedBoxInfo.time]);
+			// this.DB_UPDATE(
+			// 	'position', 
+			// 	{ duration: duration },
+			// 	{
+			// 		nid: ['=', this.state.noteInfo.nid],
+			// 		did: ['=', did], 
+			// 		time: ['=', this.selectedBoxInfo.time]
+			// 	}
+			// );
+			
+			this.DB_DELETE('position', 
+	  	['nid=?', 'did=?', 'time>?', 'time+duration<=?'], 
+	  	[this.state.noteInfo.nid, did, this.selectedBoxInfo.time, rightEndTime]);
+			// this.DB_DELETE(
+			// 	'position', 
+			// 	[
+			// 		'nid='  + this.state.noteInfo.nid, 
+			// 		'did='  + did,
+			// 		'time>'	+ this.selectedBoxInfo.time,
+			// 		'time+duration<=' + rightEndTime
+			// 	]
+			// );
 
 			console.log('selectedPositionIdx', this.selectedBoxInfo.posIndex, this.allPosList[did].length);
 			// 댄서의 각 checked box 에 대해서...
@@ -853,17 +898,21 @@ export default class FormationScreen extends React.Component {
 
 					console.log(originTime, '->', this.allPosList[did][i].time, this.allPosList[did][i].time)
 
-					this.DB_UPDATE(
-						'position', 
-						{ 
-							duration: this.allPosList[did][i].duration,
-							time: this.allPosList[did][i].time 
-						},{
-							nid: ['=', this.state.noteInfo.nid],
-							did: ['=', did], 
-							time: ['=', originTime]
-						}
-					);
+					this.DB_UPDATE('position', 
+						{duration: this.allPosList[did][i].duration, time: this.allPosList[did][i].time}, 
+						['nid=?', 'did=?', 'time=?'], 
+						[this.state.noteInfo.nid, did, originTime]);
+					// this.DB_UPDATE(
+					// 	'position', 
+					// 	{ 
+					// 		duration: this.allPosList[did][i].duration,
+					// 		time: this.allPosList[did][i].time 
+					// 	},{
+					// 		nid: ['=', this.state.noteInfo.nid],
+					// 		did: ['=', did], 
+					// 		time: ['=', originTime]
+					// 	}
+					// );
 					break;
 				}
 				// 바뀐 길이에 완전히 덮여버린 경우: 삭제 (splice)
@@ -880,70 +929,56 @@ export default class FormationScreen extends React.Component {
 
 		if(to < 0 || this.state.musicLength < to) return;
 
-		if(!doUpdate){
-			let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
-			
-			// 자기 자신 빼놓기
-			const temp = {...posList[this.selectedBoxInfo.posIndex], time: to};
+		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
+		let myPosInfo;
+		let shouldDelete = [];	// 삭제 되어야 할 position의 time
+		let shouldUpdate = [];	// 업데이트 되어야 할 position의 [time, {updated_value}]
+		let shouldInsert = [];	// 새로 생성 되어야 할 position의 {inserted_value}
 
-			// 화면에 보이는 선택된 값 업데이트를 위해
-			this.selectedBoxInfo.time = to;
+		// 화면에 보이는 선택된 값 업데이트를 위해
+		this.selectedBoxInfo.time = to;
 
-			// 댄서의 각 checked box 에 대해서...
-			const rightEndTime = this.selectedBoxInfo.time + this.selectedBoxInfo.duration;
+		// 댄서의 각 checked box 에 대해서...
+		const rightEndTime = this.selectedBoxInfo.time + this.selectedBoxInfo.duration;
 
-			let findIndex = false;
+		let findIndex = false;
 
-			for(let i=0; i<posList.length; i++){
-				console.log('FOR-LOOP::', i);
-				// 자기 자신 제거
-				if(posList[i].time == from){
-					console.log('case 1');
-					posList.splice(i, 1);
-					i--;
-					continue;
-				}
+		for(let i=0; i<posList.length; i++){
+			console.log('FOR-LOOP::', i);
+			// 자기 자신 정보를 저장해놓고 삭제
+			if(posList[i].time == from){
+				console.log('case 1: 자기 자신 제거');
+				myPosInfo = {...posList.splice(i, 1)[0], time: to};
+				shouldDelete.push(from);
+				i--;
+				continue;
+			}
 
-				// selected box 왼쪽 끝보다 뒤에 있는 경우: 무시 (continue)
-				if(posList[i].time + posList[i].duration < this.selectedBoxInfo.time) {
-					console.log('case 2');
-					continue;
-				}
+			// selected box 왼쪽 끝보다 뒤에 있는 경우: 무시 (continue)
+			if(posList[i].time + posList[i].duration < this.selectedBoxInfo.time) {
+				console.log('case 2: 뒤에 있는 경우 무시');
+				continue;
+			}
 
+			// 시작 시간이 뒤에 있는 경우
+			if(posList[i].time < this.selectedBoxInfo.time){
 				// 시작 시간은 뒤에 있으나 조금 잘리는 경우: duration 줄이기
-				if(posList[i].time < this.selectedBoxInfo.time){
-					console.log('case 3');
+				if(posList[i].time + posList[i].duration <= rightEndTime){
+					console.log('case 3-1: 시작 시간은 뒤에 있으나 조금 잘리는 경우 duration 줄이기');
 					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
+					shouldUpdate.push([posList[i].time, {duration: posList[i].duration}]);
 					continue;
 				}
-
-				// 완전히 포개진 경우: 삭제
-				if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time + posList[i].duration <= rightEndTime){
-					console.log('case 4');
-					posList.splice(i, 1);
-					i--;
-					continue;
-				}
-
-				// 시작 시간은 포함되지만 duration을 줄이면 되는 경우: time 증가 && duration 감소
-				// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
-				if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time <= rightEndTime  && rightEndTime < posList[i].time + posList[i].duration){
-					console.log('case 5');
-					posList[i].duration -= (rightEndTime + 1 - posList[i].time);
-					posList[i].time = rightEndTime + 1;
-					if(!findIndex) {
-						console.log('FIND INDEX::', i);
-						this.selectedBoxInfo.posIndex = i;
-						findIndex = true;
-					}
-					continue;
-				}
-
-				// 시간이 바뀐 길이보다 큰 경우: 무시 (continue)
-				// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
-				if(rightEndTime < posList[i].time) {
-					console.log('case 6');
-					if(!findIndex) {
+				// 시작 시간은 뒤에 있으나 중간에 잘리는 경우: 둘로 나누기
+				else{
+					console.log('case 3-2: 시작 시간은 뒤에 있으나 중간에 잘리는 경우 둘로 나누기');
+					const newPos = {...posList[i], time: rightEndTime+1, duration: posList[i].duration+posList[i].time-rightEndTime-1};
+					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
+					posList.splice(i+1, 0, newPos);
+					shouldUpdate.push([posList[i].time, {duration: posList[i].duration}]);
+					shouldInsert.push(newPos);
+					i++;
+					if(!findIndex){
 						console.log('FIND INDEX::', i);
 						this.selectedBoxInfo.posIndex = i;
 						findIndex = true;
@@ -951,22 +986,88 @@ export default class FormationScreen extends React.Component {
 					continue;
 				}
 			}
-			if(!findIndex) {
-				this.selectedBoxInfo.posIndex = posList.length;
+
+			// 완전히 포개진 경우: 삭제
+			if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time + posList[i].duration <= rightEndTime){
+				console.log('case 4: 완전히 포개진 경우 삭제');
+				shouldDelete.push(posList[i].time);
+				posList.splice(i, 1);
+				i--;
+				continue;
 			}
-			posList.splice(this.selectedBoxInfo.posIndex, 0, temp);
+
+			// 시작 시간은 포함되지만 duration을 줄이면 되는 경우: time 증가 && duration 감소
+			// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
+			if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time <= rightEndTime  && rightEndTime < posList[i].time + posList[i].duration){
+				console.log('case 5: 시작 시간은 포함되지만 duration을 줄이면 되는 경우: time 증가 && duration 감소');
+				
+				posList[i].duration -= (rightEndTime + 1 - posList[i].time);
+				shouldUpdate.push([posList[i].time, {time: rightEndTime + 1, duration: posList[i].duration}]);
+				posList[i].time = rightEndTime + 1;
+				if(!findIndex) {
+					console.log('FIND INDEX::', i);
+					this.selectedBoxInfo.posIndex = i;
+					findIndex = true;
+				}
+				continue;
+			}
+
+			// 시간이 바뀐 길이보다 큰 경우: 무시 (continue)
+			// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
+			if(rightEndTime < posList[i].time) {
+				console.log('case 6: 시간이 바뀐 길이보다 큰 경우: 무시 (continue)');
+				if(!findIndex) {
+					console.log('FIND INDEX::', i);
+					this.selectedBoxInfo.posIndex = i;
+					findIndex = true;
+				}
+				continue;
+			}
+		}
+		if(!findIndex) {
+			console.log('FIND INDEX::', posList.length);
+			this.selectedBoxInfo.posIndex = posList.length;
+		}
+		posList.splice(this.selectedBoxInfo.posIndex, 0, myPosInfo);
+		shouldInsert.push(myPosInfo);
+
+		this.posList = posList; 	// for DB debug
+		console.log(shouldDelete);
+		console.log(shouldUpdate);
+		console.log(shouldInsert);
+
+		if(!doUpdate){
 			this.setMusicbox(did, posList);
 			this.forceUpdate();
+		}
+		else{
+			shouldDelete.forEach(time => {
+				this.DB_DELETE('position', ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
+			});
+			shouldUpdate.forEach(([time, set]) => {
+				this.DB_UPDATE('position', set, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
+			});
+			shouldInsert.forEach(value => {
+				this.DB_INSERT('position', {...value, nid: this.state.noteInfo.nid});
+			});
+
+			this.allPosList[did] = posList;
+			this.setMusicbox(did);
+			this.setDancer();
 		}
 	}
 
 	changeAlignWithCoordinate = () => {
 		this.alignWithCoordinate = !this.alignWithCoordinate;
-		this.DB_UPDATE(
-			'note', 
+		this.DB_UPDATE('note', 
 			{alignWithCoordinate: this.alignWithCoordinate}, 
-			{nid: ['=',this.state.noteInfo.nid]}
-		);
+			['nid=?'], 
+			[this.state.noteInfo.nid]);
+		// this.DB_UPDATE(
+		// 	'note', 
+		// 	{alignWithCoordinate: this.alignWithCoordinate}, 
+		// 	{nid: ['=',this.state.noteInfo.nid]}
+		// );
 		this.setDancer();
 	}
 	
@@ -1051,15 +1152,19 @@ export default class FormationScreen extends React.Component {
 			time = time > this.state.musicLength ? this.state.musicLength : time;
 			// UPDATE DB
 			// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
-			this.DB_UPDATE(
-				'position', 
-				{ time: time },
-				{
-					nid: ['=', this.state.noteInfo.nid],
-					did: ['=', this.selectedBoxInfo.did], 
-					time: ['=', this.selectedBoxInfo.time]
-				}
-			);
+			this.DB_UPDATE('position', 
+				{time: time}, 
+				['nid=?', 'did=?', 'time=?'], 
+				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
+			// this.DB_UPDATE(
+			// 	'position', 
+			// 	{ time: time },
+			// 	{
+			// 		nid: ['=', this.state.noteInfo.nid],
+			// 		did: ['=', this.selectedBoxInfo.did], 
+			// 		time: ['=', this.selectedBoxInfo.time]
+			// 	}
+			// );
 			this.selectedBoxInfo.time = time;
 			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].time = time;
 			this.setMusicbox(this.selectedBoxInfo.did);
@@ -1084,15 +1189,19 @@ export default class FormationScreen extends React.Component {
 		if(!isNaN(Number(text)) && text != ''){
 			let posx = Math.round(Number(text));
 			posx = Math.abs(posx) > Math.floor(width/2) ? Math.floor(width/2) * Math.sign(posx) : posx;
-			this.DB_UPDATE(
-				'position', 
-				{ posx: posx },
-				{
-					nid: ['=', this.state.noteInfo.nid],
-					did: ['=', this.selectedBoxInfo.did], 
-					time: ['=', this.selectedBoxInfo.time]
-				}
-			);
+			this.DB_UPDATE('position', 
+				{posx: posx}, 
+				['nid=?', 'did=?', 'time=?'], 
+				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
+			// this.DB_UPDATE(
+			// 	'position', 
+			// 	{ posx: posx },
+			// 	{
+			// 		nid: ['=', this.state.noteInfo.nid],
+			// 		did: ['=', this.selectedBoxInfo.did], 
+			// 		time: ['=', this.selectedBoxInfo.time]
+			// 	}
+			// );
 			this.selectedBoxInfo.posx = posx;
 			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].posx = posx;
 			this.setDancer();
@@ -1250,11 +1359,11 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 
 					{ this.state.isPlay ? 
-					<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 10}} activeOpacity={.9}>
+					<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 1}} activeOpacity={.9}>
 						<IconIonicons name="pause-circle-outline" size={40}/>
 					</TouchableOpacity>
 					:
-					<TouchableOpacity onPress={()=>{this.play()}} style={{margin: 10}} activeOpacity={.9}>
+					<TouchableOpacity onPress={()=>{this.play()}} style={{margin: 1}} activeOpacity={.9}>
 						<IconIonicons name="play-circle" size={40}/>
 					</TouchableOpacity>
 					}
@@ -1321,6 +1430,7 @@ export default class FormationScreen extends React.Component {
 				<DatabaseScreen 
 				dancerList={this.dancerList}
 				allPosList={this.allPosList}
+				posList={this.posList}
 				nid={this.state.noteInfo.nid}
 				closeDBScreen={this.closeDBScreen}/>
 				: 

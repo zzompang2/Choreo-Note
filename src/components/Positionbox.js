@@ -81,6 +81,7 @@ export default class Positionbox extends React.Component {
 				}
 				else{
 					// 이동!
+					this.props.movePositionbox(true, this.time, this.initialValue.time);
 				}
       }
 		})
