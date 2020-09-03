@@ -33,7 +33,7 @@ export default class FormationScreen extends React.Component {
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
-			isDBPop: true,		// DB 스크린이 켜져 있는가?
+			isDBPop: false,		// DB 스크린이 켜져 있는가?
 			dancers: [],
 			nameColumn: [],
 		}
@@ -212,6 +212,7 @@ export default class FormationScreen extends React.Component {
 	 */
 	setMusicbox = (did, posList = this.allPosList[did]) => {
 		let prevTime = -1;
+		// let rowView = [<View key={0} style={{width: this.boxWidth/2}}/>];	// 
 		let rowView = [];
 		let selectedIdxInRowView = -1;
 		
@@ -449,7 +450,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	/** 기존 저장되어 있는 값들을 기반으로 position DB에 좌표를 추가한다.
-	 * - re-render: YES ( forceUpdate() )
+	 * - re-render: YES ( setDancer() )
 	 * - update: this.allPosList, this.musicbox
 	 * @param did dancer id
 	 * @param time 추가할 좌표의 time 값
@@ -461,29 +462,44 @@ export default class FormationScreen extends React.Component {
 		let posList = this.allPosList[did];
 		let posx;
 		let posy;
+		let i=0;	// 추가될 위치 index
 
-		let i=0;
-		for(; i<posList.length; i++){
-			if(time < posList[i].time){
+		// 리스트에 아무것도 없는 경우
+		if(posList.length == 0){
+			posx = 0;
+			posy = 0;
+		}
+		else{
+			// 들어갈 index 찾기
+			for(; i<posList.length; i++){
+				if(time < posList[i].time)
+					break;
+			}
+			// 맨 앞에 추가하는 경우
+			if(i == 0){
+				posx = posList[0].posx;
+				posy = posList[0].posy;
+			}
+			// 맨 뒤에 추가하는 경우
+			else if(i == posList.length) {
+				posx = posList[i-1].posx;
+				posy = posList[i-1].posy;
+			}
+			// 중간에 추가하는 경우
+			else{
 				const dx = (posList[i].posx - posList[i-1].posx) * (time - posList[i-1].time) / (posList[i].time - posList[i-1].time)
 				const dy = (posList[i].posy - posList[i-1].posy) * (time - posList[i-1].time) / (posList[i].time - posList[i-1].time)
 				posx = posList[i-1].posx + dx;
 				posy = posList[i-1].posy + dy;
-				break;
+				posx = Math.round(posx);
+				posy = Math.round(posy);
 			}
 		}
-		if(i == posList.length) {
-			posx = posList[i-1].posx;
-			posy = posList[i-1].posy;
-		}
-
-		posx = Math.round(posx);
-		posy = Math.round(posy);
 		posList.splice(i, 0, {did: did, posx: posx, posy: posy, time: time, duration: 0});
 
 		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0});
 		this.setMusicbox(did);
-		this.forceUpdate();
+		this.setDancer();	// 추가해서 댄서가 active될 수 있으므로.
 	}
 
 	/** position DB에서 선택한 값을 삭제한다.
@@ -688,23 +704,35 @@ export default class FormationScreen extends React.Component {
 	 * 선택되어 있는 box의 duration을 변경한다.
 	 * @param {number} doUpdate
 	 * @param {number} duration 
-	 * @param {number} time 
+	 * @param {number} time 수정되기 전 initial time
 	 * @param {number} did 
 	 */
 	resizePositionboxLeft = (doUpdate, duration, time = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, "resizePositionboxLeft(", doUpdate, duration, time, did, ')');
+		/**
+		 * posList = [...this.allPosList[did]]
+		 *  
+		 * JSX 표현은 '참조 형식'이라 같은 값을 가리킨다. (포인터 개념)
+		 * posList 변경시 allPosList의 값도 바뀐다.
+		 * 
+		 * 따라서 JSON.parse 를 사용하여 값을 복사해준다.
+		 */
+		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 		
-		if(!doUpdate){
-			/**
-			 * posList = [...this.allPosList[did]]
-			 *  
-			 * JSX 표현은 '참조 형식'이라 같은 값을 가리킨다. (포인터 개념)
-			 * posList 변경시 allPosList의 값도 바뀐다.
-			 * 
-			 * 따라서 JSON.parse 를 사용하여 값을 복사해준다.
-			 */
-			let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
+		// 변경했을 때 시간이 0보다 작아지는 것을 방지하기 위해
+		// 변경 후 시간을 계산
+		for(let i=0; i<posList.length; i++){
+			if(posList[i].time == time){
+				const leftEndTime = time + posList[i].duration - duration;
+				if(leftEndTime < 0) {
+					console.log(TAG, '왼쪽 끝이에요.');
+					return;
+				}
+				break;
+			}
+		}
 
+		if(!doUpdate){
 			// 화면에 보이는 선택된 값 업데이트를 위해
 			this.selectedBoxInfo.time -= (duration - this.selectedBoxInfo.duration);	// ++ or --
 			this.selectedBoxInfo.duration = duration;
@@ -745,31 +773,11 @@ export default class FormationScreen extends React.Component {
 			this.DB_DELETE('position', 
 				['nid=?', 'did=?', 'time>=?', 'time<?'], 
 				[this.state.noteInfo.nid, did, this.selectedBoxInfo.time, time],
-			// this.DB_DELETE(
-			// 	'position', 
-			// 	[
-			// 		'nid='   + this.state.noteInfo.nid, 
-			// 		'did='   + did,
-			// 		'time>=' + this.selectedBoxInfo.time,
-			// 		'time<'  + time
-			// 	],
 				()=>{
 					this.DB_UPDATE('position', 
 					{duration: duration, time: this.selectedBoxInfo.time}, 
 					['nid=?', 'did=?', 'time=?'], 
 					[this.state.noteInfo.nid, did, time]);
-					// this.DB_UPDATE(
-					// 	'position', 
-					// 	{
-					// 		duration: duration, 
-					// 		time: this.selectedBoxInfo.time
-					// 	},
-					// 	{
-					// 		nid: ['=',this.state.noteInfo.nid],
-					// 		did: ['=',did], 
-					// 		time: ['=',time]
-					// 	}
-					// )
 				}
 			);
 			let i = 0;
@@ -791,13 +799,6 @@ export default class FormationScreen extends React.Component {
 					{duration: reducedDuration}, 
 					['nid=?', 'did=?', 'time=?'], 
 					[this.state.noteInfo.nid, did, this.allPosList[did][i].time]);
-					// this.DB_UPDATE(
-					// 	'position', 
-					// 	{ duration: reducedDuration },
-					// 	{
-					// 		nid: ['=',this.state.noteInfo.nid],
-					// 		did: ['=',did], 
-					// 		time: ['=',this.allPosList[did][i].time]})
 					continue;
 				}
 				// 바뀐 시간 이상 && 바뀌가 전 시간보다 작은 경우: 삭제 (splice)
@@ -816,16 +817,20 @@ export default class FormationScreen extends React.Component {
 	resizePositionboxRight = (doUpdate, duration = this.selectedBoxInfo.duration, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, "resizePositionboxRight(", doUpdate, duration, did, ')');
 		
+		const rightEndTime = this.selectedBoxInfo.time + duration;
+		if(this.state.musicLength < rightEndTime) {
+			console.log(TAG, '오른쪽 끝이에요.');
+			return;
+		}
+
+		// 화면에 보이는 선택된 값 업데이트를 위해
+		this.selectedBoxInfo.duration = duration;
+
 		if(!doUpdate){
 			let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 			posList[this.selectedBoxInfo.posIndex].duration = duration;
 
-			// 화면에 보이는 선택된 값 업데이트를 위해
-			this.selectedBoxInfo.duration = duration;
-			
 			// 댄서의 각 checked box 에 대해서...
-			const rightEndTime = this.selectedBoxInfo.time + this.selectedBoxInfo.duration;
-
 			for(let i = this.selectedBoxInfo.posIndex + 1; i<posList.length; i++){
 				// 시간이 바뀐 길이보다 큰 경우: 무시 (break)
 				if(rightEndTime < posList[i].time) break;
@@ -847,37 +852,16 @@ export default class FormationScreen extends React.Component {
 
 		// update DB & allPosList
 		else{
-			this.selectedBoxInfo.duration = duration;
-
-			const rightEndTime = this.selectedBoxInfo.time + duration;
 			this.allPosList[did][this.selectedBoxInfo.posIndex].duration = duration;
 
 			this.DB_UPDATE('position', 
 				{duration: duration}, 
 				['nid=?', 'did=?', 'time=?'], 
 				[this.state.noteInfo.nid, did, this.selectedBoxInfo.time]);
-			// this.DB_UPDATE(
-			// 	'position', 
-			// 	{ duration: duration },
-			// 	{
-			// 		nid: ['=', this.state.noteInfo.nid],
-			// 		did: ['=', did], 
-			// 		time: ['=', this.selectedBoxInfo.time]
-			// 	}
-			// );
 			
 			this.DB_DELETE('position', 
 	  	['nid=?', 'did=?', 'time>?', 'time+duration<=?'], 
 	  	[this.state.noteInfo.nid, did, this.selectedBoxInfo.time, rightEndTime]);
-			// this.DB_DELETE(
-			// 	'position', 
-			// 	[
-			// 		'nid='  + this.state.noteInfo.nid, 
-			// 		'did='  + did,
-			// 		'time>'	+ this.selectedBoxInfo.time,
-			// 		'time+duration<=' + rightEndTime
-			// 	]
-			// );
 
 			console.log('selectedPositionIdx', this.selectedBoxInfo.posIndex, this.allPosList[did].length);
 			// 댄서의 각 checked box 에 대해서...
@@ -902,17 +886,6 @@ export default class FormationScreen extends React.Component {
 						{duration: this.allPosList[did][i].duration, time: this.allPosList[did][i].time}, 
 						['nid=?', 'did=?', 'time=?'], 
 						[this.state.noteInfo.nid, did, originTime]);
-					// this.DB_UPDATE(
-					// 	'position', 
-					// 	{ 
-					// 		duration: this.allPosList[did][i].duration,
-					// 		time: this.allPosList[did][i].time 
-					// 	},{
-					// 		nid: ['=', this.state.noteInfo.nid],
-					// 		did: ['=', did], 
-					// 		time: ['=', originTime]
-					// 	}
-					// );
 					break;
 				}
 				// 바뀐 길이에 완전히 덮여버린 경우: 삭제 (splice)
@@ -1156,15 +1129,6 @@ export default class FormationScreen extends React.Component {
 				{time: time}, 
 				['nid=?', 'did=?', 'time=?'], 
 				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
-			// this.DB_UPDATE(
-			// 	'position', 
-			// 	{ time: time },
-			// 	{
-			// 		nid: ['=', this.state.noteInfo.nid],
-			// 		did: ['=', this.selectedBoxInfo.did], 
-			// 		time: ['=', this.selectedBoxInfo.time]
-			// 	}
-			// );
 			this.selectedBoxInfo.time = time;
 			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].time = time;
 			this.setMusicbox(this.selectedBoxInfo.did);
@@ -1193,15 +1157,6 @@ export default class FormationScreen extends React.Component {
 				{posx: posx}, 
 				['nid=?', 'did=?', 'time=?'], 
 				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
-			// this.DB_UPDATE(
-			// 	'position', 
-			// 	{ posx: posx },
-			// 	{
-			// 		nid: ['=', this.state.noteInfo.nid],
-			// 		did: ['=', this.selectedBoxInfo.did], 
-			// 		time: ['=', this.selectedBoxInfo.time]
-			// 	}
-			// );
 			this.selectedBoxInfo.posx = posx;
 			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].posx = posx;
 			this.setDancer();
@@ -1313,7 +1268,6 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
 		this.props.route.params.updateNoteList();
-		// this.props.route.params.updateNoteList();
 	}
 
 	render() {
@@ -1393,8 +1347,12 @@ export default class FormationScreen extends React.Component {
 						horizontal={true}
 						showsHorizontalScrollIndicator={false}
 						ref={ref => (this.scrollView = ref)}>
-							<View flexDirection='column'>
-								{ this.musicbox }
+							<View flexDirection='row'>
+								<View style={{width: this.boxWidth/2}}/>
+								<View flexDirection='column'>
+									{ this.musicbox }
+								</View>
+								<View style={{width: this.boxWidth/2}}/>
 							</View>
 						</ScrollView>
 					</View>
