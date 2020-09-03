@@ -35,11 +35,12 @@ export default class FormationScreen extends React.Component {
 			isMenuPop: false,	// 세팅 모드인가?
 			isDBPop: false,		// DB 스크린이 켜져 있는가?
 			dancers: [],
-			nameColumn: [],
+			
 		}
 		this.allPosList = [];
 		this.dancerList = [];	// nid, did, name
-		this.scrollView;
+		this.nameColumn = [],
+		// this.scrollView;
 		this.scrollViewStyle;
 		this.timeText = [];
 		this.musicbox = [];	
@@ -48,6 +49,7 @@ export default class FormationScreen extends React.Component {
 		this.boxHeight = 30;
 		this.positionboxSize = 20;
 		this.stageHeight = 250;
+		this.scrollOffset = 0;		// 세로 스크롤 위치
 
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
 		this.radiusLevel = this.state.noteInfo.radiusLevel;
@@ -197,11 +199,16 @@ export default class FormationScreen extends React.Component {
 			<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
 		</View>
 		
-		this.musicbox.splice(0, 1,
+		// this.musicbox.splice(0, 1,
+		// 	<View key={0} flexDirection='row'>
+		// 		{ _timeText }
+		// 	</View>
+		// );
+
+		this.timeTextSelect =
 			<View key={0} flexDirection='row'>
 				{ _timeText }
 			</View>
-		);
 	}
 
 	/** did번째 댄서의 music box를 초기화한다.
@@ -212,7 +219,6 @@ export default class FormationScreen extends React.Component {
 	 */
 	setMusicbox = (did, posList = this.allPosList[did]) => {
 		let prevTime = -1;
-		// let rowView = [<View key={0} style={{width: this.boxWidth/2}}/>];	// 
 		let rowView = [];
 		let selectedIdxInRowView = -1;
 		
@@ -303,9 +309,9 @@ export default class FormationScreen extends React.Component {
 			/>
 			);
 
-		this.musicbox.splice(1+did, 1,
+		this.musicbox.splice(did, 1,
 			<View 
-			key={1+did}
+			key={did}
 			style={{flexDirection: 'row', alignItems: 'center'}}>
 				{rowView}
 			</View>
@@ -323,6 +329,7 @@ export default class FormationScreen extends React.Component {
 		this.musicbox = [];	// 제거된 dancer가 있을 수 있으므로 초기화.
 
 		this.setTimebox(markedTime);
+		this.setDancerName();
 
 		for(let did=0; did<this.dancerList.length; did++)
 			this.setMusicbox(did);
@@ -372,23 +379,36 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	setDancerName = () => {
+		const dancerNum = this.dancerList.length;
+		this.nameColumn = [];	// +10 : timeBox에서 positionbox와의 간격
+		for(let i=0; i<dancerNum; i++){
+			this.nameColumn.push(
+				<View key={this.nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60}}>
+					<Text style={{fontSize: 11}}>{i+1}. {this.dancerList[i].name}</Text>
+				</View>
+			)
+		}
+	}
+
 	/** 댄서들 이름과 <Dancer>들을 설정한다.
 	 * - re-render: YES ( setState )
 	 * - update: dancers, nameColumn
 	 */
 	setDancer = () => {
 		console.log(TAG, "setDancer: " + this.allPosList.length);
+		
 		const dancerNum = this.dancerList.length;
 		const radiusLength = 10 + this.radiusLevel * 2;
 
 		let _dancers = [];
-		let _nameColumn = [ <Text key={0} style={{height: this.boxHeight + 10, width: 60}}/> ];	// +10 : timeBox에서 positionbox와의 간격
-
+		
 		for(let i=0; i<dancerNum; i++){
       _dancers.push(
 				<Dancer
 				key={_dancers.length}
-				did={i} 
+				did={i}
+				isSelected={this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == i ? true : false}
 				curTime={this.state.time}
 				posList={[...this.allPosList[i]]} 
 				dropPosition={this.dropPosition}
@@ -399,13 +419,8 @@ export default class FormationScreen extends React.Component {
 				color={this.dancerList[i].color}
 				/>
 			)
-			_nameColumn.push(
-				<View key={_nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60}}>
-					<Text style={{fontSize: 11}}>{i+1}. {this.dancerList[i].name}</Text>
-				</View>
-			)
 		}
-		this.setState({dancers: _dancers, nameColumn: _nameColumn})
+		this.setState({dancers: _dancers})
 	}
 	
 	/** <Dancer>에서 드래그 후 드랍한 위치 정보로 position DB에 추가/수정한다.
@@ -634,7 +649,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	/** <DancerScreen>에서 수정된 정보를 적용한다.
-	 * - re-render: YES ( setDancer() )
+	 * - re-render: YES ( setDancer )
 	 * - update: this.dancerList, this.allPosList / this.musicbox / dancers, nameColumn
 	 * @param {array} _dancerList 변경된 dancerList
 	 * @param {array} _allPosList 변경된 allPosList
@@ -648,7 +663,7 @@ export default class FormationScreen extends React.Component {
 	}
 	
 	/** position box 하나를 선택한다.
-	 * - re-render: YES ( forceUpdate )
+	 * - re-render: YES ( setDancer )
 	 * - update: this.selectedBoxInfo, musicbox
 	 * - setMusicbox()
 	 * @param {number} did 
@@ -664,21 +679,13 @@ export default class FormationScreen extends React.Component {
 		// {color: 1, did: 0, duration: 11, name: 견우, posx: -30, posy: 0, time: 0}
 		this.selectedBoxInfo = {...this.dancerList[did], ...this.allPosList[did][posIndex], posIndex: posIndex}
 
-		// this.selectedBoxInfo.did = did;	
-		// this.selectedBoxInfo.posIndex = positionIdx;
-		// this.selectedBoxInfo.name = (did+1) + '. ' + '함창수';
-		// this.selectedBoxInfo.time = this.allPosList[did][positionIdx].time;
-		// this.selectedBoxInfo.posx = this.allPosList[did][positionIdx].posx;
-		// this.selectedBoxInfo.posy = this.allPosList[did][positionIdx].posy;
-		// this.selectedBoxInfo.duration = this.allPosList[did][positionIdx].duration;
-
 		this.setMusicbox(did);
-		this.forceUpdate();
+		this.setDancer();	// 선택된 댄서 아이콘 보여주기 위해
 	}
 
 	/**
 	 * 선택되어 있는 position box을 선택 취소한다.
-	 * - re-render: YES ( forceUpdate )
+	 * - re-render: YES ( setDancer )
 	 * - update: musicbox
 	 * - setMusicbox()
 	 */
@@ -687,7 +694,7 @@ export default class FormationScreen extends React.Component {
 		this.selectedBoxInfo.posIndex = -1;
 
 		this.setMusicbox(this.selectedBoxInfo.did);
-		this.forceUpdate();
+		this.setDancer(); // 선택된 댄서 아이콘 취소하기 위해
 	}
 
 	/** 
@@ -1062,7 +1069,7 @@ export default class FormationScreen extends React.Component {
 		this.interval = setInterval(() => {
 			this.setTimebox(this.state.time+1);
 			// time에 맞게 scroll view를 강제 scroll하기
-			this.scrollView.scrollTo({x: (this.state.time-1)*this.boxWidth, animated: false});
+			this.musicboxScrollHorizontal.scrollTo({x: (this.state.time+1)*this.boxWidth, animated: false});
 			this.setState({time: this.state.time+1}, () => {
 				if(this.state.time == this.state.musicLength)
 					this.pause();
@@ -1088,7 +1095,7 @@ export default class FormationScreen extends React.Component {
 		else if (dest > this.state.musicLength) dest = this.state.musicLength;
 
 		this.setTimebox(dest);
-		this.scrollView.scrollTo({x: (dest-1)*this.boxWidth, animated: false});
+		this.musicboxScrollHorizontal.scrollTo({x: (dest)*this.boxWidth, animated: false});
 		this.setState({time: dest}, () => {
 			this.setDancer();
 		});
@@ -1280,13 +1287,13 @@ export default class FormationScreen extends React.Component {
 			<View style={{flex: 1}}>
 
 				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}} style={{padding: 12}}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 
 					<Text style={styles.toolbarTitle}>{this.state.noteInfo.title}</Text>
 					
-					<TouchableOpacity onPress={()=>{this.setState({isMenuPop: !this.state.isMenuPop})}}>
+					<TouchableOpacity onPress={()=>{this.setState({isMenuPop: !this.state.isMenuPop})}} style={{padding: 12}}>
 						<IconIonicons name={this.state.isMenuPop ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
 					</TouchableOpacity>
 				</View>
@@ -1335,18 +1342,65 @@ export default class FormationScreen extends React.Component {
 
 				</View>
 
-				<ScrollView 
-				scrollEnabled={!this.state.isEditing}
-				style={{padding: 10}}>
-					<View style={{flexDirection: 'row'}}>
-						<View style={{flexDirection: 'column'}}>
-							{ this.state.nameColumn }
-						</View>
+				<View flexDirection='row' style={{flex: 1}}>
+					
+					<View flexDirection='column'>
+
+						{/* <TouchableOpacity onPress={() => {
+							this.scrollOffset -= this.boxHeight;
+							this.nameScroll.scrollTo({y: this.scrollOffset});
+							this.musicboxScrollVertical.scrollTo({y: this.scrollOffset}); 
+							console.log('this.scrollOffset:', this.scrollOffset)}}>
+							<Text style={{height: this.boxHeight + 10, width: 60}}>up</Text>
+						</TouchableOpacity> */}
+						<View style={{height: this.boxHeight + 10}}/>
+
 						<ScrollView
-						scrollEnabled={!this.state.isEditing}
-						horizontal={true}
-						showsHorizontalScrollIndicator={false}
-						ref={ref => (this.scrollView = ref)}>
+						bounces={false}						// 오버스크롤 막기 (iOS)
+						decelerationRate={0}			// 스크롤 속도 (iOS)
+						showsVerticalScrollIndicator={false}
+						ref={ref => (this.nameScroll = ref)}
+						scrollEventThrottle={16}
+						onScroll={event => this.musicboxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y})}
+						onScrollEndDrag={event => {
+							// ceil로 한 이유: floor/round로 하면 맨 마지막 항목이 일부 짤리는 경우가 생길 수 있다.
+							this.scrollOffset = Math.ceil(event.nativeEvent.contentOffset.y/this.boxHeight) * this.boxHeight;
+							this.nameScroll.scrollTo({y: this.scrollOffset});
+							this.musicboxScrollVertical.scrollTo({y: this.scrollOffset});}}>
+							<View style={{flexDirection: 'column'}}>
+								{ this.nameColumn }
+							</View>
+						</ScrollView>
+						
+					</View>
+
+					<ScrollView 
+					horizontal={true}
+					bounces={false} 					// 오버스크롤 막기 (iOS)
+					decelerationRate={0.5}		// 스크롤 속도 (iOS)
+					scrollEnabled={!this.state.isEditing}
+					showsHorizontalScrollIndicator={false}
+					ref={ref => (this.musicboxScrollHorizontal = ref)}
+					// scrollEventThrottle={16}					// onScroll 실행 간격(?)
+					// onScroll={event=>{}}							// 스크롤 중
+					// onScrollEndDrag={event=>{}}			// 손가락 떼었을 때
+					// onMomentumScrollEnd={event=>{}}	// 스크롤 움직임이 아예 멈췄을 때
+					// pagingEnabled={false} 						// 스크롤이 되어도 넘어가지는 못하도록 막음
+					// alwaysBounceVertical={true} 			// 상하, 좌우를 동시에!
+					>
+						<ScrollView
+						bounces={false} 						// 오버스크롤 막기 (iOS)
+						stickyHeaderIndices={[0]}		// 0번째 View 고정
+						scrollEnabled={false}				// 스크롤 막기
+						showsVerticalScrollIndicator={false}
+						ref={ref => (this.musicboxScrollVertical = ref)}>
+
+							<View flexDirection='row' style={{backgroundColor: COLORS.grayLight}}>
+								<View style={{width: this.boxWidth/2}}/>
+								{ this.timeTextSelect }
+								<View style={{width: this.boxWidth/2}}/>
+							</View>
+							
 							<View flexDirection='row'>
 								<View style={{width: this.boxWidth/2}}/>
 								<View flexDirection='column'>
@@ -1354,9 +1408,19 @@ export default class FormationScreen extends React.Component {
 								</View>
 								<View style={{width: this.boxWidth/2}}/>
 							</View>
+
 						</ScrollView>
-					</View>
-				</ScrollView>
+
+					</ScrollView>
+				</View>
+
+				{/* <TouchableOpacity onPress={() => {
+					this.scrollOffset += this.boxHeight;
+					this.nameScroll.scrollTo({y: this.scrollOffset});
+					this.musicboxScrollVertical.scrollTo({y: this.scrollOffset}); 
+					console.log('this.scrollOffset:', this.scrollOffset)}}>
+					<Text style={{height: this.boxHeight + 10, width: 60}}>down</Text>
+				</TouchableOpacity> */}
 
 				{ this.state.isMenuPop ? 
 				<Menu
@@ -1436,7 +1500,7 @@ const styles = StyleSheet.create({
 		backgroundColor:COLORS.purple, 
 		alignItems: 'center', 
 		justifyContent: 'space-between', 
-		paddingHorizontal: 20,
+		// paddingHorizontal: 20,
 	},
 	toolbarTitle: {
 		color:COLORS.white, 

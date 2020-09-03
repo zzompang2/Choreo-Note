@@ -204,12 +204,18 @@ export default class Dancer extends React.Component {
     return (
       <Animated.View
       {...this.panResponder.panHandlers}
-      style={[panStyle, styles.circle, {
+      style={[panStyle, {
+        backgroundColor: COLORS.yellow,
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
         opacity: this.fadeAnim,
         width: this.props.radiusLength*2, 
         height: this.props.radiusLength*2, 
         borderRadius: this.props.radiusLength,
         backgroundColor: dancerColor[this.props.color],
+        borderColor: COLORS.green,
+        borderWidth: this.props.isSelected ? 3 : 0,
         }]}>
       <Text style={[styles.number, {fontSize: this.props.radiusLength}]}>{this.props.did+1}</Text>
       {/* <Text style={{fontSize: 6}}>({this._val.x},{this._val.y})</Text> */}
@@ -224,14 +230,7 @@ export default class Dancer extends React.Component {
 }
 
 let styles = StyleSheet.create({
-  // 모양 정의를 위한 스타일
-  circle: {
-    backgroundColor: COLORS.yellow,
-    position: 'absolute',
-    alignItems: 'center'
-  },
   number: {
-    marginTop: 5,
     textAlign: 'center',
   }
 });

@@ -185,14 +185,14 @@ export default class ListScreen extends React.Component {
 			<SafeAreaView style={{flex: 1, flexDirection: 'column', backgroundColor: COLORS.white}}>
 
 				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}} style={{padding: 12}}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 
 					<Text style={styles.toolbarTitle}>댄서 편집</Text>
 					
-					<TouchableOpacity onPress={()=>this.addDancer()}>
-						<IconIonicons name="person-add" size={20} color={COLORS.white}/>
+					<TouchableOpacity onPress={()=>this.addDancer()} style={{padding: 12}}>
+						<IconIonicons name="person-add" size={24} color={COLORS.white}/>
 					</TouchableOpacity>
 				</View>
 
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.purple, 
 		alignItems: 'center', 
 		justifyContent: 'space-between', 
-		paddingHorizontal: 20,
+		// paddingHorizontal: 20,
 	},
 	toolbarTitle: {
 		color:COLORS.white, 
