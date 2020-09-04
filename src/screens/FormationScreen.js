@@ -19,6 +19,16 @@ let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
+// custom icon 도전중...
+
+// import choreonote_icon from 'react-native-vector-icons/choreonote_icon';
+// import fontelloConfig from '../../assets/font/config.json';
+// import customFontGlyph from '../../assets/font/config.json';
+// import {createIconSet, createIconSetFromFontello} from 'react-native-vector-icons';
+
+// const Icon = createIconSet(customFontGlyph, 'choreonote_icon', 'choreonote_icon.ttf');
+// const Icon = createIconSetFromFontello(fontelloConfig);
+
 // 화면의 가로, 세로 길이 받아오기
 const {width, height} = Dimensions.get('window');
 
@@ -70,8 +80,8 @@ export default class FormationScreen extends React.Component {
 	DB_UPDATE = (table, set, where, param = [], callback = ()=>{}) => {
 		console.log(TAG, 'DB_UPDATE');
 
-		let setString = "*";
-		let whereString = "*";
+		let setString = "";
+		let whereString = "";
 
 		for(let key in set)
 			setString += ", " + key + "=" + set[key];
@@ -80,9 +90,10 @@ export default class FormationScreen extends React.Component {
 			whereString += " AND " + str;
 		});
 			
-		
-		setString = setString.replace("*, ", "");
-		whereString = whereString.replace("* AND ", "");
+		setString = setString.replace(", ", "");
+		whereString = whereString.replace(" AND ", "");
+
+		// console.log("UPDATE " + table + " " + "SET " + setString + " " + "WHERE " + whereString + ";");
 
 		this.state.db.transaction(txn => {
 			txn.executeSql(
@@ -216,7 +227,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {array} posList (default) this.allPosList[did]
 	 */
 	setMusicbox = (did, posList = this.allPosList[did]) => {
-		console.log(TAG, 'setMusicbox (', did, posList, ')');
+		console.log(TAG, 'setMusicbox (', did, 'posList )');
 		let rowView = [];
 		
 		// did번째 댄서에 대한 position이 하나도 없는 경우
@@ -706,10 +717,13 @@ export default class FormationScreen extends React.Component {
 	 */
 	unselectPosition = () => {
 		console.log(TAG, 'unselectPosition');
-		this.selectedBoxInfo.posIndex = -1;
 
-		this.setMusicbox(this.selectedBoxInfo.did);
-		this.setDancer(); // 선택된 댄서 아이콘 취소하기 위해
+		if(this.selectedBoxInfo.posIndex != -1){
+			this.selectedBoxInfo.posIndex = -1;
+
+			this.setMusicbox(this.selectedBoxInfo.did);
+			this.setDancer(); // 선택된 댄서 아이콘 취소하기 위해
+		}
 	}
 
 	/** 
@@ -929,7 +943,7 @@ export default class FormationScreen extends React.Component {
 	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, 'movePositionbox (', doUpdate, to, from, did, ')');
 
-		if(to < 0 || this.state.noteInfo.musicLength < to) return;
+		if(to < 0 || this.state.noteInfo.musicLength < to + this.selectedBoxInfo.duration) return;
 
 		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 		let myPosInfo;
@@ -1235,22 +1249,50 @@ export default class FormationScreen extends React.Component {
 
 		return (
 			<View style={styles.selectContainer}>
-				<View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
-					<Text style={styles.selectText}>시작</Text>
-					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editTime(event.nativeEvent.text)}>
-						{isSelected ? this.timeFormat(this.selectedBoxInfo.time) : ''}</TextInput>
-					<Text style={styles.selectText}>길이</Text>
-					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
-						{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
-					<Text style={styles.selectText}>X</Text>
-					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editX(event.nativeEvent.text)}>
-						{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
-					<Text style={styles.selectText}>Y</Text>
-					<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editY(event.nativeEvent.text)}>
-						{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
-				</View>
+				<TouchableOpacity onPress={()=>{this.unselectPosition();}} activeOpacity={1}>
+					<IconIonicons name={this.selectedBoxInfo.posIndex == -1 ? "ios-ellipse-outline" : "md-checkmark-circle-outline"} size={24} color={COLORS.grayMiddle}/>
+				</TouchableOpacity>
+				<Text style={styles.selectText}>시작</Text>
+				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editTime(event.nativeEvent.text)}>
+					{isSelected ? this.timeFormat(this.selectedBoxInfo.time) : ''}</TextInput>
+				<Text style={styles.selectText}>길이</Text>
+				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
+					{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
+				<Text style={styles.selectText}>X</Text>
+				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editX(event.nativeEvent.text)}>
+					{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
+				<Text style={styles.selectText}>Y</Text>
+				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editY(event.nativeEvent.text)}>
+					{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
 			</View>
 		)
+	}
+
+	menuView = () =>
+	<View style={styles.selectContainer}>
+		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
+			<IconIonicons name={"ios-chevron-down-circle"} size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>댄서 작게</Text>
+		</TouchableOpacity>
+		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
+			<IconIonicons name={"ios-chevron-up-circle"} size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>댄서 크게</Text>
+		</TouchableOpacity>
+		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
+			<IconIonicons name={"ios-contract"} size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>좌표 좁게</Text>
+		</TouchableOpacity>
+		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
+			<IconIonicons name={"ios-apps"} size={30} color={COLORS.grayMiddle}/>
+			{/* <Icon name='coordinate-narrow'/> */}
+			<Text style={styles.menuText}>좌표 넓게</Text>
+		</TouchableOpacity>
+	</View>
+
+	editTitle = (newTitle) => {
+		console.log(TAG, 'editTitle');
+		this.setState({noteInfo: {...this.state.noteInfo, title: newTitle}});
+		this.DB_UPDATE('note', {title: '\"'+newTitle+'\"'}, ['nid=?'], [this.state.noteInfo.nid]);
 	}
 
 	componentDidMount() {
@@ -1309,7 +1351,7 @@ export default class FormationScreen extends React.Component {
 	componentWillUnmount() {
 		console.log(TAG, "componentWillUnmount");
 		clearInterval(this.interval);
-		this.props.route.params.updateNoteList();
+		this.props.route.params.updateNoteList(this.state.noteInfo);
 	}
 
 	render() {
@@ -1322,13 +1364,13 @@ export default class FormationScreen extends React.Component {
 			<View style={{flex: 1}}>
 
 				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}} style={{padding: 12}}>
+					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}} style={styles.toolbarButton}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
 					</TouchableOpacity>
 
-					<Text style={styles.toolbarTitle}>{this.state.noteInfo.title}</Text>
+					<TextInput style={styles.toolbarTitle} onEndEditing={(event)=>this.editTitle(event.nativeEvent.text)}>{this.state.noteInfo.title}</TextInput>
 					
-					<TouchableOpacity onPress={()=>{this.setState({isMenuPop: !this.state.isMenuPop})}} style={{padding: 12}}>
+					<TouchableOpacity onPress={()=>{this.setState({isMenuPop: !this.state.isMenuPop})}} style={styles.toolbarButton}>
 						<IconIonicons name={this.state.isMenuPop ? "ios-arrow-up" : "ios-menu"} size={24} color="#ffffff"/>
 					</TouchableOpacity>
 				</View>
@@ -1436,6 +1478,8 @@ export default class FormationScreen extends React.Component {
 					</ScrollView>
 				</View>
 
+				{this.menuView()}
+
 				{ this.state.isMenuPop ? 
 				<Menu
 				closeMenu={()=>{this.setState({isMenuPop: false})}}
@@ -1520,10 +1564,29 @@ const styles = StyleSheet.create({
 		color:COLORS.white, 
 		fontSize: 15,
 	},
+	toolbarButton: {
+		width: 50,
+		height: 50,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	menuButton: {
+		flexDirection: 'column',
+		width: 70,
+		height: 70,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	menuText: {
+		fontSize: 12,
+		textAlign: 'center',
+		color: COLORS.grayMiddle,
+	},
 	selectContainer: {
+		flexDirection: 'row', 
 		width:'100%', 
 		height:50,
-		flexDirection: 'column',
+		alignItems: 'center',
 		backgroundColor:COLORS.grayLight, 
 		padding: 10,
 	},
@@ -1544,18 +1607,5 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		borderColor: COLORS.grayMiddle,
 		borderWidth: 1,
-	},
-	button: {
-		flex: 1,
-		fontSize: 14,
-		textAlign: 'center',
-		color: COLORS.white,
-		padding: 5,
-		marginLeft: 5,
-		backgroundColor: COLORS.grayMiddle,
-		borderRadius: 20,
-		borderColor: COLORS.white,
-		borderWidth: 1,
-		alignItems: 'center',
 	},
 })

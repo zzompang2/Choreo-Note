@@ -10,10 +10,10 @@ import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 
 var db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
-TAG = "ListScreen";
+TAG = "DancerScreen/";
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
-export default class ListScreen extends React.Component {
+export default class DancerScreen extends React.Component {
 	constructor(props){
 		super(props);
 		this.state={

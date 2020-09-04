@@ -18,7 +18,7 @@ const randomCouple = [
 ];
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
-class ListScreen extends React.Component {
+export default class ListScreen extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
@@ -89,7 +89,7 @@ class ListScreen extends React.Component {
 			txn.executeSql(
 				'INSERT INTO note VALUES (0, "Choreo Note에 오신걸 환영해요!", ?, "노래 없음", 30, 3, 3, 1);', 
 				[this.dateFormat(new Date())],
-				this.updateNoteList,
+				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}
 			);
 			txn.executeSql(
@@ -161,7 +161,7 @@ class ListScreen extends React.Component {
 			txn.executeSql(
 				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 60, 3, 3, 1);', 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
-				() => {this.updateNoteList();},
+				() => {this.setNoteList();},
 				() => {console.log('ERROR');}
 			);
 			txn.executeSql(
@@ -280,8 +280,8 @@ class ListScreen extends React.Component {
 		});
 	}
 
-	updateNoteList = () => {
-		console.log(TAG, "updateNoteList");
+	setNoteList = () => {
+		console.log(TAG, "setNoteList");
 
 		let _noteList = [];
 
@@ -300,6 +300,13 @@ class ListScreen extends React.Component {
 		return true;
 	}
 
+	updateNoteList = (noteInfo) => {
+		console.log(TAG, "updateNoteList");
+		let _noteList = [...this.state.noteList];
+		_noteList[noteInfo.nid] = {...noteInfo};
+		this.setState({noteList: _noteList});
+	}
+
 	listViewItemSeparator = () => <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 
 	render() {
@@ -310,16 +317,16 @@ class ListScreen extends React.Component {
 			
 				<View style={styles.toolbar}>
 					{!this.state.isEditMode ?
-					<TouchableOpacity onPress={()=>{ this.setState({isEditMode: true}); }}>
-						<Text style={{color: COLORS.white}}>편집</Text>
+					<TouchableOpacity style={styles.toolbarButton} onPress={()=>{ this.setState({isEditMode: true}); }}>
+						<Text style={styles.buttonText}>편집</Text>
 					</TouchableOpacity>
 					:
-					<TouchableOpacity onPress={()=>{ this.setState({isEditMode: false}); this.updateNoteList(); }}>
-						<Text style={{color: COLORS.white}}>완료</Text>
+					<TouchableOpacity style={styles.toolbarButton} onPress={()=>{ this.setState({isEditMode: false}); this.setNoteList(); }}>
+						<Text style={styles.buttonText}>완료</Text>
 					</TouchableOpacity>}
 
 					<Text style={styles.toolbarTitle}>Choreo Note</Text>
-					<TouchableOpacity onPress={()=>this.addNote()}>
+					<TouchableOpacity style={styles.toolbarButton} onPress={()=>this.addNote()}>
 						<IconIonicons name="create-outline" size={24} color={COLORS.white}/>
 					</TouchableOpacity>
 				</View>
@@ -346,7 +353,6 @@ class ListScreen extends React.Component {
 									maxLength={30}
 									style={[styles.title, styles.titleInput]}
 									placeholder="제목을 입력해 주세요."
-									onChangeTex
 									onChangeText={text=>{this.changeName(text, item.nid)}}>
 										{item.title}
 									</TextInput>
@@ -387,7 +393,7 @@ class ListScreen extends React.Component {
 
 	componentDidMount() {
 		console.log(TAG, "componentDidMount");
-		this.updateNoteList();
+		this.setNoteList();
 	}
 }
 
@@ -399,11 +405,12 @@ const styles = StyleSheet.create({
 		backgroundColor:COLORS.purple, 
 		alignItems: 'center', 
 		justifyContent: 'space-between', 
-		paddingHorizontal: 20,
+		// paddingHorizontal: 20,
 	},
 	toolbarTitle: {
 		color:COLORS.white, 
 		fontSize: 15,
+		fontFamily: FONTS.binggrae,
 	},
 	noteItem: {
 		flex: 1,
@@ -432,7 +439,7 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		marginTop: 5,
 		paddingVertical: 5,
-    //fontFamily: FONTS.binggrae2,
+    fontFamily: FONTS.binggrae_bold,
 	},
 	titleInput: {
 		backgroundColor: COLORS.grayLight,
@@ -451,8 +458,14 @@ const styles = StyleSheet.create({
     color: COLORS.grayMiddle, 
     fontSize:12,
     //fontFamily: FONTS.binggrae2,
-  },
+	},
+	toolbarButton: {
+		width: 50,
+		height: 50,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	buttonText: {
+		color: COLORS.white,
+	}
 })
-
-// connect 이용해서 reducer와 연결해준다.
-export default ListScreen;

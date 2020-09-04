@@ -1,0 +1,38 @@
+{
+  "name": "choreonote_icon",
+  "css_prefix_text": "icon-",
+  "css_use_suffix": false,
+  "hinting": true,
+  "units_per_em": 1000,
+  "ascent": 850,
+  "glyphs": [
+    {
+      "uid": "394bff8add4a155cc2db281633cd7ba3",
+      "css": "coordinate-wide",
+      "code": 59393,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M970 720H780V280H970A30 30 0 0 0 970 220H780V30A30 30 0 0 0 720 30V220H280V30A30 30 0 0 0 220 30V220H30A30 30 0 0 0 30 280H220V720H30A30 30 0 0 0 30 780H220V970A30 30 0 0 0 280 970V780H720V970A30 30 0 0 0 780 970V780H970A30 30 0 0 0 970 720ZM280 720V280H720V720Z",
+        "width": 1000
+      },
+      "search": [
+        "coordinate-wide"
+      ]
+    },
+    {
+      "uid": "019a6fb4a0164716974707ab3afe96c3",
+      "css": "coordinate-narrow",
+      "code": 59392,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M970 530A30 30 0 0 0 970 470H830V230H970A30 30 0 0 0 970 170H830V30A30 30 0 0 0 770 30V170H530V30A30 30 0 0 0 470 30V170H230V30A30 30 0 0 0 170 30V170H30A30 30 0 0 0 30 230H170V470H30A30 30 0 0 0 30 530H170V770H30A30 30 0 0 0 30 830H170V970A30 30 0 0 0 230 970V830H470V970A30 30 0 0 0 530 970V830H770V970A30 30 0 0 0 830 970V830H970A30 30 0 0 0 970 770H830V530ZM770 230V470H530V230ZM230 230H470V470H230ZM230 770V530H470V770ZM770 770H530V530H770Z",
+        "width": 1000
+      },
+      "search": [
+        "coordinate-narrow"
+      ]
+    }
+  ]
+}
