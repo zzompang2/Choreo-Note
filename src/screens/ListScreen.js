@@ -87,7 +87,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (0, "Choreo Note에 오신걸 환영해요!", ?, "노래 없음", 30, 3, 3, 1);', 
+				'INSERT INTO note VALUES (0, "Choreo Note에 오신걸 환영해요!", ?, "love.mp3", 30, 3, 3, 1);', 
 				[this.dateFormat(new Date())],
 				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}
@@ -159,7 +159,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, ?, ?, "노래 없음", 60, 3, 3, 1);', 
+				'INSERT INTO note VALUES (?, ?, ?, "", 60, 3, 3, 1);', 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
 				() => {this.setNoteList();},
 				() => {console.log('ERROR');}
@@ -370,7 +370,7 @@ export default class ListScreen extends React.Component {
 									<IconIonicons name="calendar" size={15} color={COLORS.grayMiddle}/>
 									<Text numberOfLines={1} style={styles.date}> {item.date}</Text>
 									<IconIonicons name="musical-notes" size={15} color={COLORS.grayMiddle}/>
-									<Text numberOfLines={1} style={styles.music}> {item.music}</Text>
+									<Text numberOfLines={1} style={styles.music}> {item.music == '' ? '노래 없음' : item.music}</Text>
 								</View>
 							</View>
 						</TouchableOpacity>

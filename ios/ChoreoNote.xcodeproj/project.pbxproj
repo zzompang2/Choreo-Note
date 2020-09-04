@@ -17,6 +17,7 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* ChoreoNoteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ChoreoNoteTests.m */; };
 		3716E1EE2501FBFE0075B06A /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 3716E1ED2501FBFE0075B06A /* Fonts */; };
+		3724D9BE2502691C00676A7D /* love.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3724D9BD2502691C00676A7D /* love.mp3 */; };
 		456DBFD6B4AD87F9E06FEE47 /* libPods-ChoreoNote-ChoreoNoteTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD762218CD3197F29F38C99 /* libPods-ChoreoNote-ChoreoNoteTests.a */; };
 		5B8AA1E1625E969599537A76 /* libPods-ChoreoNote-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CCC80B2A3599E98635692A86 /* libPods-ChoreoNote-tvOSTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -57,6 +58,7 @@
 		2D02E4901E0B4A5D006451C7 /* ChoreoNote-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ChoreoNote-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E625A618D99FF5D118B96B /* Pods-ChoreoNote-ChoreoNoteTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChoreoNote-ChoreoNoteTests.release.xcconfig"; path = "Target Support Files/Pods-ChoreoNote-ChoreoNoteTests/Pods-ChoreoNote-ChoreoNoteTests.release.xcconfig"; sourceTree = "<group>"; };
 		3716E1ED2501FBFE0075B06A /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
+		3724D9BD2502691C00676A7D /* love.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = love.mp3; sourceTree = "<group>"; };
 		681AF46187C645402D33D857 /* Pods-ChoreoNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChoreoNote.debug.xcconfig"; path = "Target Support Files/Pods-ChoreoNote/Pods-ChoreoNote.debug.xcconfig"; sourceTree = "<group>"; };
 		6F79FA389A2848715ED54A11 /* Pods-ChoreoNote-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChoreoNote-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-ChoreoNote-tvOSTests/Pods-ChoreoNote-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ChoreoNote/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				3724D9BD2502691C00676A7D /* love.mp3 */,
 				3716E1ED2501FBFE0075B06A /* Fonts */,
 				13B07FAE1A68108700A75B9A /* ChoreoNote */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -351,6 +354,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3724D9BE2502691C00676A7D /* love.mp3 in Resources */,
 				3716E1EE2501FBFE0075B06A /* Fonts in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
