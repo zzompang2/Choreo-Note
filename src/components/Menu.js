@@ -26,73 +26,14 @@ export default class Menu extends React.Component {
 
 				<View style={styles.menu}>
 
-					<View style={styles.menuItem}>
-						<Text style={styles.menuText}>댄서 크기</Text>
-						<TouchableOpacity onPress={()=>this.props.resizeDancer('down')} style={styles.menuButton} activeOpacity={.9}>
-							<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
-						</TouchableOpacity>
-						<Text style={styles.menuValueText}>{this.props.radiusLevel}</Text>
-						<TouchableOpacity onPress={()=>this.props.resizeDancer('up')} style={styles.menuButton} activeOpacity={.9}>
-							<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
-						</TouchableOpacity>
-					</View>
-
-					{this.listViewItemSeparator}
-
-					<View style={styles.menuItem}>
-						<Text style={styles.menuText}>좌표 간격</Text>
-						<TouchableOpacity onPress={()=>this.props.resizeCoordinate('down')} style={styles.menuButton} activeOpacity={.9}>
-							<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle}/>
-						</TouchableOpacity>
-						<Text style={styles.menuValueText}>{this.props.coordinateLevel}</Text>
-						<TouchableOpacity onPress={()=>this.props.resizeCoordinate('up')} style={styles.menuButton} activeOpacity={.9}>
-							<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
-						</TouchableOpacity>
-					</View>
-
-					{this.listViewItemSeparator}
-
-					<View style={styles.menuItem}>
-						<Text style={styles.menuText}>표 너비</Text>
-						<TouchableOpacity onPress={()=>this.props.resizeMusicList('reduce')} style={styles.menuButton} activeOpacity={.9}>
-							<IconIonicons name="caret-back" size={24} color={COLORS.grayMiddle} />
-						</TouchableOpacity>
-						<Text style={styles.menuValueText}>{this.props.boxWidth}</Text>
-						<TouchableOpacity onPress={()=>this.props.resizeMusicList('expand')} style={styles.menuButton} activeOpacity={.9}>
-							<IconIonicons name="caret-forward" size={24} color={COLORS.grayMiddle}/>
-						</TouchableOpacity>
-					</View>
-
-					{this.listViewItemSeparator}
-
-					<View style={styles.menuItem}>
-						<Text style={styles.menuText}>좌표 맞춤</Text>
-						<View style={{flex: 1, alignItems: 'center'}}>
-							<Switch
-							style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
-							trackColor={{true: COLORS.red}}
-							thumbColor={COLORS.white}
-							ios_backgroundColor={COLORS.grayDark}
-							onValueChange={this.props.changeAlignWithCoordinate}
-							value={this.alignWithCoordinate}/>
-						</View>
-					</View>
-
-					{this.listViewItemSeparator}
-
-					<TouchableOpacity 
-					style={styles.menuItem}
-					onPress={this.props.moveToDancer}>
-						<Text style={styles.menuText}>댄서 편집</Text>
-					</TouchableOpacity>
-
-					{this.listViewItemSeparator}
-
 					<TouchableOpacity 
 					style={styles.menuItem}
 					onPress={this.props.openDBScreen}>
 						<Text style={styles.menuText}>DB</Text>
 					</TouchableOpacity>
+
+					{this.listViewItemSeparator}
+					
 				</View>
 			</View>
 		)

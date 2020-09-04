@@ -19,15 +19,10 @@ let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
 const TAG = "FormationScreen/";
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 
-// custom icon 도전중...
-
-// import choreonote_icon from 'react-native-vector-icons/choreonote_icon';
+// custom icon 
+import {createIconSetFromFontello} from 'react-native-vector-icons';
 import fontelloConfig from '../../assets/font/config.json';
-// import customFontGlyph from '../../assets/font/config.json';
-import {createIconSet, createIconSetFromFontello} from 'react-native-vector-icons';
-
-// const Icon = createIconSet(customFontGlyph, 'choreonote_icon', 'choreonote_icon.ttf');
-const Icon = createIconSetFromFontello(fontelloConfig);
+const CustomIcon = createIconSetFromFontello(fontelloConfig);
 
 // 화면의 가로, 세로 길이 받아오기
 const {width, height} = Dimensions.get('window');
@@ -55,7 +50,8 @@ export default class FormationScreen extends React.Component {
 		this.selectedBoxInfo = {posIndex: -1};
 		this.boxWidth = 30;
 		this.boxHeight = 30;
-		this.positionboxSize = 20;
+		this.positionboxWidth = this.boxWidth - 8;
+		this.positionboxHeight = this.boxHeight - 8;
 		this.stageHeight = 250;
 		this.scrollOffset = 0;		// 세로 스크롤 위치
 
@@ -282,7 +278,7 @@ export default class FormationScreen extends React.Component {
 						<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration,}]}/>
 						<View style={[this.styles('checkedBox'), {
 							position: 'absolute',
-							width: this.positionboxSize + this.boxWidth * duration, 
+							width: this.positionboxWidth + this.boxWidth * duration, 
 							backgroundColor: dancerColor[this.dancerList[did].color],
 						}]}/>
 					</TouchableOpacity>
@@ -320,14 +316,14 @@ export default class FormationScreen extends React.Component {
 						justifyContent: 'space-between',
 						borderWidth: 2,
 						borderColor: COLORS.green,
-						borderRadius: this.boxWidth/4,
+						borderRadius: 5,
 						left: this.boxWidth * this.selectedBoxInfo.time - this.boxWidth/2,
 					}}
 					boxStyle={[this.styles('checkedBox'), {
-						width: this.positionboxSize + this.boxWidth * this.selectedBoxInfo.duration,
+						width: this.positionboxWidth + this.boxWidth * this.selectedBoxInfo.duration,
 						backgroundColor: dancerColor[this.dancerList[did].color],
 					}]}
-					buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: this.boxWidth/4}}
+					buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: 5}}
 					/>
 				);
 		}
@@ -357,22 +353,19 @@ export default class FormationScreen extends React.Component {
 		for(let did=0; did<this.dancerList.length; did++)
 			this.setMusicbox(did);
 
-		// 댄서 0명일 경우: 비어있는 row 하나 추가
-		if(this.dancerList.length < 10){
-			let rowView = [];
-			// 마지막 대열~노래 끝부분까지 회색박스 채우기
-			for(let i=0; i<=this.state.noteInfo.musicLength; i++){
-				rowView.push( <View key={rowView.length} style={[this.styles('uncheckedBox'), {height: this.boxHeight * (10-this.dancerList.length)}]}/> )
-			}
-			this.musicbox.push(
-				<View 
-				key={-1}
-				flexDirection='row'>
-					{rowView}
-				</View>
-			)
-		}
-			
+		// 가로선만 있는 row 하나 추가
+		// let rowView = [];
+		// // 마지막 대열~노래 끝부분까지 회색박스 채우기
+		// for(let i=0; i<=this.state.noteInfo.musicLength; i++){
+		// 	rowView.push( <View key={rowView.length} style={[this.styles('uncheckedBox'), {height: height}]}/> )
+		// }
+		// this.musicbox.push(
+		// 	<View 
+		// 	key={-1}
+		// 	flexDirection='row'>
+		// 		{rowView}
+		// 	</View>
+		// )			
 	}
 
 	/** coordinate를 설정한다.
@@ -408,8 +401,10 @@ export default class FormationScreen extends React.Component {
 		this.nameColumn = [];	// +10 : timeBox에서 positionbox와의 간격
 		for(let i=0; i<dancerNum; i++){
 			this.nameColumn.push(
-				<View key={this.nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60}}>
-					<Text style={{fontSize: 11}}>{i+1}. {this.dancerList[i].name}</Text>
+				<View key={this.nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60, paddingRight: 1}}>
+					<View style={{height: this.boxHeight-3, width: 3, backgroundColor: dancerColor[this.dancerList[i].color],}}/>
+					<Text style={{fontSize: 11, minWidth: 14, textAlign: 'center', color: COLORS.grayMiddle}}>{i+1}</Text>
+					<Text style={{fontSize: 11, width: 42, color: COLORS.blackDark}} numberOfLines={1}> {this.dancerList[i].name}</Text>
 				</View>
 			)
 		}
@@ -652,7 +647,8 @@ export default class FormationScreen extends React.Component {
 			case 'expand':
 				if(this.boxWidth < 40){
 					this.boxWidth += 2;
-					this.positionboxSize += 1;
+					this.positionboxWidth += 2;
+					// this.positionboxHeight ++;
 					this.setMusicboxs();
 					this.forceUpdate();
 					break;
@@ -662,7 +658,8 @@ export default class FormationScreen extends React.Component {
 			case 'reduce':
 				if(this.boxWidth > 20){
 					this.boxWidth -= 2;
-					this.positionboxSize -= 1;
+					this.positionboxWidth -= 2;
+					// this.positionboxHeight --;
 					this.setMusicboxs();
 					this.forceUpdate();
 					break;
@@ -1269,25 +1266,77 @@ export default class FormationScreen extends React.Component {
 	}
 
 	menuView = () =>
-	<View style={styles.selectContainer}>
-		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
-			<IconIonicons name={"ios-chevron-down-circle"} size={30} color={COLORS.grayMiddle}/>
+	<ScrollView horizontal={true} bounces={false} decelerationRate={0} showsHorizontalScrollIndicator={false}
+	style={{flexDirection: 'row', maxHeight: 70}}>
+
+		<TouchableOpacity 
+		activeOpacity={1} style={styles.menuButton}
+		onPress={() => {
+			if(this.state.isPlay) { this.setState({isPlay: false}); }
+			this.props.navigation.navigate('Dancer', {
+				noteId: this.state.noteInfo.nid, 
+				dancerList: this.dancerList, 
+				allPosList: this.allPosList, 
+				changeDancerList: this.changeDancerList,
+			});
+		}}>
+			<CustomIcon name='edit-dancer' size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>댄서</Text>
+		</TouchableOpacity>
+
+		<TouchableOpacity onPress={()=>this.resizeDancer('down')} activeOpacity={1} style={styles.menuButton}>
+			<View style={{alignItems: 'center', justifyContent: 'center'}}>
+				<CustomIcon name='dancer-down' size={30} color={COLORS.grayMiddle}/>
+				<Text style={{position: 'absolute', color: COLORS.white, fontSize: 12}}>{this.radiusLevel}</Text>
+			</View>
 			<Text style={styles.menuText}>댄서 작게</Text>
 		</TouchableOpacity>
-		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
-			<IconIonicons name={"ios-chevron-up-circle"} size={30} color={COLORS.grayMiddle}/>
+
+		<TouchableOpacity onPress={()=>this.resizeDancer('up')} activeOpacity={1} style={styles.menuButton}>
+			<View style={{alignItems: 'center', justifyContent: 'center'}}>
+				<CustomIcon name='dancer-up' size={30} color={COLORS.grayMiddle}/>
+				<Text style={{position: 'absolute', color: COLORS.white, fontSize: 14}}>{this.radiusLevel}</Text>
+			</View>
 			<Text style={styles.menuText}>댄서 크게</Text>
 		</TouchableOpacity>
-		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
-			<IconIonicons name={"ios-contract"} size={30} color={COLORS.grayMiddle}/>
+
+		<TouchableOpacity onPress={()=>this.resizeCoordinate('down')} activeOpacity={1} style={styles.menuButton}>
+			<CustomIcon name='coordinate-narrow' size={30} color={COLORS.grayMiddle}/>
 			<Text style={styles.menuText}>좌표 좁게</Text>
 		</TouchableOpacity>
-		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
-			{/* <IconIonicons name={"ios-apps"} size={30} color={COLORS.grayMiddle}/> */}
-			<Icon name='coordinate-narrow'/>
+
+		<TouchableOpacity onPress={()=>this.resizeCoordinate('up')} activeOpacity={1} style={styles.menuButton}>
+		<View style={{alignItems: 'center', justifyContent: 'center'}}>
+				<CustomIcon name='coordinate-wide' size={30} color={COLORS.grayMiddle}/>
+				<Text style={{position: 'absolute', color: COLORS.grayMiddle, fontSize: 14}}>{this.coordinateLevel}</Text>
+			</View>
 			<Text style={styles.menuText}>좌표 넓게</Text>
 		</TouchableOpacity>
-	</View>
+
+		<TouchableOpacity onPress={()=>this.resizeMusicList('reduce')} activeOpacity={1} style={styles.menuButton}>
+			<CustomIcon name='box-width-down' size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>표간격 좁게</Text>
+		</TouchableOpacity>
+
+		<TouchableOpacity onPress={()=>this.resizeMusicList('expand')} activeOpacity={1} style={styles.menuButton}>
+			<CustomIcon name='box-width-up' size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>표간격 넓게</Text>
+		</TouchableOpacity>
+
+		<TouchableOpacity onPress={this.changeAlignWithCoordinate} activeOpacity={1} style={styles.menuButton}>
+			<View style={{alignItems: 'center', justifyContent: 'center'}}>
+				<CustomIcon name='align-with-coordinate' size={30} color={COLORS.grayMiddle}/>
+				<Text style={{position: 'absolute', color: COLORS.white, fontSize: 10}}>{this.alignWithCoordinate ? 'ON' : 'OFF'}</Text>
+			</View>
+			<Text style={styles.menuText}>좌표맞추기</Text>
+		</TouchableOpacity>	
+
+		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
+			<CustomIcon name='edit-music' size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>노래 편집</Text>
+		</TouchableOpacity>	
+
+	</ScrollView>
 
 	editTitle = (newTitle) => {
 		console.log(TAG, 'editTitle');
@@ -1421,17 +1470,17 @@ export default class FormationScreen extends React.Component {
 
 				<View flexDirection='row' style={{flex: 1}}>
 					
+					{/* dancer name */}
 					<View flexDirection='column'>
-
 						<View style={{height: this.boxHeight + 10}}/>
-
 						<ScrollView
 						bounces={false}						// 오버스크롤 막기 (iOS)
 						decelerationRate={0}			// 스크롤 속도 (iOS)
 						showsVerticalScrollIndicator={false}
 						ref={ref => (this.nameScroll = ref)}
 						scrollEventThrottle={16}
-						onScroll={event => this.musicboxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y})}
+						// music box list와 동시에 움직이는 것처럼 보이기 위해 scrollTo의 animated를 false로 한다.
+						onScroll={event => this.musicboxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}
 						onScrollEndDrag={event => {
 							// ceil로 한 이유: floor/round로 하면 맨 마지막 항목이 일부 짤리는 경우가 생길 수 있다.
 							this.scrollOffset = Math.ceil(event.nativeEvent.contentOffset.y/this.boxHeight) * this.boxHeight;
@@ -1441,7 +1490,6 @@ export default class FormationScreen extends React.Component {
 								{ this.nameColumn }
 							</View>
 						</ScrollView>
-						
 					</View>
 
 					<ScrollView 
@@ -1533,9 +1581,9 @@ export default class FormationScreen extends React.Component {
 				})
 			case 'checkedBox':
 				return({
-					height: this.positionboxSize, 
-					width: this.positionboxSize, 
-					borderRadius: 10,
+					height: this.positionboxHeight, 
+					width: this.positionboxWidth, 
+					borderRadius: this.positionboxWidth/2,
 				})
 			case 'timeBox': 
 				return({
@@ -1578,7 +1626,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 	},
 	menuText: {
-		fontSize: 12,
+		fontSize: 10,
 		textAlign: 'center',
 		color: COLORS.grayMiddle,
 	},
