@@ -8,9 +8,11 @@ const Stack = createStackNavigator();
 
 export default function ScreenStack() {
   return (
-		<Stack.Navigator 
+		<Stack.Navigator
 		initialRouteName="ListScreen"
-		headerMode={'none'}>
+    headerMode={'none'}
+    screenOptions={{gestureEnabled: false}} // swipe 로 goBack 하는 것 막기
+    >
       <Stack.Screen name="List" component={ListScreen} />
       <Stack.Screen name="Formation" component={FormationScreen} />
 			<Stack.Screen name="Dancer" component={DancerScreen} />

@@ -70,11 +70,11 @@ export default class DatabaseScreen extends React.Component {
 		return(
 			<View style={{flexDirection: 'column', height: '40%', backgroundColor: COLORS.blackLight}}>
 				<View style={styles.toolbar}>
-					<TouchableOpacity onPress={this.props.closeDBScreen}>
+					<TouchableOpacity onPress={this.props.closeDBScreen} style={styles.toolbarButton}>
 						<IconIonicons name="close-outline" size={20} color="#ffffff"/>
 					</TouchableOpacity>
 					<Text style={styles.toolbarTitle}>Database</Text>	
-					<TouchableOpacity onPress={this.refresh}>
+					<TouchableOpacity onPress={this.refresh} style={styles.toolbarButton}>
 						<IconIonicons name="reload" size={20} color="#ffffff"/>
 					</TouchableOpacity>
 				</View>
@@ -218,11 +218,16 @@ const styles = StyleSheet.create({
 		backgroundColor:COLORS.grayDark, 
 		alignItems: 'center', 
 		justifyContent: 'space-between', 
-		paddingHorizontal: 20,
 	},
 	toolbarTitle: {
 		color:COLORS.white, 
 		fontSize: 15,
+	},
+	toolbarButton: {
+		width: 40,
+		height: 40,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 	columnText: {
 		fontSize: 10,

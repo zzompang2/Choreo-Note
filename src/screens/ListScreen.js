@@ -27,9 +27,9 @@ export default class ListScreen extends React.Component {
 		}
 
 		db.transaction(txn => {
-			// txn.executeSql('DROP TABLE IF EXISTS note;');
-			// txn.executeSql('DROP TABLE IF EXISTS dancer');
-			// txn.executeSql('DROP TABLE IF EXISTS position');
+			txn.executeSql('DROP TABLE IF EXISTS note;');
+			txn.executeSql('DROP TABLE IF EXISTS dancer');
+			txn.executeSql('DROP TABLE IF EXISTS position');
 
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS note(' +
@@ -179,7 +179,7 @@ export default class ListScreen extends React.Component {
 				(e) => {console.log('ERROR', e);}
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, 0, 2, -30, 0, 0);",
+				"INSERT INTO position VALUES (?, 1, 0, 30, 0, 0);",
 				[newNid],
 				() => {console.log('success!');},
 				(e) => {console.log('ERROR', e);}

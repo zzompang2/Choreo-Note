@@ -403,8 +403,12 @@ export default class FormationScreen extends React.Component {
 			this.nameColumn.push(
 				<View key={this.nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60, paddingRight: 1}}>
 					<View style={{height: this.boxHeight-3, width: 3, backgroundColor: dancerColor[this.dancerList[i].color],}}/>
-					<Text style={{fontSize: 11, minWidth: 14, textAlign: 'center', color: COLORS.grayMiddle}}>{i+1}</Text>
-					<Text style={{fontSize: 11, width: 42, color: COLORS.blackDark}} numberOfLines={1}> {this.dancerList[i].name}</Text>
+					<Text style={{fontSize: 11, minWidth: 14, textAlign: 'center', color: COLORS.grayMiddle}}>{i+1+' '}</Text>
+					{ this.dancerList[i].name=='' ?
+					<Text style={{fontSize: 11, width: 42, color: COLORS.grayMiddle}} numberOfLines={1}>이름없음</Text>
+					:
+					<Text style={{fontSize: 11, width: 42, color: COLORS.blackDark}} numberOfLines={1}>{this.dancerList[i].name}</Text>
+					}
 				</View>
 			)
 		}
@@ -418,7 +422,7 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "setDancer: dancerNum = " + this.dancerList.length);
 		
 		const dancerNum = this.dancerList.length;
-		const radiusLength = 10 + this.radiusLevel * 2;
+		const radiusLength = 8 + this.radiusLevel * 2;
 
 		let _dancers = [];
 		
@@ -1246,19 +1250,19 @@ export default class FormationScreen extends React.Component {
 
 		return (
 			<View style={styles.selectContainer}>
-				<TouchableOpacity onPress={()=>{this.unselectPosition();}} activeOpacity={1}>
+				{/* <TouchableOpacity onPress={()=>{this.unselectPosition();}} activeOpacity={1}>
 					<IconIonicons name={this.selectedBoxInfo.posIndex == -1 ? "ios-ellipse-outline" : "md-checkmark-circle-outline"} size={24} color={COLORS.grayMiddle}/>
-				</TouchableOpacity>
-				<Text style={styles.selectText}>시작</Text>
+				</TouchableOpacity> */}
+				<Text style={styles.selectText}>시작:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editTime(event.nativeEvent.text)}>
 					{isSelected ? this.timeFormat(this.selectedBoxInfo.time) : ''}</TextInput>
-				<Text style={styles.selectText}>길이</Text>
+				<Text style={styles.selectText}> 길이:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
-				<Text style={styles.selectText}>X</Text>
+				<Text style={styles.selectText}> X:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editX(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
-				<Text style={styles.selectText}>Y</Text>
+				<Text style={styles.selectText}> Y:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editY(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
 			</View>
