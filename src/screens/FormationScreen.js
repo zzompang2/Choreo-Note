@@ -22,12 +22,12 @@ const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 // custom icon 도전중...
 
 // import choreonote_icon from 'react-native-vector-icons/choreonote_icon';
-// import fontelloConfig from '../../assets/font/config.json';
+import fontelloConfig from '../../assets/font/config.json';
 // import customFontGlyph from '../../assets/font/config.json';
-// import {createIconSet, createIconSetFromFontello} from 'react-native-vector-icons';
+import {createIconSet, createIconSetFromFontello} from 'react-native-vector-icons';
 
 // const Icon = createIconSet(customFontGlyph, 'choreonote_icon', 'choreonote_icon.ttf');
-// const Icon = createIconSetFromFontello(fontelloConfig);
+const Icon = createIconSetFromFontello(fontelloConfig);
 
 // 화면의 가로, 세로 길이 받아오기
 const {width, height} = Dimensions.get('window');
@@ -1283,8 +1283,8 @@ export default class FormationScreen extends React.Component {
 			<Text style={styles.menuText}>좌표 좁게</Text>
 		</TouchableOpacity>
 		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
-			<IconIonicons name={"ios-apps"} size={30} color={COLORS.grayMiddle}/>
-			{/* <Icon name='coordinate-narrow'/> */}
+			{/* <IconIonicons name={"ios-apps"} size={30} color={COLORS.grayMiddle}/> */}
+			<Icon name='coordinate-narrow'/>
 			<Text style={styles.menuText}>좌표 넓게</Text>
 		</TouchableOpacity>
 	</View>
