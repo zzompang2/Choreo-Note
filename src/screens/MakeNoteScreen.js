@@ -55,7 +55,7 @@ export default class MakeNoteScreen extends React.Component {
 			nid: this.state.nid, 
 			title: '', 
 			date: this.props.route.params.date, 
-			music: '', 
+			music: 'love.mp3',		// sample music 
 			musicLength: 30, 
 			radiusLevel: 3, 
 			coordinateLevel: 3, 
@@ -231,6 +231,56 @@ export default class MakeNoteScreen extends React.Component {
 		this.setCoordinate();
 	}
 
+	completeMakingNote = () => {
+		// 이름이 공백인 경우
+		if(this.noteInfo.title.replace(/ /gi, '') == ''){
+			console.log('제목을 적어주세요.');
+			Alert.alert('제목이 비어있음', '제목을 입력해 주세요.');
+			return;
+		}
+
+		// 노래가 없는 경우
+
+		// 노래 있는 경우
+		// 재생해보고 musicLength 업데이트
+
+		// dancer 추가
+		for(let i=0; i<this.dancerList.length; i++){
+			db.transaction(txn => {
+				txn.executeSql(
+					"INSERT INTO dancer VALUES (?, ?, ?, ?);",
+					[this.noteInfo.nid, i, this.dancerList[i].name, this.dancerList[i].color]
+				);
+			});
+		}
+
+		// position 추가
+		for(let i=0; i<this.allPosList.length; i++){
+			db.transaction(txn => {
+				txn.executeSql(
+					"INSERT INTO position VALUES (?, ?, 0, ?, ?, 0);",
+					[this.noteInfo.nid, this.allPosList[i].did, this.allPosList[i].posx, this.allPosList[i].posy],
+					() => {console.log('success!');},
+					(e) => {console.log('ERROR', e);}
+				);
+			});
+		}
+
+		// 노트 추가하고 리스트로 이동
+		db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
+				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, 
+					this.noteInfo.radiusLevel, this.noteInfo.coordinateLevel, this.noteInfo.stageWidth, this.noteInfo.stageHeight],
+				() => {
+					this.props.route.params.updateNoteList(this.noteInfo);
+					this.props.navigation.goBack();
+				},
+				(e) => {console.log('ERROR:', e);}
+			);
+		});
+	}
+
 	render() {
 		console.log(TAG, 'render');
 		return(
@@ -243,7 +293,7 @@ export default class MakeNoteScreen extends React.Component {
 
 					<Text style={styles.toolbarTitle}>새로운 노트 만들기</Text>
 
-					<TouchableOpacity style={styles.toolbarButton} onPress={()=>{ }}>
+					<TouchableOpacity style={styles.toolbarButton} onPress={this.completeMakingNote}>
 						<Text style={styles.buttonText}>완료</Text>
 					</TouchableOpacity>
 				</View>
@@ -398,7 +448,7 @@ export default class MakeNoteScreen extends React.Component {
 						maxLength={10}
 						style={{flex: 1, fontSize: 16, color: COLORS.blackDark, padding: 10,}}
 						placeholder="이름을 입력해 주세요."
-						onEndEditing={(event)=>{}}
+						onEndEditing={(event)=>{this.dancerList[item.did].name = event.nativeEvent.text;}}
 						autoCorrect={false}>
 							{item.name}
 						</TextInput>

@@ -492,6 +492,15 @@ export default class FormationScreen extends React.Component {
 				</View>
 			)
 		}
+		if(dancerNum == 0){
+			this.nameColumn.push(
+				<View key={0} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60, paddingRight: 1}}>
+					<View style={{height: this.boxHeight-3, width: 3, backgroundColor: COLORS.grayMiddle}}/>
+					<Text style={{fontSize: 11, minWidth: 14, textAlign: 'center', color: COLORS.grayMiddle}}>{0+' '}</Text>
+					<Text style={{fontSize: 11, width: 42, color: COLORS.grayMiddle}} numberOfLines={1}>댄서 없음</Text>
+				</View>
+			)
+		}
 	}
 
 	/** 댄서들 이름과 <Dancer>들을 설정한다.
@@ -1560,7 +1569,7 @@ export default class FormationScreen extends React.Component {
 
 				<View flexDirection='row' style={{flex: 1}}>
 					
-					{/* dancer name */}
+					{/* dancer 이름 */}
 					<View flexDirection='column'>
 						<View style={{height: this.boxHeight + 10}}/>
 						<ScrollView

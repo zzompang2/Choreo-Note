@@ -152,42 +152,42 @@ export default class ListScreen extends React.Component {
 		});
 	}
 
-	addNote = () => {
-		const newNid = this.state.noteList.length;
-		const randomValue = Math.floor(Math.random() * randomCouple.length);
-		const randomColor = Math.floor(Math.random() * (dancerColor.length));
+	// addNote = () => {
+	// 	const newNid = this.state.noteList.length;
+	// 	const randomValue = Math.floor(Math.random() * randomCouple.length);
+	// 	const randomColor = Math.floor(Math.random() * (dancerColor.length));
 
-		console.log(TAG, "addNote", newNid, randomValue);
+	// 	console.log(TAG, "addNote", newNid, randomValue);
 
-		db.transaction(txn => {
-			txn.executeSql(
-				"INSERT INTO note VALUES (?, ?, ?, '', 60, 3, 3, 1, 1200, 600);", 
-				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
-				() => {this.setNoteList();},
-				() => {console.log('ERROR');}
-			);
-			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, 0, ?, ?);",
-				[newNid, randomCouple[randomValue][1], randomColor]
-			);
-			txn.executeSql(
-				"INSERT INTO dancer VALUES (?, 1, ?, ?);",
-				[newNid, randomCouple[randomValue][2], randomColor]
-			);
-			txn.executeSql(
-				"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
-				[newNid],
-				() => {console.log('success!');},
-				(e) => {console.log('ERROR', e);}
-			);
-			txn.executeSql(
-				"INSERT INTO position VALUES (?, 1, 0, 30, 0, 0);",
-				[newNid],
-				() => {console.log('success!');},
-				(e) => {console.log('ERROR', e);}
-			);
-		});
-	}
+	// 	db.transaction(txn => {
+	// 		txn.executeSql(
+	// 			"INSERT INTO note VALUES (?, ?, ?, '', 60, 3, 3, 1, 1200, 600);", 
+	// 			[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
+	// 			() => {this.setNoteList();},
+	// 			() => {console.log('ERROR');}
+	// 		);
+	// 		txn.executeSql(
+	// 			"INSERT INTO dancer VALUES (?, 0, ?, ?);",
+	// 			[newNid, randomCouple[randomValue][1], randomColor]
+	// 		);
+	// 		txn.executeSql(
+	// 			"INSERT INTO dancer VALUES (?, 1, ?, ?);",
+	// 			[newNid, randomCouple[randomValue][2], randomColor]
+	// 		);
+	// 		txn.executeSql(
+	// 			"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
+	// 			[newNid],
+	// 			() => {console.log('success!');},
+	// 			(e) => {console.log('ERROR', e);}
+	// 		);
+	// 		txn.executeSql(
+	// 			"INSERT INTO position VALUES (?, 1, 0, 30, 0, 0);",
+	// 			[newNid],
+	// 			() => {console.log('success!');},
+	// 			(e) => {console.log('ERROR', e);}
+	// 		);
+	// 	});
+	// }
 
 	deleteNote = (nid) => {
 		console.log(TAG, "deleteNote", nid);
@@ -305,7 +305,13 @@ export default class ListScreen extends React.Component {
 	updateNoteList = (noteInfo) => {
 		console.log(TAG, "updateNoteList");
 		let _noteList = [...this.state.noteList];
-		_noteList[noteInfo.nid] = {...noteInfo};
+
+		if(noteInfo.nid == _noteList){
+			_noteList.push(noteInfo);
+		}
+		else{
+			_noteList[noteInfo.nid] = {...noteInfo};
+		}
 		this.setState({noteList: _noteList});
 	}
 
