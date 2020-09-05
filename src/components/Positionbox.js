@@ -10,7 +10,7 @@ export default class Positionbox extends React.Component {
 	constructor(props) {
 		super(props);
 		console.log(TAG, 'constructor');
-		this.time;
+		this.beat;
 		this.duration;
 	
 		this.leftResponder = PanResponder.create({
@@ -23,7 +23,7 @@ export default class Positionbox extends React.Component {
 				// scroll lock
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
-				this.initialValue = {time: this.time, duration: this.duration};
+				this.initialValue = {beat: this.beat, duration: this.duration};
       },
 
 			// 터치이벤트 진행중...
@@ -35,7 +35,7 @@ export default class Positionbox extends React.Component {
 				const changedDuration = this.initialValue.duration - Math.round(gesture.dx / this.props.boxWidth);
 
 				if(this.props.duration != changedDuration && changedDuration >= 0)
-					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.time);
+					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.beat);
 			},
 
       // 터치이벤트 끝날 때.
@@ -44,7 +44,7 @@ export default class Positionbox extends React.Component {
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
-				this.props.resizePositionboxLeft(true, this.props.duration, this.initialValue.time);
+				this.props.resizePositionboxLeft(true, this.props.duration, this.initialValue.beat);
       }
 		})
 
@@ -58,15 +58,15 @@ export default class Positionbox extends React.Component {
 				// scroll lock
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
-				this.initialValue = {time: this.time, duration: this.duration};
+				this.initialValue = {beat: this.beat, duration: this.duration};
       },
 
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
-				const changedTime = this.initialValue.time + Math.round(gesture.dx / this.props.boxWidth);
+				const changedBeat = this.initialValue.beat + Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.time != changedTime)
-					this.props.movePositionbox(false, changedTime, this.initialValue.time);
+				if(this.props.beat != changedBeat)
+					this.props.movePositionbox(false, changedBeat, this.initialValue.beat);
 			},
 
       // 터치이벤트 끝날 때.
@@ -81,7 +81,7 @@ export default class Positionbox extends React.Component {
 				}
 				else{
 					// 이동!
-					this.props.movePositionbox(true, this.time, this.initialValue.time);
+					this.props.movePositionbox(true, this.beat, this.initialValue.beat);
 				}
       }
 		})
@@ -96,7 +96,7 @@ export default class Positionbox extends React.Component {
 				// scroll lock
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
-				this.initialValue = {time: this.time, duration: this.duration};
+				this.initialValue = {beat: this.beat, duration: this.duration};
       },
 
 			// 터치이벤트 진행중...
@@ -127,7 +127,7 @@ export default class Positionbox extends React.Component {
 	render(){
 		console.log(TAG, 'render');
 
-		this.time = this.props.time;
+		this.beat = this.props.beat;
 		this.duration = this.props.duration;
 
 		return(

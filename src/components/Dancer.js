@@ -88,13 +88,13 @@ export default class Dancer extends React.Component {
     });
   }
 
-  // 전달받은 curTime에 어느 위치에 놓여져 있는지 계산한다.
+  // 전달받은 curBeat에 어느 위치에 놓여져 있는지 계산한다.
   getCurPosition = () => {
     const posList = [...this.props.posList];
-    const curTime = this.props.curTime;
+    const curBeat = this.props.curBeat;
 
     // 맨 앞의 checked point보다 작거나 같은 경우
-    if(curTime < posList[0].time){
+    if(curBeat < posList[0].beat){
       this.fadeAnim = new Animated.Value(0);
       return({x: posList[0].posx, y: posList[0].posy});
     }
@@ -102,7 +102,7 @@ export default class Dancer extends React.Component {
 
     // 어떤 checked point들 사이에 있는지 계산 ( [i-1] < ... <= [i] )
     for(var i=0; i<posList.length; i++)
-      if(curTime <= posList[i].time) break;
+      if(curBeat <= posList[i].beat) break;
 
     // 최종 checked point의 시간보다 큰 경우
     if(i == posList.length){
@@ -110,16 +110,16 @@ export default class Dancer extends React.Component {
     }
 
     // 어떤 checked point와 시간이 같은 경우
-    if(curTime == posList[i].time)
+    if(curBeat == posList[i].beat)
       return({x: posList[i].posx, y: posList[i].posy});
 
     // 이전 checked point(i-1 번째)의 duration 중인 경우
-    const leftedDuration = posList[i-1].time + posList[i-1].duration - this.props.curTime;
+    const leftedDuration = posList[i-1].beat + posList[i-1].duration - this.props.curBeat;
     if(leftedDuration >= 0)
       return({x: posList[i-1].posx, y: posList[i-1].posy});
 
-    const dx = Math.round( (posList[i].posx - posList[i-1].posx) * (curTime - posList[i-1].time - posList[i-1].duration) / (posList[i].time - posList[i-1].time - posList[i-1].duration) );
-    const dy = Math.round( (posList[i].posy - posList[i-1].posy) * (curTime - posList[i-1].time - posList[i-1].duration) / (posList[i].time - posList[i-1].time - posList[i-1].duration) );
+    const dx = Math.round( (posList[i].posx - posList[i-1].posx) * (curBeat - posList[i-1].beat - posList[i-1].duration) / (posList[i].beat - posList[i-1].beat - posList[i-1].duration) );
+    const dy = Math.round( (posList[i].posy - posList[i-1].posy) * (curBeat - posList[i-1].beat - posList[i-1].duration) / (posList[i].beat - posList[i-1].beat - posList[i-1].duration) );
     
     return({x: posList[i-1].posx + dx, y: posList[i-1].posy + dy});
   }
@@ -138,18 +138,18 @@ export default class Dancer extends React.Component {
     // 현재 시간에 어느 위치에 있는지 찾는다.
     let i=0;
     for(; i<posList.length; i++){
-      if(this.props.curTime < posList[i].time)
+      if(this.props.curBeat < posList[i].beat)
         break;
     }
     // 최초 좌표 이전의 시간인 경우: 무대 등장하기 전이므로 대기
     if(i == 0){
-      leftedDuration = posList[0].time - this.props.curTime;
+      leftedDuration = posList[0].beat - this.props.curBeat;
     }
     // 최종 좌표 이후의 시간인 경우: 애니메이션 필요 없음
     else if(i == posList.length) return;
     else{
       // 이전 좌표의 duration이 아직 진행중인 경우를 체크
-      leftedDuration = posList[i-1].time + posList[i-1].duration - this.props.curTime;
+      leftedDuration = posList[i-1].beat + posList[i-1].duration - this.props.curBeat;
       leftedDuration = ( leftedDuration > 0 ? leftedDuration : 0 );
     }
     // 첫번째 애니메이션: 현재 시간 ~ 처음으로 나오는 좌표의 위치
@@ -158,9 +158,9 @@ export default class Dancer extends React.Component {
         this.state.pan,
         {
           toValue: {x: posList[i].posx, y: posList[i].posy, opacity: .7},
-          duration: (posList[i].time - this.props.curTime - leftedDuration) * 1000,
+          duration: (posList[i].beat - this.props.curBeat - leftedDuration) * 1000*60/this.props.bpm,
           useNativeDriver: true,
-          delay: leftedDuration * 1000,
+          delay: leftedDuration * 1000*60/this.props.bpm,
         }
       ),
       Animated.timing(
@@ -176,9 +176,9 @@ export default class Dancer extends React.Component {
           this.state.pan,
           {
             toValue: {x: posList[j].posx, y: posList[j].posy},
-            duration: (posList[j].time - posList[j-1].time - posList[j-1].duration) * 1000,
+            duration: (posList[j].beat - posList[j-1].beat - posList[j-1].duration) * 1000*60/this.props.bpm,
             useNativeDriver: true,
-            delay: posList[j-1].duration * 1000,
+            delay: posList[j-1].duration * 1000*60/this.props.bpm,
           }
         )
       );

@@ -36,19 +36,19 @@ export default class FormationScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate, stageWidth, stageHeight}
-			time: 0,
+			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, bpm, radiusLevel, coordinateLevel, alignWithCoordinate, stageWidth, stageHeight}
+			beat: 0,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
 			isDBPop: false,		// DB 스크린이 켜져 있는가?
 			dancers: [],
 		}
-		this.allPosList = [];	// nid, did, time, posx, posy, duration
+		this.allPosList = [];	// nid, did, beat, posx, posy, duration
 		this.dancerList = [];	// nid, did, name
 		this.nameColumn = [],
 		this.scrollViewStyle;
-		this.timeText = [];
+		this.beatText = [];
 		this.musicbox = [];	
 		this.selectedBoxInfo = {posIndex: -1};
 		this.boxWidth = 30;
@@ -122,7 +122,7 @@ export default class FormationScreen extends React.Component {
 		}
 		if(this.state.isPlay) this.pause();
 		
-		this.sound.setCurrentTime(this.state.time);
+		this.sound.setCurrentBeat(this.state.beat);
 
 		this.sound.play((success) => {
 			if (success) {
@@ -155,8 +155,8 @@ export default class FormationScreen extends React.Component {
 	/**
 	 * DB_UPDATE('position', 
 	 * 	{posx: posx, posy: posy}, 
-	 * 	['nid=?', 'did=?', 'time=?'], 
-	 * 	[nid, did, time]);
+	 * 	['nid=?', 'did=?', 'beat=?'], 
+	 * 	[nid, did, beat]);
 	 * @param {string} table 
 	 * @param {JSX} set 
 	 * @param {array<string>} where 
@@ -195,8 +195,8 @@ export default class FormationScreen extends React.Component {
 
 	/**
 	 * DB_DELETE('position', 
-	 * 	['nid=?', 'did=?', 'time=?'], 
-	 * 	[nid, did, time]);
+	 * 	['nid=?', 'did=?', 'beat=?'], 
+	 * 	[nid, did, beat]);
 	 * @param {*} table 
 	 * @param {*} where 
 	 * @param {*} param 
@@ -241,36 +241,36 @@ export default class FormationScreen extends React.Component {
 		})
 	}
 
-	/** time box를 초기화하거나 특정 시간을 표시한다.
+	/** beat box를 초기화하거나 특정 시간을 표시한다.
 	 * - if(no param) => initialize
 	 * - re-render: NO
-	 * - update: this.musicbox(, this.timeText)
-	 * @param markedTime 마크할 시간 (없다면 초기화)
+	 * - update: this.musicbox(, this.beatText)
+	 * @param markedBeat 마크할 비트 (없다면 초기화)
 	 */
-	setTimebox = (markedTime) => {
-		console.log(TAG, 'setTimebox');
+	setBeatbox = (markedBeat) => {
+		console.log(TAG, 'setBeatbox(', markedBeat, ')');
 
-		let _timeText;
+		let _beatText;
 
 		// 파라미터가 없는 경우: initialize
-		if(markedTime == undefined){
-			markedTime = 0;	// default로 0초를 마크
-			this.timeText = [];
-			for(let time=0; time <= this.state.noteInfo.musicLength; time++){
-				this.timeText.push(
-					<View key={this.timeText.length} style={{flexDirection: 'column'}}>
+		if(markedBeat == undefined){
+			markedBeat = 0;	// default로 0초를 마크
+			this.beatText = [];
+			for(let beat=0; beat <= this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; beat++){
+				this.beatText.push(
+					<View key={this.beatText.length} style={{flexDirection: 'column'}}>
 						<TouchableOpacity
-						style={this.styles('timeBox')}
+						style={this.styles('beatBox')}
 						onPress={()=>{
-							this.setTimebox(time);
-							this.setState({time: time}, () => {
+							this.setBeatbox(beat);
+							this.setState({beat: beat}, () => {
 								// play 상태인 경우: pause 후 시간에 맞게 <Dancer> 위치 설정
 								if(this.state.isPlay) this.pause();
 								// pause 상태인 경우: 변한 시간에 맞게 <Dancer> 위치 설정
 								else this.setDancer();
 								});
 							}}>
-							<Text style={{fontSize: 11}}>{time}</Text>
+							<Text style={{fontSize: 11}}>{beat}</Text>
 						</TouchableOpacity>
 						<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
 					</View>
@@ -278,31 +278,31 @@ export default class FormationScreen extends React.Component {
 			}
 		}
 
-		// this.timeText: 아무 마크도 없는 pure한 array (음악 길이가 변경되지 않는 한 절대 변경되지 않음)
-		// _timeText: 특정 시간이 마크되어 있는 array
+		// this.beatText: 아무 마크도 없는 pure한 array (음악 길이가 변경되지 않는 한 절대 변경되지 않음)
+		// _beatText: 특정 시간이 마크되어 있는 array
 
-		_timeText = [...this.timeText];
-		_timeText[markedTime] = 
-		<View key={markedTime} style={{flexDirection: 'column'}}>
+		_beatText = [...this.beatText];
+		_beatText[markedBeat] = 
+		<View key={markedBeat} style={{flexDirection: 'column'}}>
 			<View
-			style={[this.styles('timeBox'), {
+			style={[this.styles('beatBox'), {
 				borderColor: COLORS.grayMiddle, 
 				borderRadius: 99, 
 				borderWidth: 1}]}>
-				<Text style={{fontSize: 11}}>{markedTime}</Text>
+				<Text style={{fontSize: 11}}>{markedBeat}</Text>
 			</View>
 			<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
 		</View>
 		
 		// this.musicbox.splice(0, 1,
 		// 	<View key={0} flexDirection='row'>
-		// 		{ _timeText }
+		// 		{ _beatText }
 		// 	</View>
 		// );
 
-		this.timeTextSelect =
+		this.beatTextSelect =
 			<View key={0} flexDirection='row'>
-				{ _timeText }
+				{ _beatText }
 			</View>
 	}
 
@@ -318,35 +318,35 @@ export default class FormationScreen extends React.Component {
 		
 		// did번째 댄서에 대한 position이 하나도 없는 경우
 		if(posList.length == 0){
-			for(let time=0; time<=this.state.noteInfo.musicLength; time++){
+			for(let beat=0; beat<=this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; beat++){
 				rowView.push(
-					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, time)}>
+					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, beat)}>
 						<View style={this.styles('uncheckedBox')}></View>
 					</TouchableOpacity>
 				)
 			}
 		}
 		else{
-			let prevTime = -1;
+			let prevBeat = -1;
 			let selectedIdxInRowView = -1;
 
 			for(let i=0; i<posList.length; i++){
 
-				const curTime = posList[i].time;
+				const curBeat = posList[i].beat;
 				const duration = posList[i].duration;
 
 				// duration으로 인해 이전 checked box에 덮어진 경우
-				if(curTime <= prevTime){
+				if(curBeat <= prevBeat){
 					continue;
 				}
 
-				// 이전 좌표의 시간 ~ 다음 좌표의 시간까지 unchecked box 채우기
-				for(let time=prevTime+1; time<curTime; time++){
+				// 이전 좌표의 비트 ~ 다음 좌표의 비트까지 unchecked box 채우기
+				for(let beat=prevBeat+1; beat<curBeat; beat++){
 					rowView.push(
 						<TouchableOpacity 
 						key={rowView.length} 
 						activeOpacity={1} 
-						onLongPress={()=>this.addPosition(did, time)}>
+						onLongPress={()=>this.addPosition(did, beat)}>
 							<View style={this.styles('uncheckedBox')}></View>
 						</TouchableOpacity>
 					)
@@ -354,14 +354,14 @@ export default class FormationScreen extends React.Component {
 
 				// 선택된 블럭인 경우
 				const isSelected = (i == this.selectedBoxInfo.posIndex) && (did == this.selectedBoxInfo.did);
-				if(isSelected) selectedIdxInRowView = curTime;
+				if(isSelected) selectedIdxInRowView = curBeat;
 
 				// checked box 넣기
 				rowView.push(
 					<TouchableOpacity 
 					key={rowView.length}
 					onPress={()=>this.selectPosition(did, i)}
-					onLongPress={()=>this.deletePosition(did, curTime)}
+					onLongPress={()=>this.deletePosition(did, curBeat)}
 					activeOpacity={.8}
 					disabled={isSelected}
 					style={{alignItems: 'center', justifyContent: 'center',}}>
@@ -373,11 +373,11 @@ export default class FormationScreen extends React.Component {
 						}]}/>
 					</TouchableOpacity>
 				)
-				prevTime = curTime + duration;
+				prevBeat = curBeat + duration;
 			}
 
 			// 마지막 대열~노래 끝부분까지 회색박스 채우기
-			for(let i=prevTime+1; i<=this.state.noteInfo.musicLength; i++){
+			for(let i=prevBeat+1; i<=this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; i++){
 				rowView.push(
 					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
 						<View style={this.styles('uncheckedBox')}></View>
@@ -390,7 +390,7 @@ export default class FormationScreen extends React.Component {
 					<Positionbox
 					key={-1}
 					boxWidth={this.boxWidth}
-					time={this.selectedBoxInfo.time}
+					beat={this.selectedBoxInfo.beat}
 					duration={this.selectedBoxInfo.duration}
 					setScrollEnable={this.setScrollEnable}
 					resizePositionboxLeft={this.resizePositionboxLeft}
@@ -407,7 +407,7 @@ export default class FormationScreen extends React.Component {
 						borderWidth: 2,
 						borderColor: COLORS.green,
 						borderRadius: 5,
-						left: this.boxWidth * this.selectedBoxInfo.time - this.boxWidth/2,
+						left: this.boxWidth * this.selectedBoxInfo.beat - this.boxWidth/2,
 					}}
 					boxStyle={[this.styles('checkedBox'), {
 						width: this.positionboxWidth + this.boxWidth * this.selectedBoxInfo.duration,
@@ -429,33 +429,19 @@ export default class FormationScreen extends React.Component {
 
 	/** music box 전체를 초기화한다.
 	 * - re-render: NO
-	 * - update: this.musicbox(, this.timeText)
-	 * @param markedTime 마크할 시간 (없다면 초기화)
+	 * - update: this.musicbox(, this.beatText)
+	 * @param markedBeat 마크할 시간 (없다면 초기화)
 	 */
-	setMusicboxs = (markedTime) => {
+	setMusicboxs = (markedBeat) => {
 		console.log(TAG, "setMusicboxs");
 
 		this.musicbox = [];	// 제거된 dancer가 있을 수 있으므로 초기화.
 
-		this.setTimebox(markedTime);
+		this.setBeatbox(markedBeat);
 		this.setDancerName();
 
 		for(let did=0; did<this.dancerList.length; did++)
 			this.setMusicbox(did);
-
-		// 가로선만 있는 row 하나 추가
-		// let rowView = [];
-		// // 마지막 대열~노래 끝부분까지 회색박스 채우기
-		// for(let i=0; i<=this.state.noteInfo.musicLength; i++){
-		// 	rowView.push( <View key={rowView.length} style={[this.styles('uncheckedBox'), {height: height}]}/> )
-		// }
-		// this.musicbox.push(
-		// 	<View 
-		// 	key={-1}
-		// 	flexDirection='row'>
-		// 		{rowView}
-		// 	</View>
-		// )			
 	}
 
 	/** coordinate를 설정한다.
@@ -488,7 +474,7 @@ export default class FormationScreen extends React.Component {
 	setDancerName = () => {
 		console.log(TAG, "setDancerName: dancerNum = " + this.dancerList.length);
 		const dancerNum = this.dancerList.length;
-		this.nameColumn = [];	// +10 : timeBox에서 positionbox와의 간격
+		this.nameColumn = [];	// +10 : beatBox에서 positionbox와의 간격
 		for(let i=0; i<dancerNum; i++){
 			this.nameColumn.push(
 				<View key={this.nameColumn.length} style={{flexDirection: 'row', alignItems: 'center', height: this.boxHeight, width: 60, paddingRight: 1}}>
@@ -531,7 +517,8 @@ export default class FormationScreen extends React.Component {
 				key={_dancers.length}
 				did={i}
 				isSelected={this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == i ? true : false}
-				curTime={this.state.time}
+				curBeat={this.state.beat}
+				bpm={this.state.noteInfo.bpm}
 				posList={[...this.allPosList[i]]} 
 				dropPosition={this.dropPosition}
 				isPlay={this.state.isPlay}
@@ -551,39 +538,39 @@ export default class FormationScreen extends React.Component {
 	 * @param did  dancer id
 	 * @param posx 드랍한 x 좌표
 	 * @param posy 드랍한 y 좌표
-	 * @param time 시간
+	 * @param beat 시간
 	 */
-  dropPosition = (did, posx, posy, time = this.state.time) => {
+  dropPosition = (did, posx, posy, beat = this.state.beat) => {
     console.log(TAG + "dropPosition");
 		
 		// state 업데이트
-		let newPos = {did: did, posx: posx, posy: posy, time: time, duration: 0};
+		let newPos = {did: did, posx: posx, posy: posy, beat: beat, duration: 0};
 		let posList = this.allPosList[did];	// 참조 형식
 
 		for(var i=0; i<posList.length; i++){	// for문 밖에서도 사용하므로 let이 아닌 var
 			// 0번째보다 이전 시간인 경우는 존재하지 않는다. 드래그할 수 없게 막았기 때문.
 
 			// i번째 box에 속한 경우: UPDATE
-			if(posList[i].time <= time && time <= posList[i].time + posList[i].duration){
+			if(posList[i].beat <= beat && beat <= posList[i].beat + posList[i].duration){
 				// selected box인 경우
-				if(this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == did && this.selectedBoxInfo.time == posList[i].time){
+				if(this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == did && this.selectedBoxInfo.beat == posList[i].beat){
 					this.selectedBoxInfo.posx = posx;
 					this.selectedBoxInfo.posy = posy;
 				}
-				newPos = {...newPos, time: posList[i].time, duration: posList[i].duration};
+				newPos = {...newPos, beat: posList[i].beat, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
-				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, posList[i].time]);
+				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'beat=?'], [this.state.noteInfo.nid, did, posList[i].beat]);
 				this.setMusicbox(did);
 				this.setDancer();
 				return;
 			}
 			// 어떤 box에도 속하지 않은 경우: INSERT
-			else if(time < posList[i].time)
+			else if(beat < posList[i].beat)
 				break;
 		}
 		// 모든 박스를 확인하고 for문을 나온 경우: INSERT
 		posList.splice(i, 0, newPos);
-		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0})
+		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, beat: beat, posx: posx, posy: posy, duration: 0})
 		this.setMusicbox(did);
 		this.setDancer();
 	}
@@ -592,12 +579,12 @@ export default class FormationScreen extends React.Component {
 	 * - re-render: YES ( setDancer() )
 	 * - update: this.allPosList, this.musicbox
 	 * @param did dancer id
-	 * @param time 추가할 좌표의 time 값
+	 * @param beat 추가할 좌표의 beat 값
 	 */
-	addPosition = (did, time) => {
-		console.log(TAG, "addPosition(did:",did,"time:",time,")");
+	addPosition = (did, beat) => {
+		console.log(TAG, "addPosition(did:",did,"beat:",beat,")");
 
-		// time에 맞는 위치 구하기
+		// beat에 맞는 위치 구하기
 		let posList = this.allPosList[did];
 		let posx;
 		let posy;
@@ -611,7 +598,7 @@ export default class FormationScreen extends React.Component {
 		else{
 			// 들어갈 index 찾기
 			for(; i<posList.length; i++){
-				if(time < posList[i].time)
+				if(beat < posList[i].beat)
 					break;
 			}
 			// 맨 앞에 추가하는 경우
@@ -626,17 +613,17 @@ export default class FormationScreen extends React.Component {
 			}
 			// 중간에 추가하는 경우
 			else{
-				const dx = (posList[i].posx - posList[i-1].posx) * (time - posList[i-1].time) / (posList[i].time - posList[i-1].time)
-				const dy = (posList[i].posy - posList[i-1].posy) * (time - posList[i-1].time) / (posList[i].time - posList[i-1].time)
+				const dx = (posList[i].posx - posList[i-1].posx) * (beat - posList[i-1].beat) / (posList[i].beat - posList[i-1].beat)
+				const dy = (posList[i].posy - posList[i-1].posy) * (beat - posList[i-1].beat) / (posList[i].beat - posList[i-1].beat)
 				posx = posList[i-1].posx + dx;
 				posy = posList[i-1].posy + dy;
 				posx = Math.round(posx);
 				posy = Math.round(posy);
 			}
 		}
-		posList.splice(i, 0, {did: did, posx: posx, posy: posy, time: time, duration: 0});
+		posList.splice(i, 0, {did: did, posx: posx, posy: posy, beat: beat, duration: 0});
 
-		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, time: time, posx: posx, posy: posy, duration: 0});
+		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, beat: beat, posx: posx, posy: posy, duration: 0});
 		this.setMusicbox(did);
 		this.setDancer();	// 추가해서 댄서가 active될 수 있으므로.
 	}
@@ -646,10 +633,10 @@ export default class FormationScreen extends React.Component {
 	 * - re-render: YES ( setDancer() )
 	 * - update: this.allPosList, this.musicbox
 	 * @param did dancer id
-	 * @param time 삭제할 좌표의 time 값
+	 * @param beat 삭제할 좌표의 beat 값
 	 */
-	deletePosition = (did, time) => {
-		console.log(TAG, "deletePosition(",did,time,")");
+	deletePosition = (did, beat) => {
+		console.log(TAG, "deletePosition(",did,beat,")");
 
 		// if(this.posList[did].length == 1) {
 		// 	Alert.alert("경고", "댄서당 최소 하나의 위치는 표시해야 합니다!");
@@ -658,21 +645,21 @@ export default class FormationScreen extends React.Component {
 
 		let posList = this.allPosList[did];
 		for(let i=0; i<posList.length; i++){
-			if(time == posList[i].time){
+			if(beat == posList[i].beat){
 				posList.splice(i, 1);
 				break;
 			}
 		}
 
 		this.DB_DELETE('position', 
-	  	['nid=?', 'did=?', 'time=?'], 
-	  	[this.state.noteInfo.nid, did, time]);
+	  	['nid=?', 'did=?', 'beat=?'], 
+	  	[this.state.noteInfo.nid, did, beat]);
 		// this.DB_DELETE(
 		// 	'position', 
 		// 	[
 		// 		'nid='  + this.state.noteInfo.nid, 
 		// 		'did='  + did,
-		// 		'time=' + time
+		// 		'beat=' + beat
 		// 	]
 		// )
 		this.setMusicbox(did);
@@ -784,7 +771,7 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, 'changeDancerList');
 		this.dancerList = [..._dancerList];
 		this.allPosList = [..._allPosList];
-		this.setMusicboxs(this.state.time);
+		this.setMusicboxs(this.state.beat);
 		this.setDancer();
 	}
 	
@@ -802,7 +789,7 @@ export default class FormationScreen extends React.Component {
 		if(this.selectedBoxInfo.posIndex != -1){
 			this.unselectPosition();
 		}
-		// {color: 1, did: 0, duration: 11, name: 견우, posx: -30, posy: 0, time: 0}
+		// {color: 1, did: 0, duration: 11, name: 견우, posx: -30, posy: 0, beat: 0}
 		this.selectedBoxInfo = {...this.dancerList[did], ...this.allPosList[did][posIndex], posIndex: posIndex}
 
 		this.setMusicbox(did);
@@ -840,11 +827,11 @@ export default class FormationScreen extends React.Component {
 	 * 선택되어 있는 box의 duration을 변경한다.
 	 * @param {number} doUpdate
 	 * @param {number} duration 
-	 * @param {number} time 수정되기 전 initial time
+	 * @param {number} beat 수정되기 전 initial beat
 	 * @param {number} did 
 	 */
-	resizePositionboxLeft = (doUpdate, duration, time = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
-		console.log(TAG, "resizePositionboxLeft(", doUpdate, duration, time, did, ')');
+	resizePositionboxLeft = (doUpdate, duration, beat = this.selectedBoxInfo.beat, did = this.selectedBoxInfo.did) => {
+		console.log(TAG, "resizePositionboxLeft(", doUpdate, duration, beat, did, ')');
 		/**
 		 * posList = [...this.allPosList[did]]
 		 *  
@@ -858,9 +845,9 @@ export default class FormationScreen extends React.Component {
 		// 변경했을 때 시간이 0보다 작아지는 것을 방지하기 위해
 		// 변경 후 시간을 계산
 		for(let i=0; i<posList.length; i++){
-			if(posList[i].time == time){
-				const leftEndTime = time + posList[i].duration - duration;
-				if(leftEndTime < 0) {
+			if(posList[i].beat == beat){
+				const leftEndBeat = beat + posList[i].duration - duration;
+				if(leftEndBeat < 0) {
 					console.log(TAG, '왼쪽 끝이에요.');
 					return;
 				}
@@ -870,24 +857,24 @@ export default class FormationScreen extends React.Component {
 
 		if(!doUpdate){
 			// 화면에 보이는 선택된 값 업데이트를 위해
-			this.selectedBoxInfo.time -= (duration - this.selectedBoxInfo.duration);	// ++ or --
+			this.selectedBoxInfo.beat -= (duration - this.selectedBoxInfo.duration);	// ++ or --
 			this.selectedBoxInfo.duration = duration;
 			
 			// 댄서의 각 checked box 에 대해서...
 			let i = 0;
 			for(; ; i++){
-				console.log(this.selectedBoxInfo.time, '<=', posList[i].time, '<', time);
+				console.log(this.selectedBoxInfo.beat, '<=', posList[i].beat, '<', beat);
 
 				// 바뀌기 전 시간 이상인 경우: 무시 (break)
 				// [i]번째 == 선택된 positionbox의 정보
-				if(time <= posList[i].time) break;
+				if(beat <= posList[i].beat) break;
 
 				// 바뀐 시간보다 작은 경우: 무시 (continue)
-				if(posList[i].time + posList[i].duration < this.selectedBoxInfo.time) continue;
+				if(posList[i].beat + posList[i].duration < this.selectedBoxInfo.beat) continue;
 
 				// 바뀐 시간보다 크지만 duration 을 줄이면 되는 경우: duration 줄이기
-				if(posList[i].time < this.selectedBoxInfo.time) {
-					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
+				if(posList[i].beat < this.selectedBoxInfo.beat) {
+					posList[i].duration = this.selectedBoxInfo.beat - posList[i].beat - 1;
 					continue;
 				}
 				// 바뀐 시간 이상 && 바뀌가 전 시간보다 작은 경우: 삭제 (splice)
@@ -897,7 +884,7 @@ export default class FormationScreen extends React.Component {
 			this.selectedBoxInfo.posIndex = i;
 			console.log(TAG, 'selectedPositionIdx Update! ' + this.selectedBoxInfo.posIndex);
 
-			posList[i] = {...posList[i], time: this.selectedBoxInfo.time, duration: duration};
+			posList[i] = {...posList[i], beat: this.selectedBoxInfo.beat, duration: duration};
 
 			this.posList = posList; 	// for DB debug
 			this.setMusicbox(did, posList);
@@ -907,34 +894,34 @@ export default class FormationScreen extends React.Component {
 		// update DB & allPosList
 		else{
 			this.DB_DELETE('position', 
-				['nid=?', 'did=?', 'time>=?', 'time<?'], 
-				[this.state.noteInfo.nid, did, this.selectedBoxInfo.time, time],
+				['nid=?', 'did=?', 'beat>=?', 'beat<?'], 
+				[this.state.noteInfo.nid, did, this.selectedBoxInfo.beat, beat],
 				()=>{
 					this.DB_UPDATE('position', 
-					{duration: duration, time: this.selectedBoxInfo.time}, 
-					['nid=?', 'did=?', 'time=?'], 
-					[this.state.noteInfo.nid, did, time]);
+					{duration: duration, beat: this.selectedBoxInfo.beat}, 
+					['nid=?', 'did=?', 'beat=?'], 
+					[this.state.noteInfo.nid, did, beat]);
 				}
 			);
 			let i = 0;
 			for(; ; i++){
-				console.log(this.selectedBoxInfo.time, '<=', this.allPosList[did][i].time, '<', time)
+				console.log(this.selectedBoxInfo.beat, '<=', this.allPosList[did][i].beat, '<', beat)
 
 				// 바뀌기 전 시간 이상인 경우: 무시 (break)
 				// [i]번째 == 선택된 positionbox의 정보
-				if(this.allPosList[did][i].time >= time) break;
+				if(this.allPosList[did][i].beat >= beat) break;
 
 				// 바뀐 시간보다 작은 경우: 무시 (continue)
-				if(this.allPosList[did][i].time + this.allPosList[did][i].duration < this.selectedBoxInfo.time) continue;
+				if(this.allPosList[did][i].beat + this.allPosList[did][i].duration < this.selectedBoxInfo.beat) continue;
 
 				// 바뀐 시간보다 크지만 duration 을 줄이면 되는 경우: duration 줄이기
-				if(this.allPosList[did][i].time < this.selectedBoxInfo.time) {
-					const reducedDuration = this.selectedBoxInfo.time - this.allPosList[did][i].time - 1;
+				if(this.allPosList[did][i].beat < this.selectedBoxInfo.beat) {
+					const reducedDuration = this.selectedBoxInfo.beat - this.allPosList[did][i].beat - 1;
 					this.allPosList[did][i].duration = reducedDuration;
 					this.DB_UPDATE('position', 
 					{duration: reducedDuration}, 
-					['nid=?', 'did=?', 'time=?'], 
-					[this.state.noteInfo.nid, did, this.allPosList[did][i].time]);
+					['nid=?', 'did=?', 'beat=?'], 
+					[this.state.noteInfo.nid, did, this.allPosList[did][i].beat]);
 					continue;
 				}
 				// 바뀐 시간 이상 && 바뀌가 전 시간보다 작은 경우: 삭제 (splice)
@@ -943,7 +930,7 @@ export default class FormationScreen extends React.Component {
 				i--;
 			}	
 			console.log(i, '번째에 선택된 정보가 있다!');
-			this.allPosList[did][i].time = this.selectedBoxInfo.time;
+			this.allPosList[did][i].beat = this.selectedBoxInfo.beat;
 			this.allPosList[did][i].duration = duration;
 			this.setMusicbox(did);
 			this.setDancer();
@@ -953,8 +940,8 @@ export default class FormationScreen extends React.Component {
 	resizePositionboxRight = (doUpdate, duration = this.selectedBoxInfo.duration, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, "resizePositionboxRight(", doUpdate, duration, did, ')');
 		
-		const rightEndTime = this.selectedBoxInfo.time + duration;
-		if(this.state.noteInfo.musicLength < rightEndTime) {
+		const rightEndBeat = this.selectedBoxInfo.beat + duration;
+		if(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm < rightEndBeat) {
 			console.log(TAG, '오른쪽 끝이에요.');
 			return;
 		}
@@ -969,12 +956,12 @@ export default class FormationScreen extends React.Component {
 			// 댄서의 각 checked box 에 대해서...
 			for(let i = this.selectedBoxInfo.posIndex + 1; i<posList.length; i++){
 				// 시간이 바뀐 길이보다 큰 경우: 무시 (break)
-				if(rightEndTime < posList[i].time) break;
+				if(rightEndBeat < posList[i].beat) break;
 
-				// 시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우: time++ && duration--
-				if(rightEndTime < posList[i].time + posList[i].duration){
-					posList[i].duration -= (rightEndTime + 1 - posList[i].time);
-					posList[i].time = rightEndTime + 1;
+				// 시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우: beat++ && duration--
+				if(rightEndBeat < posList[i].beat + posList[i].duration){
+					posList[i].duration -= (rightEndBeat + 1 - posList[i].beat);
+					posList[i].beat = rightEndBeat + 1;
 					break;
 				}
 				// 바뀐 길이에 완전히 덮여버린 경우: 삭제 (splice)
@@ -992,36 +979,36 @@ export default class FormationScreen extends React.Component {
 
 			this.DB_UPDATE('position', 
 				{duration: duration}, 
-				['nid=?', 'did=?', 'time=?'], 
-				[this.state.noteInfo.nid, did, this.selectedBoxInfo.time]);
+				['nid=?', 'did=?', 'beat=?'], 
+				[this.state.noteInfo.nid, did, this.selectedBoxInfo.beat]);
 			
 			this.DB_DELETE('position', 
-	  	['nid=?', 'did=?', 'time>?', 'time+duration<=?'], 
-	  	[this.state.noteInfo.nid, did, this.selectedBoxInfo.time, rightEndTime]);
+	  	['nid=?', 'did=?', 'beat>?', 'beat+duration<=?'], 
+	  	[this.state.noteInfo.nid, did, this.selectedBoxInfo.beat, rightEndBeat]);
 
 			console.log('selectedPositionIdx', this.selectedBoxInfo.posIndex, this.allPosList[did].length);
 			// 댄서의 각 checked box 에 대해서...
 			for(let i = this.selectedBoxInfo.posIndex + 1; i<this.allPosList[did].length; i++){
 
-				console.log(rightEndTime, '\n', this.allPosList[did][i].time, '\n', this.allPosList[did][i].duration)
+				console.log(rightEndBeat, '\n', this.allPosList[did][i].beat, '\n', this.allPosList[did][i].duration)
 
 				// 시간이 바뀐 길이보다 큰 경우: 무시 (break)
-				if(rightEndTime < this.allPosList[did][i].time) break;
+				if(rightEndBeat < this.allPosList[did][i].beat) break;
 
-				// 시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우: time++ && duration--
-				if(rightEndTime < this.allPosList[did][i].time + this.allPosList[did][i].duration){
+				// 시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우: beat++ && duration--
+				if(rightEndBeat < this.allPosList[did][i].beat + this.allPosList[did][i].duration){
 					console.log('시간이 바뀐 길이보다 작지만 duration을 줄이면 되는 경우');
 					
-					const originTime = this.allPosList[did][i].time;
-					this.allPosList[did][i].duration -= (rightEndTime + 1 - originTime);
-					this.allPosList[did][i].time = rightEndTime + 1;
+					const originBeat = this.allPosList[did][i].beat;
+					this.allPosList[did][i].duration -= (rightEndBeat + 1 - originBeat);
+					this.allPosList[did][i].beat = rightEndBeat + 1;
 
-					console.log(originTime, '->', this.allPosList[did][i].time, this.allPosList[did][i].time)
+					console.log(originBeat, '->', this.allPosList[did][i].beat, this.allPosList[did][i].beat)
 
 					this.DB_UPDATE('position', 
-						{duration: this.allPosList[did][i].duration, time: this.allPosList[did][i].time}, 
-						['nid=?', 'did=?', 'time=?'], 
-						[this.state.noteInfo.nid, did, originTime]);
+						{duration: this.allPosList[did][i].duration, beat: this.allPosList[did][i].beat}, 
+						['nid=?', 'did=?', 'beat=?'], 
+						[this.state.noteInfo.nid, did, originBeat]);
 					break;
 				}
 				// 바뀐 길이에 완전히 덮여버린 경우: 삭제 (splice)
@@ -1040,58 +1027,58 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} from 
 	 * @param {number} did 
 	 */
-	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.time, did = this.selectedBoxInfo.did) => {
+	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.beat, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, 'movePositionbox (', doUpdate, to, from, did, ')');
 
-		if(to < 0 || this.state.noteInfo.musicLength < to + this.selectedBoxInfo.duration) return;
+		if(to < 0 || this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm < to + this.selectedBoxInfo.duration) return;
 
 		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 		let myPosInfo;
-		let shouldDelete = [];	// 삭제 되어야 할 position의 time
-		let shouldUpdate = [];	// 업데이트 되어야 할 position의 [time, {updated_value}]
+		let shouldDelete = [];	// 삭제 되어야 할 position의 beat
+		let shouldUpdate = [];	// 업데이트 되어야 할 position의 [beat, {updated_value}]
 		let shouldInsert = [];	// 새로 생성 되어야 할 position의 {inserted_value}
 
 		// 화면에 보이는 선택된 값 업데이트를 위해
-		this.selectedBoxInfo.time = to;
+		this.selectedBoxInfo.beat = to;
 
 		// 댄서의 각 checked box 에 대해서...
-		const rightEndTime = this.selectedBoxInfo.time + this.selectedBoxInfo.duration;
+		const rightEndBeat = this.selectedBoxInfo.beat + this.selectedBoxInfo.duration;
 
 		let findIndex = false;
 
 		for(let i=0; i<posList.length; i++){
 			console.log('FOR-LOOP::', i);
 			// 자기 자신 정보를 저장해놓고 삭제
-			if(posList[i].time == from){
+			if(posList[i].beat == from){
 				console.log('case 1: 자기 자신 제거');
-				myPosInfo = {...posList.splice(i, 1)[0], time: to};
+				myPosInfo = {...posList.splice(i, 1)[0], beat: to};
 				shouldDelete.push(from);
 				i--;
 				continue;
 			}
 
 			// selected box 왼쪽 끝보다 뒤에 있는 경우: 무시 (continue)
-			if(posList[i].time + posList[i].duration < this.selectedBoxInfo.time) {
+			if(posList[i].beat + posList[i].duration < this.selectedBoxInfo.beat) {
 				console.log('case 2: 뒤에 있는 경우 무시');
 				continue;
 			}
 
 			// 시작 시간이 뒤에 있는 경우
-			if(posList[i].time < this.selectedBoxInfo.time){
+			if(posList[i].beat < this.selectedBoxInfo.beat){
 				// 시작 시간은 뒤에 있으나 조금 잘리는 경우: duration 줄이기
-				if(posList[i].time + posList[i].duration <= rightEndTime){
+				if(posList[i].beat + posList[i].duration <= rightEndBeat){
 					console.log('case 3-1: 시작 시간은 뒤에 있으나 조금 잘리는 경우 duration 줄이기');
-					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
-					shouldUpdate.push([posList[i].time, {duration: posList[i].duration}]);
+					posList[i].duration = this.selectedBoxInfo.beat - posList[i].beat - 1;
+					shouldUpdate.push([posList[i].beat, {duration: posList[i].duration}]);
 					continue;
 				}
 				// 시작 시간은 뒤에 있으나 중간에 잘리는 경우: 둘로 나누기
 				else{
 					console.log('case 3-2: 시작 시간은 뒤에 있으나 중간에 잘리는 경우 둘로 나누기');
-					const newPos = {...posList[i], time: rightEndTime+1, duration: posList[i].duration+posList[i].time-rightEndTime-1};
-					posList[i].duration = this.selectedBoxInfo.time - posList[i].time - 1;
+					const newPos = {...posList[i], beat: rightEndBeat+1, duration: posList[i].duration+posList[i].beat-rightEndBeat-1};
+					posList[i].duration = this.selectedBoxInfo.beat - posList[i].beat - 1;
 					posList.splice(i+1, 0, newPos);
-					shouldUpdate.push([posList[i].time, {duration: posList[i].duration}]);
+					shouldUpdate.push([posList[i].beat, {duration: posList[i].duration}]);
 					shouldInsert.push(newPos);
 					i++;
 					if(!findIndex){
@@ -1104,22 +1091,22 @@ export default class FormationScreen extends React.Component {
 			}
 
 			// 완전히 포개진 경우: 삭제
-			if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time + posList[i].duration <= rightEndTime){
+			if(this.selectedBoxInfo.beat <= posList[i].beat && posList[i].beat + posList[i].duration <= rightEndBeat){
 				console.log('case 4: 완전히 포개진 경우 삭제');
-				shouldDelete.push(posList[i].time);
+				shouldDelete.push(posList[i].beat);
 				posList.splice(i, 1);
 				i--;
 				continue;
 			}
 
-			// 시작 시간은 포함되지만 duration을 줄이면 되는 경우: time 증가 && duration 감소
+			// 시작 시간은 포함되지만 duration을 줄이면 되는 경우: beat 증가 && duration 감소
 			// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
-			if(this.selectedBoxInfo.time <= posList[i].time && posList[i].time <= rightEndTime  && rightEndTime < posList[i].time + posList[i].duration){
-				console.log('case 5: 시작 시간은 포함되지만 duration을 줄이면 되는 경우: time 증가 && duration 감소');
+			if(this.selectedBoxInfo.beat <= posList[i].beat && posList[i].beat <= rightEndBeat  && rightEndBeat < posList[i].beat + posList[i].duration){
+				console.log('case 5: 시작 시간은 포함되지만 duration을 줄이면 되는 경우: beat 증가 && duration 감소');
 				
-				posList[i].duration -= (rightEndTime + 1 - posList[i].time);
-				shouldUpdate.push([posList[i].time, {time: rightEndTime + 1, duration: posList[i].duration}]);
-				posList[i].time = rightEndTime + 1;
+				posList[i].duration -= (rightEndBeat + 1 - posList[i].beat);
+				shouldUpdate.push([posList[i].beat, {beat: rightEndBeat + 1, duration: posList[i].duration}]);
+				posList[i].beat = rightEndBeat + 1;
 				if(!findIndex) {
 					console.log('FIND INDEX::', i);
 					this.selectedBoxInfo.posIndex = i;
@@ -1130,7 +1117,7 @@ export default class FormationScreen extends React.Component {
 
 			// 시간이 바뀐 길이보다 큰 경우: 무시 (continue)
 			// 이후로는 겹치지 않는 것들이지만, 본인의 box가 뒤에 있을 수도 있으니 break 하지 않는다.
-			if(rightEndTime < posList[i].time) {
+			if(rightEndBeat < posList[i].beat) {
 				console.log('case 6: 시간이 바뀐 길이보다 큰 경우: 무시 (continue)');
 				if(!findIndex) {
 					console.log('FIND INDEX::', i);
@@ -1157,11 +1144,11 @@ export default class FormationScreen extends React.Component {
 			this.forceUpdate();
 		}
 		else{
-			shouldDelete.forEach(time => {
-				this.DB_DELETE('position', ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
+			shouldDelete.forEach(beat => {
+				this.DB_DELETE('position', ['nid=?', 'did=?', 'beat=?'], [this.state.noteInfo.nid, did, beat]);
 			});
-			shouldUpdate.forEach(([time, set]) => {
-				this.DB_UPDATE('position', set, ['nid=?', 'did=?', 'time=?'], [this.state.noteInfo.nid, did, time]);
+			shouldUpdate.forEach(([beat, set]) => {
+				this.DB_UPDATE('position', set, ['nid=?', 'did=?', 'beat=?'], [this.state.noteInfo.nid, did, beat]);
 			});
 			shouldInsert.forEach(value => {
 				this.DB_INSERT('position', {...value, nid: this.state.noteInfo.nid});
@@ -1196,8 +1183,15 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} sec 
 	 * @returns {string} 'min:sec'
 	 */
-	timeFormat = (sec) => Math.floor(sec/60) + ':' + ( Math.floor(sec%60) < 10 ? '0'+Math.floor(sec%60) : Math.floor(sec%60) )
-	
+	timeFormat = (beat) => {
+		console.log(TAG, 'timeFormat(', beat, ')');
+		console.log(Math.floor(beat/this.state.noteInfo.bpm) + ':' + Math.floor((beat*60/this.state.noteInfo.bpm)%60) )
+		return(
+			Math.floor(beat/this.state.noteInfo.bpm) + ':' +  
+			(Math.floor((beat*60/this.state.noteInfo.bpm)%60) < 10 ? '0' : '') +
+			Math.floor((beat*60/this.state.noteInfo.bpm)%60) 
+		)
+	}
 
 	play = async () => {
 		console.log(TAG, "play");
@@ -1209,7 +1203,7 @@ export default class FormationScreen extends React.Component {
 		if(this.state.isPlay) return;		
 
 		// state의 시간값과 맞추기
-		this.sound.setCurrentTime(this.state.time);
+		this.sound.setCurrentTime(this.state.beat * 60/this.state.noteInfo.bpm);
 
 		this.sound.play((success) => {
 			if (success) {
@@ -1221,18 +1215,18 @@ export default class FormationScreen extends React.Component {
 		
 		this.interval = setInterval(() => {
 			// 더 진행하면 시간을 넘어가는 경우: 종료
-			if(this.state.time+1 > this.state.noteInfo.musicLength){
+			if(this.state.beat+1 > this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm){
 				this.pause();	
 			}
 			else {
-				// 다음 time으로 체크마크 붙이기
-				this.setTimebox(this.state.time+1);
-				// time에 맞게 scroll view를 강제 scroll하기
-				this.musicboxScrollHorizontal.scrollTo({x: (this.state.time+1)*this.boxWidth, animated: false});
+				// 다음 beat으로 체크마크 붙이기
+				this.setBeatbox(this.state.beat+1);
+				// beat에 맞게 scroll view를 강제 scroll하기
+				this.musicboxScrollHorizontal.scrollTo({x: (this.state.beat+1)*this.boxWidth, animated: false});
 				// state 값 업데이트
-				this.setState({time: this.state.time+1});
+				this.setState({beat: this.state.beat+1});
 			}
-		}, 1000);
+		}, 1000*60/this.state.noteInfo.bpm);
 
 		// 애니메이션 재생
 		this.setState({isPlay: true}, () => {
@@ -1253,19 +1247,20 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
-	jumpTo = (time) => {
-		let dest = this.state.time + time;
-		if(dest < 0) dest = 0;
-		else if (dest > this.state.noteInfo.musicLength) dest = this.state.noteInfo.musicLength;
+	jumpTo = (beat) => {
+		console.log(TAG, 'jumpTo', beat);
+		let destination = this.state.beat + beat;
+		if(destination < 0) destination = 0;
+		else if (destination > this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm) destination = this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm;
 
-		this.setTimebox(dest);
-		this.musicboxScrollHorizontal.scrollTo({x: (dest)*this.boxWidth, animated: false});
-		this.setState({time: dest}, () => {
+		this.setBeatbox(destination);
+		this.musicboxScrollHorizontal.scrollTo({x: (destination)*this.boxWidth, animated: false});
+		this.setState({beat: destination}, () => {
 			this.setDancer();
 		});
 	}
 
-	editTime = (text) => {
+	editBeat = (text) => {
 		/**
 		 * JavaScript에는 replaceAll 함수가 없다. 
 		 * 따라서 정규식을 사용해 replace으로 replaceAll의 효과를 사용했다.
@@ -1275,49 +1270,38 @@ export default class FormationScreen extends React.Component {
 		 * i: 대/소문자 구분 안함
 		 * m: 여러 줄 검색
 		 */
-		text = text.replace(/ /gi, '').split(':');
+		text = text.replace(/ /gi, '');
+		const beat = Number(text);
 
-		let min = 0;
-		let sec;
-		let time = -1;
+		// let min = 0;
+		// let sec;
+		// let time = -1;
 		
-		// time 구하기
-		switch(text.length){
-			case 2:
-				min = Number(text[0]);
-				sec = Number(text[1]);
-				if(!isNaN(min) && !isNaN(sec) && text[0]!='' && text[1]!=''){
-					if(min == Math.round(min) && sec == Math.round(sec) && min>=0 && sec>=0 && sec<60){
-						time = min * 60 + sec;
-					}
-				}
-				break;
+		// beat 구하기
+		// switch(text.length){
+		// 	case 2:
+		// 		min = Number(text[0]);
+		// 		sec = Number(text[1]);
+		// 		if(!isNaN(min) && !isNaN(sec) && text[0]!='' && text[1]!=''){
+		// 			if(min == Math.round(min) && sec == Math.round(sec) && min>=0 && sec>=0 && sec<60){
+		// 				time = min * 60 + sec;
+		// 			}
+		// 		}
+		// 		break;
 
-			case 1:
-				sec = Number(text[0]);
-				if(!isNaN(sec) && text[0]!=''){
-					if(sec == Math.round(sec)){
-						time = sec;
-					}
-				}
-				break;
-		}
+		// 	case 1:
+		// 		sec = Number(text[0]);
+		// 		if(!isNaN(sec) && text[0]!=''){
+		// 			if(sec == Math.round(sec)){
+		// 				time = sec;
+		// 			}
+		// 		}
+		// 		break;
+		// }
 
 		// 변경
-		if(time >= 0) {
-			this.movePositionbox(true, time);
-		
-		// 	time = time > this.state.noteInfo.musicLength ? this.state.noteInfo.musicLength : time;
-		// 	// UPDATE DB
-		// 	// selectedBoxInfo 값을 변경하기 전에 원래값 기반으로 DB 먼저 수정.
-		// 	this.DB_UPDATE('position', 
-		// 		{time: time}, 
-		// 		['nid=?', 'did=?', 'time=?'], 
-		// 		[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
-		// 	this.selectedBoxInfo.time = time;
-		// 	this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].time = time;
-		// 	this.setMusicbox(this.selectedBoxInfo.did);
-		// 	this.setDancer();
+		if(!isNaN(beat) && text!='' && beat>=0){
+			this.movePositionbox(true, beat);
 		}
 		else{
 			Alert.alert("취소", "올바르지 않은 형식입니다.");
@@ -1340,8 +1324,8 @@ export default class FormationScreen extends React.Component {
 			posx = Math.abs(posx) > Math.floor(width/2) ? Math.floor(width/2) * Math.sign(posx) : posx;
 			this.DB_UPDATE('position', 
 				{posx: posx}, 
-				['nid=?', 'did=?', 'time=?'], 
-				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.time]);
+				['nid=?', 'did=?', 'beat=?'], 
+				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.beat]);
 			this.selectedBoxInfo.posx = posx;
 			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].posx = posx;
 			this.setDancer();
@@ -1357,13 +1341,10 @@ export default class FormationScreen extends React.Component {
 			posy = Math.abs(posy) > Math.floor(this.stageHeight/2) ? Math.floor(this.stageHeight/2) * Math.sign(posy) : posy;
 			this.DB_UPDATE(
 				'position', 
-				{ posy: posy },
-				{
-					nid: ['=', this.state.noteInfo.nid],
-					did: ['=', this.selectedBoxInfo.did], 
-					time: ['=', this.selectedBoxInfo.time]
-				}
-			);
+				{posy: posy}, 
+				['nid=?', 'did=?', 'beat=?'], 
+				[this.state.noteInfo.nid, this.selectedBoxInfo.did, this.selectedBoxInfo.beat]);
+
 			this.selectedBoxInfo.posy = posy;
 			this.allPosList[this.selectedBoxInfo.did][this.selectedBoxInfo.posIndex].posy = posy;
 			this.setDancer();
@@ -1378,8 +1359,10 @@ export default class FormationScreen extends React.Component {
 		return (
 			<View style={styles.selectContainer}>
 				<Text style={styles.selectText}>시작:</Text>
-				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editTime(event.nativeEvent.text)}>
-					{isSelected ? this.timeFormat(this.selectedBoxInfo.time) : ''}</TextInput>
+				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editBeat(event.nativeEvent.text)}>
+					{/* {isSelected ? this.timeFormat(this.selectedBoxInfo.beat) : ''} */}
+					{isSelected ? this.selectedBoxInfo.beat : ''}
+				</TextInput>
 				<Text style={styles.selectText}> 길이:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
@@ -1495,7 +1478,7 @@ export default class FormationScreen extends React.Component {
 							"SELECT * " +
 							"FROM position " +
 							"WHERE nid=? " +
-							"ORDER BY did, time;",
+							"ORDER BY did, beat;",
 							[this.state.noteInfo.nid],
 							(tx, posResult) => {
 								console.log(TAG, 'DB SELECT SUCCESS!');
@@ -1563,7 +1546,7 @@ export default class FormationScreen extends React.Component {
 
 				<View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
 
-					<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.time)}</Text>
+					<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.beat)}</Text>
 
 					<TouchableOpacity onPress={()=>this.jumpTo(-30)} 
 					disabled={this.state.isPlay} style={{margin: 10}} activeOpacity={.7}>
@@ -1593,7 +1576,7 @@ export default class FormationScreen extends React.Component {
 						<MaterialCommunityIcons name='fast-forward-30' size={28} color={buttonColor}/>
 					</TouchableOpacity>
 
-					<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.noteInfo.musicLength)}</Text>
+					<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm)}</Text>
 
 				</View>
 
@@ -1638,7 +1621,7 @@ export default class FormationScreen extends React.Component {
 
 							<View flexDirection='row' style={{backgroundColor: COLORS.grayLight}}>
 								<View style={{width: this.boxWidth/2}}/>
-								{ this.timeTextSelect }
+								{ this.beatTextSelect }
 								<View style={{width: this.boxWidth/2}}/>
 							</View>
 							
@@ -1714,7 +1697,7 @@ export default class FormationScreen extends React.Component {
 					width: this.positionboxWidth, 
 					borderRadius: this.positionboxWidth/2,
 				})
-			case 'timeBox': 
+			case 'beatBox': 
 				return({
 					height: this.boxHeight, 
 					width: this.boxWidth,

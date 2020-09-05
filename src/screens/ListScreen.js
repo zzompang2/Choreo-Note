@@ -38,6 +38,7 @@ export default class ListScreen extends React.Component {
 				'date TEXT NOT NULL, ' +
 				'music TEXT NOT NULL, ' +
 				'musicLength INTEGER NOT NULL, ' +
+				'bpm INTEGER NOT NULL, ' +
 				'radiusLevel INTEGER NOT NULL, ' +
 				'coordinateLevel INTEGER NOT NULL, ' +
 				'alignWithCoordinate TINYINT(1) NOT NULL, ' +
@@ -59,11 +60,11 @@ export default class ListScreen extends React.Component {
 				'CREATE TABLE IF NOT EXISTS position(' +
 					'nid INTEGER NOT NULL, ' +
 					'did INTEGER NOT NULL, ' +
-					'time INTEGER NOT NULL, ' +
+					'beat INTEGER NOT NULL, ' +
 					'posx INTEGER NOT NULL, ' +
 					'posy INTEGER NOT NULL, ' +
 					'duration INTEGER NOT NULL, ' +
-					'PRIMARY KEY(nid, did, time) );'
+					'PRIMARY KEY(nid, did, beat) );'
 			);
 
 			// 앱을 시작할 때 노트가 하나도 없다면 test note를 만든다.
@@ -89,7 +90,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample', 305, 3, 3, 1, 1200, 600);", 
+				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample', 305, 120, 3, 3, 1, 1200, 600);", 
 				[this.dateFormat(new Date())],
 				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}

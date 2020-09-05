@@ -34,7 +34,7 @@ export default class MakeNoteScreen extends React.Component {
 		};
 		this.ratio = 1;					// 무대 세로/가로
 		this.dancerList = [];		// {nid, did, name, color}
-		this.allPosList = [];		// {nid, did, time, posx, posy, duration}
+		this.allPosList = [];		// {nid, did, beat, posx, posy, duration}
 		this.dancers = [];			// dancer View
 		this.formationList = [
 			[
@@ -56,6 +56,7 @@ export default class MakeNoteScreen extends React.Component {
 			date: this.props.route.params.date, 
 			music: '',		// sample music 
 			musicLength: 0,
+			bpm: 120,
 			radiusLevel: 3, 
 			coordinateLevel: 3, 
 			alignWithCoordinate: 1,
@@ -125,7 +126,7 @@ export default class MakeNoteScreen extends React.Component {
 		for(let i=0; i<num; i++){
 			const posx = this.formationList[num-1][i].posx;
 			const posy = this.formationList[num-1][i].posy;
-			this.allPosList.push({nid: this.state.nid, did: i, time: 0, posx: posx, posy: posy, duration: 0});
+			this.allPosList.push({nid: this.state.nid, did: i, beat: 0, posx: posx, posy: posy, duration: 0});
 		}
 
 		for(let i=0; i<num; i++){
@@ -183,11 +184,9 @@ export default class MakeNoteScreen extends React.Component {
 
 		this.setCoordinate();
 	}
-	
 
 	// flatList 구분선
-	listViewItemSeparator = () => 
-		<View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
+	listViewItemSeparator = () => <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 	
 	resizeDancer = (type) => {
 		switch(type){
@@ -268,8 +267,8 @@ export default class MakeNoteScreen extends React.Component {
 		// DB note 추가하고 리스트로 이동
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
-				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, 
+				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
+				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm,
 					this.noteInfo.radiusLevel, this.noteInfo.coordinateLevel, this.noteInfo.stageWidth, this.noteInfo.stageHeight],
 				() => {
 					this.props.route.params.updateNoteList(this.noteInfo);
