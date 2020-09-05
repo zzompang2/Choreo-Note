@@ -5,7 +5,7 @@ import {
 
 import {COLORS} from '../values/Colors';
 // 화면의 가로, 세로 길이 받아오기
-const {width,height} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const TAG = "Dancer/";
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];

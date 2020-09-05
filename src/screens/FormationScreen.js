@@ -7,6 +7,10 @@ import IconIonicons from 'react-native-vector-icons/Ionicons';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import Sound from 'react-native-sound';
+// Enable playback in silence mode
+Sound.setCategory('Playback');
+
 // custom library
 import Dancer from '../components/Dancer';
 import Positionbox from '../components/Positionbox';
@@ -27,64 +31,6 @@ const CustomIcon = createIconSetFromFontello(fontelloConfig);
 // 화면의 가로, 세로 길이 받아오기
 const {width, height} = Dimensions.get('window');
 
-// 음악 재생 도전중...
-// Import the react-native-sound module
-var Sound = require('react-native-sound');
-// Enable playback in silence mode
-Sound.setCategory('Playback');
-// Load the sound file 'whoosh.mp3' from the app bundle
-// See notes below about preloading sounds within initialization code below.
-var whoosh = new Sound('love.mp3', Sound.MAIN_BUNDLE, (error) => {
-  if (error) {
-    console.log('failed to load the sound', error);
-    return;
-  }
-  // loaded successfully
-  console.log('duration in seconds: ' + whoosh.getDuration() + 'number of channels: ' + whoosh.getNumberOfChannels());
- 
-  // Play the sound with an onEnd callback
-  whoosh.play((success) => {
-    if (success) {
-      console.log('successfully finished playing');
-    } else {
-      console.log('playback failed due to audio decoding errors');
-    }
-  });
-});
- 
-// Reduce the volume by half
-whoosh.setVolume(0.5);
- 
-// Position the sound to the full right in a stereo field
-whoosh.setPan(1);
- 
-// Loop indefinitely until stop() is called
-whoosh.setNumberOfLoops(-1);
- 
-// Get properties of the player instance
-console.log('volume: ' + whoosh.getVolume());
-console.log('pan: ' + whoosh.getPan());
-console.log('loops: ' + whoosh.getNumberOfLoops());
- 
-// Seek to a specific point in seconds
-whoosh.setCurrentTime(2.5);
- 
-// Get the current playback point in seconds
-whoosh.getCurrentTime((seconds) => console.log('at ' + seconds));
- 
-// Pause the sound
-whoosh.pause();
- 
-// Stop the sound and rewind to the beginning
-whoosh.stop(() => {
-  // Note: If you want to play a sound after stopping and rewinding it,
-  // it is important to call play() in a callback.
-  whoosh.play();
-});
- 
-// Release the audio player resource
-whoosh.release();
-
 export default class FormationScreen extends React.Component {
 	constructor(props){
 		super(props);
@@ -101,7 +47,6 @@ export default class FormationScreen extends React.Component {
 		this.allPosList = [];	// nid, did, time, posx, posy, duration
 		this.dancerList = [];	// nid, did, name
 		this.nameColumn = [],
-		// this.scrollView;
 		this.scrollViewStyle;
 		this.timeText = [];
 		this.musicbox = [];	
@@ -118,7 +63,84 @@ export default class FormationScreen extends React.Component {
 		this.alignWithCoordinate = this.state.noteInfo.alignWithCoordinate ? true : false;		// 좌표에 맞물려 이동
 
 		this.setCoordinate();
+
+		this.load();
 	}
+
+	// Load the sound file '[your_music_title].mp3' from the app bundle
+	// See notes below about preloading sounds within initialization code below.
+	load = () => {
+		console.log(TAG, 'load');
+		this.sound = new Sound(this.state.noteInfo.music, Sound.MAIN_BUNDLE, (error) => {
+			if (error) {
+				console.log('failed to load the sound', error);
+				return;
+			}
+			// this.sound == TRUE
+			// loaded successfully!
+			console.log('duration in seconds: ' + this.sound.getDuration(), 'number of channels: ' + this.sound.getNumberOfChannels());
+			this.setState({musicLength: Math.ceil(this.sound.getDuration())});
+		});
+		// Reduce the volume by half
+		// this.sound.setVolume(1);
+
+		// Set the pan value.
+		// Position the sound to the full right in a stereo field
+		// ranging from -1.0 (full left) through 1.0 (full right).
+		this.sound.setPan(1);
+		
+		// Loop indefinitely until stop() is called
+		this.sound.setNumberOfLoops(-1);
+		
+		// Get properties of the player instance
+		console.log('volume: ' + this.sound.getVolume());
+		console.log('pan: ' + this.sound.getPan());
+		console.log('loops: ' + this.sound.getNumberOfLoops());
+	}
+
+	// Play the sound with an onEnd callback
+	playMusic = () => {
+		console.log(TAG, 'playMusic');
+		if(!this.sound){
+			return;
+		}
+		if(this.state.isPlay) this.pause();
+		
+		this.sound.setCurrentTime(this.state.time);
+
+		this.sound.play((success) => {
+			if (success) {
+				console.log(TAG, 'MUSIC PLAY!!');
+			} else {
+				console.log(TAG, 'playback failed due to audio decoding errors');
+			}
+		});
+	}
+
+	// Pause the sound
+	pauseMusic = () => { 
+		console.log(TAG, 'pause');
+		this.sound.pause(); 
+	}
+	
+	// Stop the sound and rewind to the beginning
+	stop = () => {
+		console.log(TAG, 'stop');
+		this.sound.stop(() => {
+			// Note: If you want to play a sound after stopping and rewinding it,
+			// it is important to call play() in a callback.
+			this.sound.play();
+		});
+	}
+
+	// Seek to a specific point in seconds
+	// this.sound.setCurrentTime(2.5);
+	
+	// Get the current playback point in seconds
+	// this.sound.getCurrentTime((seconds) => console.log('at ' + seconds));
+		
+	// Release the audio player resource
+	// this.sound.release();
 
 	/**
 	 * DB_UPDATE('position', 
@@ -1174,6 +1196,9 @@ export default class FormationScreen extends React.Component {
 		this.setState({isPlay: true}, () => {
 			this.setDancer();
 		});
+
+		// music start
+		this.playMusic();
 	}
 
 	pause = () => {
@@ -1182,6 +1207,9 @@ export default class FormationScreen extends React.Component {
 		this.setState({isPlay: false}, () => {
 			this.setDancer();
 		});
+
+		// music pause
+		this.pauseMusic();
 	}
 
 	jumpTo = (time) => {

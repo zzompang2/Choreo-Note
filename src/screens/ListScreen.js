@@ -22,7 +22,7 @@ export default class ListScreen extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
-			noteList: [],		// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
+			noteList: [],		// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate, stageRatio}
 			isEditMode: false,
 		}
 
@@ -41,6 +41,8 @@ export default class ListScreen extends React.Component {
 				'radiusLevel INTEGER NOT NULL, ' +
 				'coordinateLevel INTEGER NOT NULL, ' +
 				'alignWithCoordinate TINYINT(1) NOT NULL, ' +
+				'stageWidth INTEGER NOT NULL, ' +
+				'stageHeight INTEGER NOT NULL, ' +
 				'PRIMARY KEY("nid") );'
 			);
 
@@ -87,7 +89,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (0, "Choreo Note에 오신걸 환영해요!", ?, "love.mp3", 30, 3, 3, 1);', 
+				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'love.mp3', 30, 3, 3, 1, 1200, 600);", 
 				[this.dateFormat(new Date())],
 				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}
@@ -159,7 +161,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				'INSERT INTO note VALUES (?, ?, ?, "", 60, 3, 3, 1);', 
+				"INSERT INTO note VALUES (?, ?, ?, '', 60, 3, 3, 1, 1200, 600);", 
 				[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
 				() => {this.setNoteList();},
 				() => {console.log('ERROR');}
@@ -326,7 +328,10 @@ export default class ListScreen extends React.Component {
 					</TouchableOpacity>}
 
 					<Text style={styles.toolbarTitle}>Choreo Note</Text>
-					<TouchableOpacity style={styles.toolbarButton} onPress={()=>this.addNote()}>
+					<TouchableOpacity style={styles.toolbarButton} onPress={()=>{
+						!this.state.isEditMode &&
+						this.props.navigation.navigate('MakeNote', {nid: this.state.noteList.length, date: this.dateFormat(new Date()), updateNoteList: this.updateNoteList});
+					}}>
 						<IconIonicons name="create-outline" size={24} color={COLORS.white}/>
 					</TouchableOpacity>
 				</View>
@@ -412,6 +417,12 @@ const styles = StyleSheet.create({
 		fontSize: 15,
 		fontFamily: FONTS.binggrae,
 	},
+	toolbarButton: {
+		width: 50,
+		height: 50,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
 	noteItem: {
 		flex: 1,
 		height: 65,
@@ -458,12 +469,6 @@ const styles = StyleSheet.create({
     color: COLORS.grayMiddle, 
     fontSize:12,
     //fontFamily: FONTS.binggrae2,
-	},
-	toolbarButton: {
-		width: 50,
-		height: 50,
-		alignItems: 'center',
-		justifyContent: 'center',
 	},
 	buttonText: {
 		color: COLORS.white,
