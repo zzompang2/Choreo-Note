@@ -89,7 +89,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample', 30, 3, 3, 1, 1200, 600);", 
+				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample', 305, 3, 3, 1, 1200, 600);", 
 				[this.dateFormat(new Date())],
 				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}
@@ -151,43 +151,6 @@ export default class ListScreen extends React.Component {
 			txn.executeSql("INSERT INTO position VALUES (0, 3, 23, -30, -60, 0);");
 		});
 	}
-
-	// addNote = () => {
-	// 	const newNid = this.state.noteList.length;
-	// 	const randomValue = Math.floor(Math.random() * randomCouple.length);
-	// 	const randomColor = Math.floor(Math.random() * (dancerColor.length));
-
-	// 	console.log(TAG, "addNote", newNid, randomValue);
-
-	// 	db.transaction(txn => {
-	// 		txn.executeSql(
-	// 			"INSERT INTO note VALUES (?, ?, ?, '', 60, 3, 3, 1, 1200, 600);", 
-	// 			[newNid, randomCouple[randomValue][0], this.dateFormat(new Date())],
-	// 			() => {this.setNoteList();},
-	// 			() => {console.log('ERROR');}
-	// 		);
-	// 		txn.executeSql(
-	// 			"INSERT INTO dancer VALUES (?, 0, ?, ?);",
-	// 			[newNid, randomCouple[randomValue][1], randomColor]
-	// 		);
-	// 		txn.executeSql(
-	// 			"INSERT INTO dancer VALUES (?, 1, ?, ?);",
-	// 			[newNid, randomCouple[randomValue][2], randomColor]
-	// 		);
-	// 		txn.executeSql(
-	// 			"INSERT INTO position VALUES (?, 0, 0, -30, 0, 0);",
-	// 			[newNid],
-	// 			() => {console.log('success!');},
-	// 			(e) => {console.log('ERROR', e);}
-	// 		);
-	// 		txn.executeSql(
-	// 			"INSERT INTO position VALUES (?, 1, 0, 30, 0, 0);",
-	// 			[newNid],
-	// 			() => {console.log('success!');},
-	// 			(e) => {console.log('ERROR', e);}
-	// 		);
-	// 	});
-	// }
 
 	deleteNote = (nid) => {
 		console.log(TAG, "deleteNote", nid);

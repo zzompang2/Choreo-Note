@@ -88,8 +88,7 @@ export default class FormationScreen extends React.Component {
 			filePath = Sound.DOCUMENT;
 		}
 		
-		// this.sound = new Sound(fileName, filePath, (error) => {
-		this.sound = new Sound('Love.mp3', Sound.DOCUMENT, (error) => {
+		this.sound = new Sound(fileName, filePath, (error) => {
 			if (error) {
 				console.log('failed to load the sound', error);
 				return;
@@ -97,7 +96,6 @@ export default class FormationScreen extends React.Component {
 			// this.sound == TRUE
 			// loaded successfully!
 			console.log('duration in seconds: ' + this.sound.getDuration(), 'number of channels: ' + this.sound.getNumberOfChannels());
-			this.setState({musicLength: Math.ceil(this.sound.getDuration())});
 		});
 		// Reduce the volume by half
 		// this.sound.setVolume(1);
@@ -1198,9 +1196,8 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} sec 
 	 * @returns {string} 'min:sec'
 	 */
-	timeFormat(sec){
-		return Math.floor(sec/60) + ':' + ( Math.floor(sec%60) < 10 ? '0'+Math.floor(sec%60) : Math.floor(sec%60) )
-	}
+	timeFormat = (sec) => Math.floor(sec/60) + ':' + ( Math.floor(sec%60) < 10 ? '0'+Math.floor(sec%60) : Math.floor(sec%60) )
+	
 
 	play = async () => {
 		console.log(TAG, "play");

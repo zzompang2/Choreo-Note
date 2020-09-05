@@ -4,7 +4,6 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
-import RNFS from 'react-native-fs';
 
 import Sound from 'react-native-sound';
 // Enable playback in silence mode
@@ -36,6 +35,7 @@ export default class MakeNoteScreen extends React.Component {
 		this.ratio = 1;					// 무대 세로/가로
 		this.dancerList = [];		// {nid, did, name, color}
 		this.allPosList = [];		// {nid, did, time, posx, posy, duration}
+		this.dancers = [];			// dancer View
 		this.formationList = [
 			[
 				{did:0, posx:0, posy:0},
@@ -55,26 +55,13 @@ export default class MakeNoteScreen extends React.Component {
 			title: '', 
 			date: this.props.route.params.date, 
 			music: '',		// sample music 
-			musicLength: 30, 
+			musicLength: 0,
 			radiusLevel: 3, 
 			coordinateLevel: 3, 
 			alignWithCoordinate: 1,
 			stageWidth: 1200,
 			stageHeight: 600,
 		};
-
-		this.setCoordinate();
-		this.setDancer(1);
-
-		// 파일 가져오기 도전중...
-		//readDir(dirpath: string)
-		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
-			console.log('file:', files);
-			// this.readFile(files[0].path);
-		})
-		.catch(err => {
-			console.log('ERROR:', err.message, err.code);
-		});
 	}
 
 	/**
@@ -87,8 +74,10 @@ export default class MakeNoteScreen extends React.Component {
 		const stageHeight = width * this.noteInfo.stageHeight / this.noteInfo.stageWidth;
 		this.coordinate = [];
 
-		for(let x=Math.round((-width/2)/coordinateSpace)*coordinateSpace; x<width/2; x=x+coordinateSpace){
-			for(let y=Math.ceil((-stageHeight/2+1)/coordinateSpace)*coordinateSpace; y<stageHeight/2; y=y+coordinateSpace){
+		const screen = this.getStageSizeOnScreen();
+
+		for(let x=Math.ceil((-screen.width/2)/coordinateSpace)*coordinateSpace; x<screen.width/2; x=x+coordinateSpace){
+			for(let y=Math.ceil((-screen.height/2)/coordinateSpace)*coordinateSpace; y<screen.height/2; y=y+coordinateSpace){
 				this.coordinate.push(
 				<View 
 				key={this.coordinate.length} 
@@ -250,14 +239,11 @@ export default class MakeNoteScreen extends React.Component {
 
 		// 노래가 없는 경우
 		if(this.noteInfo.music == ''){
-			Alert.alert('노래가 비어있음', '노래를 선택하지 않아 샘플 노래로 들어갑니다.\n\nSong : OpticalNoise - Colorless\nFollow Artist : https://opticalnoise.biglink.to/platf...\nMusic promoted by DayDreamSound : https://youtu.be/G0qtpekYWHA');
-			this.noteInfo.music = 'Sample';
+			Alert.alert('노래가 비어있음', '노래를 선택해 주세요.');
+			return;
 		}
 
-		// 노래 있는 경우
-		// 재생해보고 musicLength 업데이트
-
-		// dancer 추가
+		// dancer DB 추가
 		for(let i=0; i<this.dancerList.length; i++){
 			db.transaction(txn => {
 				txn.executeSql(
@@ -267,7 +253,7 @@ export default class MakeNoteScreen extends React.Component {
 			});
 		}
 
-		// position 추가
+		// position DB 추가
 		for(let i=0; i<this.allPosList.length; i++){
 			db.transaction(txn => {
 				txn.executeSql(
@@ -279,7 +265,7 @@ export default class MakeNoteScreen extends React.Component {
 			});
 		}
 
-		// 노트 추가하고 리스트로 이동
+		// DB note 추가하고 리스트로 이동
 		db.transaction(txn => {
 			txn.executeSql(
 				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
@@ -294,11 +280,40 @@ export default class MakeNoteScreen extends React.Component {
 		});
 	}
 
+	getStageSizeOnScreen = () => {
+		let screenWidth = width;
+		let screenHeight = width * this.noteInfo.stageHeight / this.noteInfo.stageWidth;
+		if(screenHeight > height/3){
+			console.log(screenHeight, '>', height/3);
+			screenHeight = height/3;
+			screenWidth = height/3 * this.noteInfo.stageWidth / this.noteInfo.stageHeight;
+		}
+
+		return {width: screenWidth, height: screenHeight};
+	}
+
+	/**
+	 * 
+	 * @param {{}} musicInfo {music: [music title], path: [music file path]}
+	 */
+	getMusicInfo = (musicInfo) => {
+		console.log(TAG, 'getMusicInfo');
+		this.noteInfo.music = musicInfo.music;
+		this.noteInfo.musicLength = musicInfo.musicLength;
+		this.forceUpdate();
+	}
+
+	componentDidMount() {
+		this.setCoordinate();
+		this.setDancer(1);
+	}
+
 	render() {
 		console.log(TAG, 'render');
 		return(
 			<SafeAreaView style={{flex: 1, backgroundColor: COLORS.white}}>
 
+				{/* Tool Bar */}
 				<View style={styles.toolbar}>
 					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}} style={styles.toolbarButton}>
 						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
@@ -318,7 +333,8 @@ export default class MakeNoteScreen extends React.Component {
 					maxLength={30}
 					style={styles.title}
 					placeholder="노트 제목을 입력해 주세요."
-					onChangeText={text=>{this.noteInfo.title = text;}}>
+					placeholderTextColor={COLORS.grayMiddle}
+					onChangeText={text=>{this.noteInfo.title = text.trim();}}>
 						{this.noteInfo.title}
 					</TextInput>
 					<View style={styles.rowContainer}>
@@ -330,22 +346,6 @@ export default class MakeNoteScreen extends React.Component {
 				</View>
 				
 				{this.listViewItemSeparator()}
-
-				{/* 무대 비율 버튼 */}
-				{/* <View flexDirection='row'>
-					<Text>무대 비율</Text>
-					<TouchableOpacity onPress={()=>{this.ratio = 1; this.setCoordinate();}} style={styles.stageSizeButton}>
-						<Text style={styles.stageSizeText}>1:1</Text>
-					</TouchableOpacity>
-
-					<TouchableOpacity onPress={()=>{this.ratio = 3/4; this.setCoordinate();}} style={styles.stageSizeButton}>
-						<Text style={styles.stageSizeText}>4:3</Text>
-					</TouchableOpacity>
-
-					<TouchableOpacity onPress={()=>{this.ratio = 9/16; this.setCoordinate();}} style={styles.stageSizeButton}>
-						<Text style={styles.stageSizeText}>16:9</Text>
-					</TouchableOpacity>
-				</View> */}
 
 				{/* 무대 비율 & 댄서 인원 수 */}
 				<View style={styles.selectContainer}>
@@ -371,39 +371,8 @@ export default class MakeNoteScreen extends React.Component {
 					<Text style={styles.selectText}> 명</Text>
 				</View>
 
-				<View style={{flexDirection: 'row', justifyContent: 'center'}}>
-					{/* 댄서 크기 조절 */}
-					{/* <Text>댄서 크기</Text>
-					<TouchableOpacity onPress={()=>this.resizeDancer('down')} activeOpacity={1} style={styles.menuButton}>
-						<IconIonicons name='remove-circle' size={30} color={COLORS.grayMiddle}/>
-					</TouchableOpacity>
-
-					<Text>{this.noteInfo.radiusLevel}</Text>
-
-					<TouchableOpacity onPress={()=>this.resizeDancer('up')} activeOpacity={1} style={styles.menuButton}>
-						<IconIonicons name='add-circle' size={30} color={COLORS.grayMiddle}/>
-					</TouchableOpacity> */}
-
-					{/* 좌표 간격 조절 */}
-					{/* <Text>좌표 간격</Text>
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')} activeOpacity={1} style={styles.menuButton}>
-						<IconIonicons name='remove-circle' size={30} color={COLORS.grayMiddle}/>
-					</TouchableOpacity>
-
-					<Text>{this.noteInfo.coordinateLevel}</Text>
-
-					<TouchableOpacity onPress={()=>this.resizeCoordinate('up')} activeOpacity={1} style={styles.menuButton}>
-						<IconIonicons name='add-circle' size={30} color={COLORS.grayMiddle}/>
-					</TouchableOpacity> */}
-					
-					{/* <TouchableOpacity onPress={()=>this.resizeStage()} activeOpacity={1} style={styles.menuButton}>
-						<View style={{alignItems: 'center', justifyContent: 'center'}}>
-							<CustomIcon name='dancer-down' size={30} color={COLORS.grayMiddle}/>
-							<Text style={{position: 'absolute', color: COLORS.white, fontSize: 12}}>{this.noteInfo.stageRatio}</Text>
-						</View>
-						<Text style={styles.menuText}>무대 사이즈</Text>
-					</TouchableOpacity> */}
-
+				<View style={{flexDirection: 'row', justifyContent: 'center', height: 50}}>
+					{/* 댄서 크기 수정 */}
 					<TouchableOpacity onPress={()=>this.resizeDancer('down')} activeOpacity={1} style={styles.menuButton}>
 						<View style={{alignItems: 'center', justifyContent: 'center'}}>
 							<CustomIcon name='dancer-down' size={30} color={COLORS.grayMiddle}/>
@@ -420,6 +389,7 @@ export default class MakeNoteScreen extends React.Component {
 						<Text style={styles.menuText}>댄서 크게</Text>
 					</TouchableOpacity>
 
+					{/* 좌표 간격 수정 */}
 					<TouchableOpacity onPress={()=>this.resizeCoordinate('down')} activeOpacity={1} style={styles.menuButton}>
 						<CustomIcon name='coordinate-narrow' size={30} color={COLORS.grayMiddle}/>
 						<Text style={styles.menuText}>좌표 좁게</Text>
@@ -433,15 +403,25 @@ export default class MakeNoteScreen extends React.Component {
 						<Text style={styles.menuText}>좌표 넓게</Text>
 					</TouchableOpacity>
 
+					{/* 노래 넣기 */}
+					<TouchableOpacity 
+					activeOpacity={1} style={styles.menuButton}
+					onPress={()=>{
+						this.props.navigation.navigate('MusicList', {getMusicInfo: this.getMusicInfo});
+					}}>
+						<CustomIcon name='edit-music' size={30} color={COLORS.grayMiddle}/>
+						<Text style={styles.menuText}>노래 넣기</Text>
+					</TouchableOpacity>	
+
 				</View>
 
 				{/* 무대 */}
-				{/* <View style={{height: width, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.grayMiddle}}> */}
-					<View style={{width: width, height: width * this.noteInfo.stageHeight / this.noteInfo.stageWidth, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.grayLight}}>
+				<View style={{width: width, height: height/3, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.white}}>
+					<View style={[this.getStageSizeOnScreen(), {alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.grayLight}]}>
 						{ this.coordinate }
 						{ this.dancers }
 					</View>
-				{/* </View> */}
+				</View>
 
 				{/* 댄서 이름, 색 편집 */}
 				<FlatList
@@ -461,6 +441,7 @@ export default class MakeNoteScreen extends React.Component {
 						maxLength={10}
 						style={{flex: 1, fontSize: 16, color: COLORS.blackDark, padding: 10,}}
 						placeholder="이름을 입력해 주세요."
+						placeholderTextColor={COLORS.grayMiddle}
 						onEndEditing={(event)=>{this.dancerList[item.did].name = event.nativeEvent.text;}}
 						autoCorrect={false}>
 							{item.name}
@@ -509,7 +490,6 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 	},
 	noteItem: {
-		
 		height: 65,
 		flexDirection: 'column',
 		marginLeft: 15,
@@ -542,7 +522,7 @@ const styles = StyleSheet.create({
 	menuButton: {
 		flexDirection: 'column',
 		width: 70,
-		height: 70,
+		height: 50,
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
