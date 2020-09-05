@@ -1208,6 +1208,9 @@ export default class FormationScreen extends React.Component {
 		// 음악이 이미 플레이 중인 경우
 		if(this.state.isPlay) return;		
 
+		// state의 시간값과 맞추기
+		this.sound.setCurrentTime(this.state.time);
+
 		this.sound.play((success) => {
 			if (success) {
 				console.log(TAG, 'MUSIC PLAY!!');
@@ -1217,13 +1220,18 @@ export default class FormationScreen extends React.Component {
 		});
 		
 		this.interval = setInterval(() => {
-			this.setTimebox(this.state.time+1);
-			// time에 맞게 scroll view를 강제 scroll하기
-			this.musicboxScrollHorizontal.scrollTo({x: (this.state.time+1)*this.boxWidth, animated: false});
-			this.setState({time: this.state.time+1}, () => {
-				if(this.state.time == this.state.noteInfo.musicLength)
-					this.pause();
-			});
+			// 더 진행하면 시간을 넘어가는 경우: 종료
+			if(this.state.time+1 > this.state.noteInfo.musicLength){
+				this.pause();	
+			}
+			else {
+				// 다음 time으로 체크마크 붙이기
+				this.setTimebox(this.state.time+1);
+				// time에 맞게 scroll view를 강제 scroll하기
+				this.musicboxScrollHorizontal.scrollTo({x: (this.state.time+1)*this.boxWidth, animated: false});
+				// state 값 업데이트
+				this.setState({time: this.state.time+1});
+			}
 		}, 1000);
 
 		// 애니메이션 재생
@@ -1238,7 +1246,6 @@ export default class FormationScreen extends React.Component {
 	
 		// music pause
 		this.sound.pause();
-		this.sound.setCurrentTime(this.state.time);
 
 		// state 변경 후 dancer 위치 업데이트
 		this.setState({isPlay: false}, () => {
@@ -1405,6 +1412,24 @@ export default class FormationScreen extends React.Component {
 			<Text style={styles.menuText}>댄서</Text>
 		</TouchableOpacity>
 
+		<TouchableOpacity onPress={()=>this.resizeMusicList('reduce')} activeOpacity={1} style={styles.menuButton}>
+			<CustomIcon name='box-width-down' size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>표간격 좁게</Text>
+		</TouchableOpacity>
+
+		<TouchableOpacity onPress={()=>this.resizeMusicList('expand')} activeOpacity={1} style={styles.menuButton}>
+			<CustomIcon name='box-width-up' size={30} color={COLORS.grayMiddle}/>
+			<Text style={styles.menuText}>표간격 넓게</Text>
+		</TouchableOpacity>
+
+		<TouchableOpacity onPress={this.changeAlignWithCoordinate} activeOpacity={1} style={styles.menuButton}>
+			<View style={{alignItems: 'center', justifyContent: 'center'}}>
+				<CustomIcon name='align-with-coordinate' size={30} color={COLORS.grayMiddle}/>
+				<Text style={{position: 'absolute', color: COLORS.white, fontSize: 10}}>{this.alignWithCoordinate ? 'ON' : 'OFF'}</Text>
+			</View>
+			<Text style={styles.menuText}>좌표맞추기</Text>
+		</TouchableOpacity>	
+
 		<TouchableOpacity onPress={()=>this.resizeDancer('down')} activeOpacity={1} style={styles.menuButton}>
 			<View style={{alignItems: 'center', justifyContent: 'center'}}>
 				<CustomIcon name='dancer-down' size={30} color={COLORS.grayMiddle}/>
@@ -1433,24 +1458,6 @@ export default class FormationScreen extends React.Component {
 			</View>
 			<Text style={styles.menuText}>좌표 넓게</Text>
 		</TouchableOpacity>
-
-		<TouchableOpacity onPress={()=>this.resizeMusicList('reduce')} activeOpacity={1} style={styles.menuButton}>
-			<CustomIcon name='box-width-down' size={30} color={COLORS.grayMiddle}/>
-			<Text style={styles.menuText}>표간격 좁게</Text>
-		</TouchableOpacity>
-
-		<TouchableOpacity onPress={()=>this.resizeMusicList('expand')} activeOpacity={1} style={styles.menuButton}>
-			<CustomIcon name='box-width-up' size={30} color={COLORS.grayMiddle}/>
-			<Text style={styles.menuText}>표간격 넓게</Text>
-		</TouchableOpacity>
-
-		<TouchableOpacity onPress={this.changeAlignWithCoordinate} activeOpacity={1} style={styles.menuButton}>
-			<View style={{alignItems: 'center', justifyContent: 'center'}}>
-				<CustomIcon name='align-with-coordinate' size={30} color={COLORS.grayMiddle}/>
-				<Text style={{position: 'absolute', color: COLORS.white, fontSize: 10}}>{this.alignWithCoordinate ? 'ON' : 'OFF'}</Text>
-			</View>
-			<Text style={styles.menuText}>좌표맞추기</Text>
-		</TouchableOpacity>	
 
 		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
 			<CustomIcon name='edit-music' size={30} color={COLORS.grayMiddle}/>

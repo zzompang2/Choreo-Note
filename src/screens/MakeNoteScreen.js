@@ -350,11 +350,11 @@ export default class MakeNoteScreen extends React.Component {
 				{/* 무대 비율 & 댄서 인원 수 */}
 				<View style={styles.selectContainer}>
 					<Text style={styles.selectText}>무대 크기(cm):</Text>
-					<TextInput maxLength={5} style={[styles.selectTextInput, {width: 60}]} 
+					<TextInput maxLength={5} style={[styles.selectTextInput, {width: 60}]} placeholder={'가로'} placeholderTextColor={COLORS.grayMiddle}
 					onEndEditing={(event)=>this.setStage(event.nativeEvent.text, 0)}>
 						{this.noteInfo.stageWidth}</TextInput>
 					<Text style={styles.selectText}>x</Text>
-					<TextInput maxLength={5} style={[styles.selectTextInput, {width: 60}]} 
+					<TextInput maxLength={5} style={[styles.selectTextInput, {width: 60}]} placeholder={'세로'} placeholderTextColor={COLORS.grayMiddle}
 					onEndEditing={(event)=>this.setStage(0, event.nativeEvent.text)}>
 						{this.noteInfo.stageHeight}</TextInput>
 						
@@ -424,6 +424,12 @@ export default class MakeNoteScreen extends React.Component {
 				</View>
 
 				{/* 댄서 이름, 색 편집 */}
+				<View style={[styles.dancerItem, {backgroundColor: COLORS.grayLight, height: 30}]}>
+					<Text style={{width: 30, color: COLORS.grayDark}}>번호</Text>
+					<Text style={{flex: 1, color: COLORS.grayDark}}>이름</Text>
+					<Text style={{width: 34, color: COLORS.grayDark}}>색상</Text>
+				</View>
+
 				<FlatList
 				showsVerticalScrollIndicator={false}
 				data={this.dancerList}
@@ -547,12 +553,10 @@ const styles = StyleSheet.create({
 	// 	fontSize: 16
 	// },
 	dancerItem: {
-		flex: 1,
 		height: 50,
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginLeft: 15,
-    marginRight: 15,
+		paddingHorizontal: 15,
 	},
 	selectContainer: {
 		flexDirection: 'row', 

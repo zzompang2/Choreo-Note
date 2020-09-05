@@ -108,6 +108,11 @@ export default class MusicListScreen extends React.Component {
 					{/* <Text style={{flex: 1}}>수정일</Text> */}
 				</View>
 
+				{/* 노래 파일 주의사항 */}
+				<Text style={{fontSize: 10, color: COLORS.grayDark, backgroundColor: COLORS.grayLight, margin: 5, padding: 10}}>
+					파일 제목은 공백이 없고 영어로만 이루어져야 합니다.</Text>
+
+				{/* Sample 노래 저작권 정보 */}
 				<Text style={{fontSize: 10, color: COLORS.grayDark, backgroundColor: COLORS.grayLight, margin: 5, padding: 10}}>
 					Sample Music 정보{'\n'}
 					Song : OpticalNoise - Colorless{'\n'}
