@@ -4,8 +4,7 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
-import IconAntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import RNFS from 'react-native-fs';
 
 import Sound from 'react-native-sound';
 // Enable playback in silence mode
@@ -66,6 +65,16 @@ export default class MakeNoteScreen extends React.Component {
 
 		this.setCoordinate();
 		this.setDancer(1);
+
+		// 파일 가져오기 도전중...
+		//readDir(dirpath: string)
+		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
+			console.log('file:', files);
+			// this.readFile(files[0].path);
+		})
+		.catch(err => {
+			console.log('ERROR:', err.message, err.code);
+		});
 	}
 
 	/**
@@ -242,7 +251,7 @@ export default class MakeNoteScreen extends React.Component {
 		// 노래가 없는 경우
 		if(this.noteInfo.music == ''){
 			Alert.alert('노래가 비어있음', '노래를 선택하지 않아 샘플 노래로 들어갑니다.\n\nSong : OpticalNoise - Colorless\nFollow Artist : https://opticalnoise.biglink.to/platf...\nMusic promoted by DayDreamSound : https://youtu.be/G0qtpekYWHA');
-			this.noteInfo.music = 'Sample.mp3';
+			this.noteInfo.music = 'Sample';
 		}
 
 		// 노래 있는 경우

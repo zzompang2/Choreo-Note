@@ -71,7 +71,25 @@ export default class FormationScreen extends React.Component {
 	// See notes below about preloading sounds within initialization code below.
 	load = () => {
 		console.log(TAG, 'load');
-		this.sound = new Sound(this.state.noteInfo.music, Sound.MAIN_BUNDLE, (error) => {
+		// console.log(Sound.MAIN_BUNDLE);
+		// console.log(Sound.DOCUMENT);
+		// console.log(Sound.LIBRARY);
+		// console.log(Sound.CACHES);
+		
+		let fileName;
+		let filePath;
+
+		if(this.state.noteInfo.music == 'Sample'){
+			fileName = 'Sample.mp3';
+			filePath = Sound.MAIN_BUNDLE;
+		}
+		else{
+			fileName = this.state.noteInfo.music;
+			filePath = Sound.DOCUMENT;
+		}
+		
+		// this.sound = new Sound(fileName, filePath, (error) => {
+		this.sound = new Sound('Love.mp3', Sound.DOCUMENT, (error) => {
 			if (error) {
 				console.log('failed to load the sound', error);
 				return;
@@ -115,12 +133,6 @@ export default class FormationScreen extends React.Component {
 				console.log(TAG, 'playback failed due to audio decoding errors');
 			}
 		});
-	}
-
-	// Pause the sound
-	pauseMusic = () => { 
-		console.log(TAG, 'pause');
-		this.sound.pause(); 
 	}
 	
 	// Stop the sound and rewind to the beginning
@@ -1192,6 +1204,21 @@ export default class FormationScreen extends React.Component {
 
 	play = async () => {
 		console.log(TAG, "play");
+
+		// 음악이 load되지 않은 경우
+		if(!this.sound) return;
+
+		// 음악이 이미 플레이 중인 경우
+		if(this.state.isPlay) return;		
+
+		this.sound.play((success) => {
+			if (success) {
+				console.log(TAG, 'MUSIC PLAY!!');
+			} else {
+				console.log(TAG, 'playback failed due to audio decoding errors');
+			}
+		});
+		
 		this.interval = setInterval(() => {
 			this.setTimebox(this.state.time+1);
 			// time에 맞게 scroll view를 강제 scroll하기
@@ -1202,23 +1229,24 @@ export default class FormationScreen extends React.Component {
 			});
 		}, 1000);
 
+		// 애니메이션 재생
 		this.setState({isPlay: true}, () => {
 			this.setDancer();
 		});
-
-		// music start
-		this.playMusic();
 	}
 
 	pause = () => {
 		console.log(TAG, "pause");
 		clearInterval(this.interval);
+	
+		// music pause
+		this.sound.pause();
+		this.sound.setCurrentTime(this.state.time);
+
+		// state 변경 후 dancer 위치 업데이트
 		this.setState({isPlay: false}, () => {
 			this.setDancer();
 		});
-
-		// music pause
-		this.pauseMusic();
 	}
 
 	jumpTo = (time) => {
@@ -1345,9 +1373,6 @@ export default class FormationScreen extends React.Component {
 
 		return (
 			<View style={styles.selectContainer}>
-				{/* <TouchableOpacity onPress={()=>{this.unselectPosition();}} activeOpacity={1}>
-					<IconIonicons name={this.selectedBoxInfo.posIndex == -1 ? "ios-ellipse-outline" : "md-checkmark-circle-outline"} size={24} color={COLORS.grayMiddle}/>
-				</TouchableOpacity> */}
 				<Text style={styles.selectText}>시작:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editTime(event.nativeEvent.text)}>
 					{isSelected ? this.timeFormat(this.selectedBoxInfo.time) : ''}</TextInput>
@@ -1371,7 +1396,7 @@ export default class FormationScreen extends React.Component {
 		<TouchableOpacity 
 		activeOpacity={1} style={styles.menuButton}
 		onPress={() => {
-			if(this.state.isPlay) { this.setState({isPlay: false}); }
+			if(this.state.isPlay) { this.pause(); }
 			this.props.navigation.navigate('Dancer', {
 				noteId: this.state.noteInfo.nid, 
 				dancerList: this.dancerList, 
@@ -1498,7 +1523,7 @@ export default class FormationScreen extends React.Component {
 
 	componentWillUnmount() {
 		console.log(TAG, "componentWillUnmount");
-		clearInterval(this.interval);
+		this.pause();
 		this.props.route.params.updateNoteList(this.state.noteInfo);
 	}
 
