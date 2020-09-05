@@ -36,7 +36,7 @@ export default class FormationScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate}
+			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, radiusLevel, coordinateLevel, alignWithCoordinate, stageWidth, stageHeight}
 			time: 0,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
@@ -55,7 +55,7 @@ export default class FormationScreen extends React.Component {
 		this.boxHeight = 30;
 		this.positionboxWidth = this.boxWidth - 8;
 		this.positionboxHeight = this.boxHeight - 8;
-		this.stageHeight = 250;
+		this.stageHeight = width * this.state.noteInfo.stageHeight / this.state.noteInfo.stageWidth;
 		this.scrollOffset = 0;		// 세로 스크롤 위치
 
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
@@ -1523,6 +1523,7 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 				
+				{/* 무대 및 댄서 */}
 				<View style={{height: this.stageHeight, alignItems: 'center', justifyContent: 'center'}}>
 					<View style={{width: width, height: this.stageHeight, backgroundColor: COLORS.white}}/>
 					{ this.coordinate }

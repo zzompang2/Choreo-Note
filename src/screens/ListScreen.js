@@ -89,7 +89,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'love.mp3', 30, 3, 3, 1, 1200, 600);", 
+				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample.mp3', 30, 3, 3, 1, 1200, 600);", 
 				[this.dateFormat(new Date())],
 				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}

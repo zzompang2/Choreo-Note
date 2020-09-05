@@ -55,7 +55,7 @@ export default class MakeNoteScreen extends React.Component {
 			nid: this.state.nid, 
 			title: '', 
 			date: this.props.route.params.date, 
-			music: 'love.mp3',		// sample music 
+			music: '',		// sample music 
 			musicLength: 30, 
 			radiusLevel: 3, 
 			coordinateLevel: 3, 
@@ -240,6 +240,10 @@ export default class MakeNoteScreen extends React.Component {
 		}
 
 		// 노래가 없는 경우
+		if(this.noteInfo.music == ''){
+			Alert.alert('노래가 비어있음', '노래를 선택하지 않아 샘플 노래로 들어갑니다.\n\nSong : OpticalNoise - Colorless\nFollow Artist : https://opticalnoise.biglink.to/platf...\nMusic promoted by DayDreamSound : https://youtu.be/G0qtpekYWHA');
+			this.noteInfo.music = 'Sample.mp3';
+		}
 
 		// 노래 있는 경우
 		// 재생해보고 musicLength 업데이트
