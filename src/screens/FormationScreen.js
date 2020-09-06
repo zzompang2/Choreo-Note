@@ -7,7 +7,7 @@ import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 // custom library
 import Dancer from '../components/Dancer';
-import Positionbox from '../components/Positionbox';
+import PositionChecker from '../components/PositionChecker';
 import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
 import DatabaseScreen from './DatabaseScreen';
@@ -60,6 +60,8 @@ export default class FormationScreen extends React.Component {
 		this.alignWithCoordinate = this.state.noteInfo.alignWithCoordinate ? true : false;		// 좌표에 맞물려 이동
 
 		this.setCoordinate();
+
+		console.log('NOTE INFO', this.state.noteInfo);
 	}
 
 	/**
@@ -157,30 +159,25 @@ export default class FormationScreen extends React.Component {
 	 * - update: this.musicbox(, this.beatText)
 	 * @param markedBeat 마크할 비트 (없다면 초기화)
 	 */
-	setBeatbox = (markedBeat) => {
-		console.log(TAG, 'setBeatbox(', markedBeat, ')');
+	setBeatbox = () => {
+		console.log(TAG, 'setBeatbox');
 
 		if(this.state.isPlay) return;
 		
-		// 파라미터가 없는 경우: initialize
-		if(markedBeat == undefined){
-			markedBeat = 0;	// default로 0초를 마크
-			this.beatBoxs = [];
-			for(let beat=0; beat <= this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; beat++){
-				this.beatBoxs.push(
-					<View key={this.beatBoxs.length} style={{flexDirection: 'column'}}>
-						<TouchableOpacity
-						style={this.styles('beatBox')}
-						onPress={()=>{
-							this.setBeatbox(beat);
-							this.setState({beat: beat});
-							}}>
-							<Text style={{fontSize: 11}}>{beat}</Text>
-						</TouchableOpacity>
-						<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
-					</View>
-				)
-			}
+		this.beatBoxs = [];
+		for(let beat=0; beat <= this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; beat++){
+			this.beatBoxs.push(
+				<View key={this.beatBoxs.length} style={{flexDirection: 'column'}}>
+					<TouchableOpacity
+					style={this.styles('beatBox')}
+					onPress={()=>{
+						this.setState({beat: beat});
+						}}>
+						<Text style={{fontSize: 11}}>{beat}</Text>
+					</TouchableOpacity>
+					<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
+				</View>
+			)
 		}
 
 		// beatBoxs: 아무 마크도 없는 pure한 array (음악 길이가 변경되지 않는 한 절대 변경되지 않음)
@@ -293,35 +290,6 @@ export default class FormationScreen extends React.Component {
 		)
 	}
 
-	positionChecker = () =>
-	<Positionbox
-	boxWidth={this.boxWidth}
-	boxInfo={this.selectedBoxInfo}
-	setScrollEnable={this.setScrollEnable}
-	resizePositionboxLeft={this.resizePositionboxLeft}
-	resizePositionboxRight={this.resizePositionboxRight}
-	movePositionbox={this.movePositionbox}
-	unselectPosition={this.unselectPosition}
-	containerStyle={{
-		height: this.boxHeight, 
-		width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
-		position: 'absolute',
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		borderWidth: 2,
-		borderColor: COLORS.green,
-		borderRadius: 5,
-		left: this.boxWidth * this.selectedBoxInfo.beat,
-		top: (this.boxHeight + 10) + this.boxHeight * this.selectedBoxInfo.did,
-	}}
-	boxStyle={[this.styles('checkedBox'), {
-		width: this.positionboxWidth + this.boxWidth * this.selectedBoxInfo.duration,
-		backgroundColor: COLORS.green,
-	}]}
-	buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: 5}}
-	/>
-
 	/** music box 전체를 초기화한다.
 	 * - re-render: NO
 	 * - update: this.musicbox(, this.beatText)
@@ -414,6 +382,7 @@ export default class FormationScreen extends React.Component {
 				isSelected={this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == i ? true : false}
 				curBeat={this.state.beat}
 				bpm={this.state.noteInfo.bpm}
+				sync={this.state.noteInfo.sync}
 				posList={[...this.allPosList[i]]} 
 				dropPosition={this.dropPosition}
 				isPlay={isPlayAnim}
@@ -1238,8 +1207,8 @@ export default class FormationScreen extends React.Component {
 		this.DB_UPDATE('note', {title: '\"'+newTitle+'\"'}, ['nid=?'], [this.state.noteInfo.nid]);
 	}
 
-	onPlaySubmit = (beat, isPlay = this.state.isPlay) => {
-		console.log(TAG, 'onPlaySubmit(', beat, isPlay, ')');
+	onPlaySubmit = (time, beat, isPlay = this.state.isPlay) => {
+		console.log(TAG, 'onPlaySubmit(', time, beat, isPlay, ')');
 		this.musicboxScrollHorizontal.scrollTo({x: beat*this.boxWidth, animated: false});
 
 		// <Dancer> 애니메이션 시작
@@ -1409,7 +1378,7 @@ export default class FormationScreen extends React.Component {
 
 						</ScrollView>
 
-						<Positionbox
+						<PositionChecker
 						boxWidth={this.boxWidth}
 						boxInfo={this.selectedBoxInfo}
 						setScrollEnable={this.setScrollEnable}

@@ -6,7 +6,7 @@ import { COLORS } from '../values/Colors'
 
 const TAG = "Positionbox/";
 
-export default class Positionbox extends React.Component {
+export default class PositionChecker extends React.Component {
 	constructor(props) {
 		super(props);
 		console.log(TAG, 'constructor');

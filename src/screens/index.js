@@ -4,8 +4,8 @@ import ListScreen from './ListScreen';
 import FormationScreen from './FormationScreen';
 import DancerScreen from './DancerScreen';
 import DatebaseScreen from './DatabaseScreen';
-import MakeNoteScreen from './MakeNoteScreen';
-import MusicListScreen from './MusicListScreen';
+import MakeNoteScreen1 from './MakeNoteScreen1';
+import MakeNoteScreen2 from './MakeNoteScreen2';
 const Stack = createStackNavigator();
 
 export default function ScreenStack() {
@@ -19,8 +19,8 @@ export default function ScreenStack() {
       <Stack.Screen name="Formation" component={FormationScreen}/>
 			<Stack.Screen name="Dancer" component={DancerScreen}/>
       <Stack.Screen name="DB" component={DatebaseScreen}/>
-      <Stack.Screen name="MakeNote" component={MakeNoteScreen}/>
-      <Stack.Screen name="MusicList" component={MusicListScreen}/>
+      <Stack.Screen name="MakeNote1" component={MakeNoteScreen1}/>
+      <Stack.Screen name="MakeNote2" component={MakeNoteScreen2}/>
     </Stack.Navigator>
   );
 }

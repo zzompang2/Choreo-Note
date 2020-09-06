@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView, StyleSheet, ScrollView, View, Text, Dimensions, TouchableOpacity, Alert, TextInput, FlatList,
+	SafeAreaView, StyleSheet, View, Text, Dimensions, TouchableOpacity, Alert, TextInput, FlatList,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
@@ -22,7 +22,7 @@ const {width, height} = Dimensions.get('window');
 const STAGE_SIZE_MIN = 500;
 const STAGE_SIZE_MAX = 3000;
 
-export default class MakeNoteScreen extends React.Component {
+export default class MakeNoteScreen2 extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
@@ -46,19 +46,7 @@ export default class MakeNoteScreen extends React.Component {
 				{did:2, posx:60, posy:30},
 			],
 		];
-		this.noteInfo  = {
-			nid: this.state.nid, 
-			title: '', 
-			date: this.props.route.params.date, 
-			music: '',		// sample music 
-			musicLength: 0,
-			bpm: 120,
-			radiusLevel: 3, 
-			coordinateLevel: 3, 
-			alignWithCoordinate: 1,
-			stageWidth: 1200,
-			stageHeight: 600,
-		};
+		this.noteInfo  = this.props.route.params.noteInfo;
 	}
 
 	/**
@@ -225,19 +213,6 @@ export default class MakeNoteScreen extends React.Component {
 	}
 
 	completeMakingNote = () => {
-		// 이름이 공백인 경우
-		if(this.noteInfo.title.replace(/ /gi, '') == ''){
-			console.log('제목을 적어주세요.');
-			Alert.alert('제목이 비어있음', '제목을 입력해 주세요.');
-			return;
-		}
-
-		// 노래가 없는 경우
-		if(this.noteInfo.music == ''){
-			Alert.alert('노래가 비어있음', '노래를 선택해 주세요.');
-			return;
-		}
-
 		// dancer DB 추가
 		for(let i=0; i<this.dancerList.length; i++){
 			db.transaction(txn => {
@@ -260,15 +235,17 @@ export default class MakeNoteScreen extends React.Component {
 			});
 		}
 
+		console.log('INSERT INTO note VALUES (', this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm, this.noteInfo.sync,
+		this.noteInfo.radiusLevel, this.noteInfo.coordinateLevel, this.noteInfo.stageWidth, this.noteInfo.stageHeight, ')');
 		// DB note 추가하고 리스트로 이동
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
-				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm,
+				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
+				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm, this.noteInfo.sync,
 					this.noteInfo.radiusLevel, this.noteInfo.coordinateLevel, this.noteInfo.stageWidth, this.noteInfo.stageHeight],
 				() => {
 					this.props.route.params.updateNoteList(this.noteInfo);
-					this.props.navigation.goBack();
+					this.props.navigation.navigate('List');
 				},
 				(e) => {console.log('ERROR:', e);}
 			);
@@ -291,12 +268,6 @@ export default class MakeNoteScreen extends React.Component {
 	 * 
 	 * @param {{}} musicInfo {music: [music title], path: [music file path]}
 	 */
-	getMusicInfo = (musicInfo) => {
-		console.log(TAG, 'getMusicInfo');
-		this.noteInfo.music = musicInfo.music;
-		this.noteInfo.musicLength = musicInfo.musicLength;
-		this.forceUpdate();
-	}
 
 	componentDidMount() {
 		this.setCoordinate();
@@ -311,37 +282,17 @@ export default class MakeNoteScreen extends React.Component {
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
 					<TouchableOpacity onPress={()=>{this.props.navigation.goBack();}} style={styles.toolbarButton}>
-						<IconIonicons name="ios-arrow-back" size={24} color="#ffffff"/>
+					<Text style={styles.buttonText}>이전</Text>
 					</TouchableOpacity>
 
-					<Text style={styles.toolbarTitle}>새로운 노트 만들기</Text>
+					<Text style={styles.toolbarTitle}>{this.noteInfo.title}</Text>
 
 					<TouchableOpacity style={styles.toolbarButton} onPress={this.completeMakingNote}>
 						<Text style={styles.buttonText}>완료</Text>
 					</TouchableOpacity>
 				</View>
 
-				{/* 노트 제목 */}
-				<View style={styles.noteItem}>
-					<TextInput 
-					numberOfLines={1}
-					maxLength={30}
-					style={styles.title}
-					placeholder="노트 제목을 입력해 주세요."
-					placeholderTextColor={COLORS.grayMiddle}
-					onChangeText={text=>{this.noteInfo.title = text.trim();}}>
-						{this.noteInfo.title}
-					</TextInput>
-					<View style={styles.rowContainer}>
-						<IconIonicons name="calendar" size={15} color={COLORS.grayMiddle}/>
-						<Text numberOfLines={1} style={styles.date}> {this.noteInfo.date}</Text>
-						<IconIonicons name="musical-notes" size={15} color={COLORS.grayMiddle}/>
-						<Text numberOfLines={1} style={styles.music}> {this.noteInfo.music == '' ? '노래 없음' : this.noteInfo.music}</Text>
-					</View>
-				</View>
 				
-				{this.listViewItemSeparator()}
-
 				{/* 무대 비율 & 댄서 인원 수 */}
 				<View style={styles.selectContainer}>
 					<Text style={styles.selectText}>무대 크기(cm):</Text>
@@ -397,17 +348,6 @@ export default class MakeNoteScreen extends React.Component {
 						</View>
 						<Text style={styles.menuText}>좌표 넓게</Text>
 					</TouchableOpacity>
-
-					{/* 노래 넣기 */}
-					<TouchableOpacity 
-					activeOpacity={1} style={styles.menuButton}
-					onPress={()=>{
-						this.props.navigation.navigate('MusicList', {getMusicInfo: this.getMusicInfo});
-					}}>
-						<CustomIcon name='edit-music' size={30} color={COLORS.grayMiddle}/>
-						<Text style={styles.menuText}>노래 넣기</Text>
-					</TouchableOpacity>	
-
 				</View>
 
 				{/* 무대 */}
@@ -463,6 +403,9 @@ export default class MakeNoteScreen extends React.Component {
 					</View>
 				}
 				/>
+				
+				{this.listViewItemSeparator()}
+
 
 			</SafeAreaView>
 		)

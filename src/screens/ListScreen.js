@@ -39,6 +39,7 @@ export default class ListScreen extends React.Component {
 				'music TEXT NOT NULL, ' +
 				'musicLength INTEGER NOT NULL, ' +
 				'bpm INTEGER NOT NULL, ' +
+				'sync REAL NOT NULL, ' +
 				'radiusLevel INTEGER NOT NULL, ' +
 				'coordinateLevel INTEGER NOT NULL, ' +
 				'alignWithCoordinate TINYINT(1) NOT NULL, ' +
@@ -90,7 +91,7 @@ export default class ListScreen extends React.Component {
 
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample', 305, 120, 3, 3, 1, 1200, 600);", 
+				"INSERT INTO note VALUES (0, 'Choreo Note에 오신걸 환영해요!', ?, 'Sample', 305, 90, 0.3, 3, 3, 1, 1200, 600);", 
 				[this.dateFormat(new Date())],
 				this.setNoteList,
 				(e) => {console.log('ERROR:', e);}
@@ -300,7 +301,7 @@ export default class ListScreen extends React.Component {
 					<Text style={styles.toolbarTitle}>Choreo Note</Text>
 					<TouchableOpacity style={styles.toolbarButton} onPress={()=>{
 						!this.state.isEditMode &&
-						this.props.navigation.navigate('MakeNote', {nid: this.state.noteList.length, date: this.dateFormat(new Date()), updateNoteList: this.updateNoteList});
+						this.props.navigation.navigate('MakeNote1', {nid: this.state.noteList.length, date: this.dateFormat(new Date()), updateNoteList: this.updateNoteList});
 					}}>
 						<IconIonicons name="create-outline" size={24} color={COLORS.white}/>
 					</TouchableOpacity>
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		marginTop: 5,
 		paddingVertical: 5,
-    fontFamily: FONTS.binggrae_bold,
+    // fontFamily: FONTS.binggrae_bold,
 	},
 	titleInput: {
 		backgroundColor: COLORS.grayLight,

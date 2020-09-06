@@ -128,6 +128,17 @@ export default class Dancer extends React.Component {
     //console.log(TAG, "playAnim: " + this.props.isPlay);
     const posList = [...this.props.posList];
 
+
+    /**
+     *  + Number(this.props.sync)
+     * 
+     * sync 만큼 애니메이션 시간 조절 필요함.
+     */
+
+
+
+
+
     // 위치 정보가 없는 경우: 애니메이션 필요 없음
     if(posList.length == 0) return;
 
