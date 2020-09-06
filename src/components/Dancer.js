@@ -229,7 +229,7 @@ export default class Dancer extends React.Component {
   }
 
   componentDidUpdate() {
-    //console.log(TAG, "componentDidUpdate");
+    console.log(TAG, "componentDidUpdate");
     if(this.props.isPlay) this.playAnim();
   }
 }
