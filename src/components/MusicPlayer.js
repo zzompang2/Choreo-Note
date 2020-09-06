@@ -23,6 +23,7 @@ export default class MusicPlayer extends React.Component{
 			isPlay: false,
 		}
 		this.BPM = this.state.noteInfo.bpm;
+		this.musicTime = this.timeFormat(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm);
 	}
 
 	// Seek to a specific point in seconds
@@ -182,6 +183,10 @@ export default class MusicPlayer extends React.Component{
 		// this.setState({beat: this.props.beat})
 	}
 
+	componentWillUnmount(){
+		this.pause();
+	}
+
   render(){
     console.log(TAG, "render");
 
@@ -221,7 +226,7 @@ export default class MusicPlayer extends React.Component{
 					<MaterialCommunityIcons name='fast-forward-30' size={28} color={buttonColor}/>
 				</TouchableOpacity>
 
-				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm)}</Text>
+				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.musicTime}</Text>
 
 			</View>
     )

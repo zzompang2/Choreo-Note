@@ -5,10 +5,6 @@ import {
 import SQLite from "react-native-sqlite-storage";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
-import Sound from 'react-native-sound';
-// Enable playback in silence mode
-Sound.setCategory('Playback');
-
 // custom library
 import { COLORS } from '../values/Colors';
 import { FONTS } from '../values/Fonts';
