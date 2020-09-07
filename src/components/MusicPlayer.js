@@ -24,7 +24,6 @@ export default class MusicPlayer extends React.Component{
 			time: 0,
 			isPlay: false,
 		}
-		this.state.noteInfo.bpm = this.state.noteInfo.bpm;
 		this.load();
 	}
 

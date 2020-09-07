@@ -45,8 +45,9 @@ export default class FormationScreen extends React.Component {
 		this.dancerList = [];	// nid, did, name
 		this.nameColumn = [],
 		this.scrollViewStyle;
-		this.beatText = [];
-		this.musicbox = [];	
+		this.positionBox = [];
+		this.positionBoxTouchZone = [];
+		this.listBox = [];
 		this.selectedBoxInfo = {posIndex: -1};
 		this.boxWidth = 30;
 		this.boxHeight = 30;
@@ -58,6 +59,8 @@ export default class FormationScreen extends React.Component {
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
 		this.radiusLevel = this.state.noteInfo.radiusLevel;
 		this.alignWithCoordinate = this.state.noteInfo.alignWithCoordinate ? true : false;		// 좌표에 맞물려 이동
+
+		this.BEAT_LENGTH = Math.ceil(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm);
 
 		this.setCoordinate();
 
@@ -156,45 +159,33 @@ export default class FormationScreen extends React.Component {
 	/** beat box를 초기화하거나 특정 시간을 표시한다.
 	 * - if(no param) => initialize
 	 * - re-render: NO
-	 * - update: this.musicbox(, this.beatText)
+	 * - update: this.positionBox(, this.beatBoxs)
 	 * @param markedBeat 마크할 비트 (없다면 초기화)
 	 */
-	setBeatbox = () => {
-		console.log(TAG, 'setBeatbox');
+	setBeatBox = () => {
+		console.log(TAG, 'setBeatBox');		
 
-		if(this.state.isPlay) return;
-		
-		this.beatBoxs = [];
-		for(let beat=0; beat <= this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; beat++){
-			this.beatBoxs.push(
-				<View key={this.beatBoxs.length} style={{flexDirection: 'column'}}>
-					<TouchableOpacity
-					style={this.styles('beatBox')}
-					onPress={()=>{
-						this.setState({beat: beat});
-						}}>
-						<Text style={{fontSize: 11}}>{beat}</Text>
-					</TouchableOpacity>
-					<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
-				</View>
+		let beatTexts = [];
+		for(let beat=0; beat <= this.BEAT_LENGTH; beat++){
+			beatTexts.push(
+				<Text style={{width: this.boxWidth, fontSize: 11, textAlign: 'center'}}>{beat}</Text>
 			)
 		}
 
-		// beatBoxs: 아무 마크도 없는 pure한 array (음악 길이가 변경되지 않는 한 절대 변경되지 않음)
-		// beatBoxsWithMark: 특정 시간이 마크되어 있는 array
+		this.beatBoxs =
+			<View>
+				<View style={{flexDirection: 'row', height: this.boxHeight, alignItems: 'center'}}>{beatTexts}</View>
+				<View style={{height: 10}}></View>
+				{/* BEAT 터치 박스 */}
+				<TouchableOpacity 
+				style={{width: this.boxWidth*(this.BEAT_LENGTH+1), height: this.boxHeight+10, position: 'absolute', alignItems: 'center'}}
+				onPress={this.onPressBeat}/>
+			</View>
+	}
 
-		// this.beatBoxsWithMark = [...this.beatBoxs];
-		// this.beatBoxsWithMark[markedBeat] = 
-		// <View key={markedBeat} style={{flexDirection: 'column'}}>
-		// 	<View
-		// 	style={[this.styles('beatBox'), {
-		// 		borderColor: COLORS.grayMiddle, 
-		// 		borderRadius: 99, 
-		// 		borderWidth: 1}]}>
-		// 		<Text style={{fontSize: 11}}>{markedBeat}</Text>
-		// 	</View>
-		// 	<View style={[this.styles('uncheckedBox'), {height: 10}]}/>
-		// </View>
+	onPressBeat = (event) => {
+		const beat = Math.floor(event.nativeEvent.locationX / this.boxWidth);
+		this.setState({beat: beat});
 	}
 
 	beatMarker = (markedBeat) =>
@@ -207,104 +198,93 @@ export default class FormationScreen extends React.Component {
 		borderWidth: 1}]}>
 	</View>
 
+	setPositionBoxTouchZone = () => {
+		let horizontalLines = [];
+		for(let beat=0; beat<=this.BEAT_LENGTH; beat++){
+			horizontalLines.push(
+				<View 
+				style={{
+					height: this.boxHeight * this.dancerList.length, 
+					width: 1, 
+					marginHorizontal: (this.boxWidth-1)/2,
+					backgroundColor: COLORS.grayMiddle,
+				}}/>
+			)
+		}
+		this.positionBoxTouchZone =
+			<TouchableOpacity 
+			style={{flexDirection: 'row', position: 'absolute', width: this.boxWidth * (this.BEAT_LENGTH+1), height: this.boxHeight * this.dancerList.length}}
+			activeOpacity={0.7}
+			onLongPress={(event)=>{
+				const did = Math.floor(event.nativeEvent.locationY/this.boxHeight);
+				const beat = Math.floor(event.nativeEvent.locationX/this.boxWidth);
+				this.addPosition(did, beat);
+			}}>
+				{horizontalLines}
+			</TouchableOpacity>
+	}
+
 	/** did번째 댄서의 music box를 초기화한다.
 	 * - re-render: NO
-	 * - update: this.musicbox
+	 * - update: this.positionBox
 	 * @param {number} did 
 	 * @param {array} posList (default) this.allPosList[did]
 	 */
-	setMusicbox = (did, posList = this.allPosList[did]) => {
-		console.log(TAG, 'setMusicbox (', did, 'posList )');
-		let rowView = [];
+	setPositionBox = (did) => {
+		console.log(TAG, 'setPositionBox (', did, ')');
 		
-		// did번째 댄서에 대한 position이 하나도 없는 경우
-		if(posList.length == 0){
-			for(let beat=0; beat<=this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; beat++){
-				rowView.push(
-					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, beat)}>
-						<View style={this.styles('uncheckedBox')}></View>
-					</TouchableOpacity>
-				)
-			}
+		let posList = this.allPosList[did];
+		let positionBoxRow = [];
+
+		for(let i=0; i<posList.length; i++){
+			console.log(did, ':', i, posList[i].beat);
+			// checked box 넣기
+			positionBoxRow.push(
+				<TouchableOpacity 
+				key={positionBoxRow.length}
+				onPress={()=>{console.log('SELECT!!!'); this.selectPosition(did, i)}}
+				onLongPress={()=>this.deletePosition(did, posList[i].beat)}
+				activeOpacity={.8}
+				style={{
+					alignItems: 'center', 
+					justifyContent: 'center', 
+					height: this.boxHeight, 
+					width: this.boxWidth * (posList[i].duration+1),
+					position: 'absolute', left: this.boxWidth * posList[i].beat, top: this.boxHeight * did}}>
+					<View style={[this.styles('checkedBox'), {
+						position: 'absolute',
+						width: this.positionboxWidth + this.boxWidth * posList[i].duration, 
+						backgroundColor: dancerColor[this.dancerList[did].color],
+					}]}/>
+				</TouchableOpacity>
+			)
 		}
-		else{
-			let prevBeat = -1;
-
-			for(let i=0; i<posList.length; i++){
-
-				const curBeat = posList[i].beat;
-				const duration = posList[i].duration;
-
-				// duration으로 인해 이전 checked box에 덮어진 경우
-				if(curBeat <= prevBeat){
-					continue;
-				}
-
-				// 이전 좌표의 비트 ~ 다음 좌표의 비트까지 unchecked box 채우기
-				for(let beat=prevBeat+1; beat<curBeat; beat++){
-					rowView.push(
-						<TouchableOpacity 
-						key={rowView.length} 
-						activeOpacity={1} 
-						onLongPress={()=>this.addPosition(did, beat)}>
-							<View style={this.styles('uncheckedBox')}></View>
-						</TouchableOpacity>
-					)
-				}
-
-				// checked box 넣기
-				rowView.push(
-					<TouchableOpacity 
-					key={rowView.length}
-					onPress={()=>{console.log('SELECT!!!'); this.selectPosition(did, i)}}
-					onLongPress={()=>this.deletePosition(did, curBeat)}
-					activeOpacity={.8}
-					style={{alignItems: 'center', justifyContent: 'center',}}>
-						<View style={[this.styles('uncheckedBox'), {marginRight: (this.boxWidth-1)/2 + this.boxWidth*duration,}]}/>
-						<View style={[this.styles('checkedBox'), {
-							position: 'absolute',
-							width: this.positionboxWidth + this.boxWidth * duration, 
-							backgroundColor: dancerColor[this.dancerList[did].color],
-						}]}/>
-					</TouchableOpacity>
-				)
-				prevBeat = curBeat + duration;
-			}
-
-			// 마지막 대열~노래 끝부분까지 회색박스 채우기
-			for(let i=prevBeat+1; i<=this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm; i++){
-				rowView.push(
-					<TouchableOpacity key={rowView.length} activeOpacity={1} onLongPress={()=>this.addPosition(did, i)}>
-						<View style={this.styles('uncheckedBox')}></View>
-					</TouchableOpacity>
-				)
-			}
-		}
-
-		this.musicbox.splice(did, 1,
+		
+		this.positionBox.splice(did, 1,
 			<View 
 			key={did}
-			style={{flexDirection: 'row', alignItems: 'center'}}>
-				{rowView}
+			style={{flexDirection: 'row', alignItems: 'center', position: 'absolute'}}>
+				{positionBoxRow}
 			</View>
 		)
 	}
 
 	/** music box 전체를 초기화한다.
 	 * - re-render: NO
-	 * - update: this.musicbox(, this.beatText)
+	 * - update: this.positionBox(, this.beatBoxs)
 	 * @param markedBeat 마크할 시간 (없다면 초기화)
 	 */
-	setMusicboxs = () => {
-		console.log(TAG, "setMusicboxs");
+	setPositionBoxs = () => {
+		console.log(TAG, "setPositionBoxs");
 
-		this.musicbox = [];	// 제거된 dancer가 있을 수 있으므로 초기화.
+		this.positionBox = [];	// 제거된 dancer가 있을 수 있으므로 초기화.
 
-		this.setBeatbox();
 		this.setDancerName();
+		this.setBeatBox();
+		this.setPositionBoxTouchZone();
 
 		for(let did=0; did<this.dancerList.length; did++)
-			this.setMusicbox(did);
+			this.setPositionBox(did);
 	}
 
 	/** coordinate를 설정한다.
@@ -399,7 +379,7 @@ export default class FormationScreen extends React.Component {
 	
 	/** <Dancer>에서 드래그 후 드랍한 위치 정보로 position DB에 추가/수정한다.
 	 * - re-render: YES ( setDancer() )
-	 * - update: this.allPosList, this.musicbox
+	 * - update: this.allPosList, this.positionBox
 	 * @param did  dancer id
 	 * @param posx 드랍한 x 좌표
 	 * @param posy 드랍한 y 좌표
@@ -425,7 +405,7 @@ export default class FormationScreen extends React.Component {
 				newPos = {...newPos, beat: posList[i].beat, duration: posList[i].duration};
 				posList.splice(i, 1, newPos);
 				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'beat=?'], [this.state.noteInfo.nid, did, posList[i].beat]);
-				this.setMusicbox(did);
+				this.setPositionBox(did);
 				this.forceUpdate();
 				return;
 			}
@@ -436,13 +416,13 @@ export default class FormationScreen extends React.Component {
 		// 모든 박스를 확인하고 for문을 나온 경우: INSERT
 		posList.splice(i, 0, newPos);
 		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, beat: beat, posx: posx, posy: posy, duration: 0})
-		this.setMusicbox(did);
+		this.setPositionBox(did);
 		this.forceUpdate();
 	}
 
 	/** 기존 저장되어 있는 값들을 기반으로 position DB에 좌표를 추가한다.
 	 * - re-render: YES ( setDancer() )
-	 * - update: this.allPosList, this.musicbox
+	 * - update: this.allPosList, this.positionBox
 	 * @param did dancer id
 	 * @param beat 추가할 좌표의 beat 값
 	 */
@@ -489,14 +469,14 @@ export default class FormationScreen extends React.Component {
 		posList.splice(i, 0, {did: did, posx: posx, posy: posy, beat: beat, duration: 0});
 
 		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, beat: beat, posx: posx, posy: posy, duration: 0});
-		this.setMusicbox(did);
+		this.setPositionBox(did);
 		this.forceUpdate();	// 추가해서 댄서가 active될 수 있으므로.
 	}
 
 	/** position DB에서 선택한 값을 삭제한다.
 	 * - selected position은 삭제할 수 없으므로 검사할 필요는 없음
 	 * - re-render: YES ( setDancer() )
-	 * - update: this.allPosList, this.musicbox
+	 * - update: this.allPosList, this.positionBox
 	 * @param did dancer id
 	 * @param beat 삭제할 좌표의 beat 값
 	 */
@@ -527,7 +507,7 @@ export default class FormationScreen extends React.Component {
 		// 		'beat=' + beat
 		// 	]
 		// )
-		this.setMusicbox(did);
+		this.setPositionBox(did);
 		this.forceUpdate();
 	}
 
@@ -604,7 +584,7 @@ export default class FormationScreen extends React.Component {
 					this.boxWidth += 2;
 					this.positionboxWidth += 2;
 					// this.positionboxHeight ++;
-					this.setMusicbox();
+					this.setPositionBox();
 					this.forceUpdate();
 					break;
 				}
@@ -615,7 +595,7 @@ export default class FormationScreen extends React.Component {
 					this.boxWidth -= 2;
 					this.positionboxWidth -= 2;
 					// this.positionboxHeight --;
-					this.setMusicboxs();
+					this.setPositionBoxs();
 					this.forceUpdate();
 					break;
 				}
@@ -628,7 +608,7 @@ export default class FormationScreen extends React.Component {
 
 	/** <DancerScreen>에서 수정된 정보를 적용한다.
 	 * - re-render: YES ( setDancer )
-	 * - update: this.dancerList, this.allPosList / this.musicbox / dancers, nameColumn
+	 * - update: this.dancerList, this.allPosList / this.positionBox / dancers, nameColumn
 	 * @param {array} _dancerList 변경된 dancerList
 	 * @param {array} _allPosList 변경된 allPosList
 	 */
@@ -636,14 +616,14 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, 'changeDancerList');
 		this.dancerList = [..._dancerList];
 		this.allPosList = [..._allPosList];
-		this.setMusicboxs();
+		this.setPositionBoxs();
 		this.forceUpdate();
 	}
 	
 	/** position box 하나를 선택한다.
 	 * - re-render: YES ( setDancer )
 	 * - update: this.selectedBoxInfo, musicbox
-	 * - setMusicbox()
+	 * - setPositionBox()
 	 * @param {number} did 
 	 * @param {number} posIndex 
 	 */
@@ -662,7 +642,7 @@ export default class FormationScreen extends React.Component {
 	 * 선택되어 있는 position box을 선택 취소한다.
 	 * - re-render: YES ( setDancer )
 	 * - update: musicbox
-	 * - setMusicbox()
+	 * - setPositionBox()
 	 */
 	unselectPosition = () => {
 		console.log(TAG, 'unselectPosition');
@@ -781,7 +761,7 @@ export default class FormationScreen extends React.Component {
 			console.log(i, '번째에 선택된 정보가 있다!');
 			this.allPosList[did][i].beat = this.selectedBoxInfo.beat;
 			this.allPosList[did][i].duration = duration;
-			this.setMusicbox(did);
+			this.setPositionBox(did);
 			this.forceUpdate();
 		}
 	}
@@ -822,7 +802,7 @@ export default class FormationScreen extends React.Component {
 		// 		i--;
 		// 	}
 		// 	this.posList = posList; 	// for DB debug
-		// 	this.setMusicbox(did, posList);
+		// 	this.setPositionBox(did, posList);
 		// 	this.forceUpdate();
 		// }
 
@@ -868,7 +848,7 @@ export default class FormationScreen extends React.Component {
 				this.allPosList[did].splice(i, 1);
 				i--;
 			}
-			this.setMusicbox(did);
+			this.setPositionBox(did);
 			this.forceUpdate();
 		}
 	}
@@ -994,7 +974,7 @@ export default class FormationScreen extends React.Component {
 		console.log(shouldInsert);
 
 		if(!doUpdate){
-			// this.setMusicbox(did, posList);
+			// this.setPositionBox(did, posList);
 			this.forceUpdate();
 		}
 		else{
@@ -1009,7 +989,7 @@ export default class FormationScreen extends React.Component {
 			});
 
 			this.allPosList[did] = posList;
-			this.setMusicbox(did);
+			this.setPositionBox(did);
 			this.forceUpdate();
 		}
 	}
@@ -1209,7 +1189,7 @@ export default class FormationScreen extends React.Component {
 
 	onPlaySubmit = (time, beat, isPlay = this.state.isPlay) => {
 		console.log(TAG, 'onPlaySubmit(', time, beat, isPlay, ')');
-		this.musicboxScrollHorizontal.scrollTo({x: beat*this.boxWidth, animated: false});
+		this.positionBoxScrollHorizontal.scrollTo({x: beat*this.boxWidth, animated: false});
 
 		// <Dancer> 애니메이션 시작
 		if(isPlay != this.isPlayAnim){
@@ -1261,7 +1241,7 @@ export default class FormationScreen extends React.Component {
 									// 다음 댄서로 넘어가기 전, 정보들을 저장한다.
 									this.allPosList.push(posList);
 								}
-								this.setMusicboxs();
+								this.setPositionBoxs();
 								this.forceUpdate();
 							},
 							() => {console.log(TAG, 'DB SELECT ERROR');}
@@ -1320,10 +1300,12 @@ export default class FormationScreen extends React.Component {
 				beat={this.state.beat}/>
 
 				<View flexDirection='row' style={{flex: 1}}>
-					
-					{/* dancer 이름 */}
 					<View flexDirection='column'>
+						
+						{/* dancer 이름 리스트 위 공백 */}
 						<View style={{height: this.boxHeight + 10}}/>
+
+						{/* dancer 이름 */}
 						<ScrollView
 						bounces={false}						// 오버스크롤 막기 (iOS)
 						decelerationRate={0}			// 스크롤 속도 (iOS)
@@ -1331,49 +1313,55 @@ export default class FormationScreen extends React.Component {
 						ref={ref => (this.nameScroll = ref)}
 						scrollEventThrottle={16}
 						// music box list와 동시에 움직이는 것처럼 보이기 위해 scrollTo의 animated를 false로 한다.
-						onScroll={event => this.musicboxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}
-						onScrollEndDrag={event => {
-							// ceil로 한 이유: floor/round로 하면 맨 마지막 항목이 일부 짤리는 경우가 생길 수 있다.
-							this.scrollOffset = Math.ceil(event.nativeEvent.contentOffset.y/this.boxHeight) * this.boxHeight;
-							this.nameScroll.scrollTo({y: this.scrollOffset});
-							this.musicboxScrollVertical.scrollTo({y: this.scrollOffset});}}>
+						onScroll={event => this.positionBoxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}
+						// onScrollEndDrag={event => {
+						// 	// ceil로 한 이유: floor/round로 하면 맨 마지막 항목이 일부 짤리는 경우가 생길 수 있다.
+						// 	this.scrollOffset = Math.ceil(event.nativeEvent.contentOffset.y/this.boxHeight) * this.boxHeight;
+						// 	this.nameScroll.scrollTo({y: this.scrollOffset});
+						// 	this.positionBoxScrollVertical.scrollTo({y: this.scrollOffset});}}
+						>
 							<View style={{flexDirection: 'column'}}>
 								{ this.nameColumn }
 							</View>
 						</ScrollView>
 					</View>
 
-					{/* POSITION 리스트 */}
+					{/* BEAT + POSITION */}
 					<ScrollView 
 					horizontal={true}
 					bounces={false} 					// 오버스크롤 막기 (iOS)
 					decelerationRate={0.5}		// 스크롤 속도 (iOS)
 					scrollEnabled={!this.state.isEditing}
 					showsHorizontalScrollIndicator={false}
-					ref={ref => (this.musicboxScrollHorizontal = ref)}>
+					ref={ref => (this.positionBoxScrollHorizontal = ref)}>
 
 						<ScrollView
 						bounces={false} 						// 오버스크롤 막기 (iOS)
-						stickyHeaderIndices={[0]}		// 0번째 View 고정
-						scrollEnabled={false}				// 스크롤 막기
+						stickyHeaderIndices={[0]}		// 0번째 View (BEAT 숫자) 고정
+						// scrollEnabled={false}				// 스크롤 막기
 						showsVerticalScrollIndicator={false}
-						ref={ref => (this.musicboxScrollVertical = ref)}>
+						ref={ref => (this.positionBoxScrollVertical = ref)}
+						scrollEventThrottle={16}
+						onScroll={event => this.nameScroll.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}>
 
+							{/* BEAT 숫자 표시 */}
 							<View flexDirection='row' style={{backgroundColor: COLORS.grayLight}}>
 								<View style={{width: this.boxWidth/2}}/>
-								<View key={0} flexDirection='row'>
-									{ this.beatBoxs }
-								</View>
+								{ this.beatBoxs }
 								{ this.beatMarker(this.state.beat) }
 								<View style={{width: this.boxWidth/2}}/>
 							</View>
-							
-							<View flexDirection='row'>
-								<View style={{width: this.boxWidth/2}}/>
-								<View flexDirection='column'>
-									{ this.musicbox }
+
+							{/* POSITION 박스들 */}
+							<View style={{flexDirection: 'row', paddingHorizontal: this.boxWidth/2, height: this.boxHeight * this.dancerList.length}}>
+								{/* <View style={{width: this.boxWidth/2}}/> */}
+								<View>
+									{ this.positionBoxTouchZone }
+									<View flexDirection='column'>
+										{ this.positionBox }
+									</View>
 								</View>
-								<View style={{width: this.boxWidth/2}}/>
+								{/* <View style={{width: this.boxWidth/2}}/> */}
 							</View>
 
 						</ScrollView>
