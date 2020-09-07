@@ -53,6 +53,7 @@ export default class FormationScreen extends React.Component {
 		this.boxHeight = 30;
 		this.positionboxWidth = this.boxWidth - 8;
 		this.positionboxHeight = this.boxHeight - 8;
+		this.stageWidth = width;
 		this.stageHeight = width * this.state.noteInfo.stageHeight / this.state.noteInfo.stageWidth;
 		this.scrollOffset = 0;		// 세로 스크롤 위치
 
@@ -168,7 +169,7 @@ export default class FormationScreen extends React.Component {
 		let beatTexts = [];
 		for(let beat=0; beat <= this.BEAT_LENGTH; beat++){
 			beatTexts.push(
-				<Text style={{width: this.boxWidth, fontSize: 11, textAlign: 'center'}}>{beat}</Text>
+				<Text key={beatTexts.length} style={{width: this.boxWidth, fontSize: 11, textAlign: 'center'}}>{beat}</Text>
 			)
 		}
 
@@ -202,7 +203,8 @@ export default class FormationScreen extends React.Component {
 		let horizontalLines = [];
 		for(let beat=0; beat<=this.BEAT_LENGTH; beat++){
 			horizontalLines.push(
-				<View 
+				<View
+				key={horizontalLines.length}
 				style={{
 					height: this.boxHeight * this.dancerList.length, 
 					width: 1, 
@@ -237,7 +239,6 @@ export default class FormationScreen extends React.Component {
 		let positionBoxRow = [];
 
 		for(let i=0; i<posList.length; i++){
-			console.log(did, ':', i, posList[i].beat);
 			// checked box 넣기
 			positionBoxRow.push(
 				<TouchableOpacity 
@@ -370,6 +371,8 @@ export default class FormationScreen extends React.Component {
 				alignWithCoordinate={this.alignWithCoordinate}
 				coordinateLevel={this.coordinateLevel}
 				color={this.dancerList[i].color}
+				stageWidth={this.stageWidth}
+				stageHeight={this.stageHeight}
 				/>
 			)
 		}
@@ -1108,6 +1111,15 @@ export default class FormationScreen extends React.Component {
 		)
 	}
 
+	editMusic = () => {
+		console.log('edit Music');
+		for(let did=0; did<this.allPosList.length; did++){
+			for(let i=0; i<this.allPosList[did].length; i++){
+				console.log("INSERT INTO position VALUES (0, "+did+", "+this.allPosList[did][i].beat+", "+this.allPosList[did][i].posx+", "+this.allPosList[did][i].posy+", "+this.allPosList[did][i].duration+");");
+			}
+		}
+	}
+
 	menuView = () =>
 	<ScrollView horizontal={true} bounces={false} decelerationRate={0} showsHorizontalScrollIndicator={false}
 	style={{flexDirection: 'row', maxHeight: 70}}>
@@ -1174,7 +1186,7 @@ export default class FormationScreen extends React.Component {
 			<Text style={styles.menuText}>좌표 넓게</Text>
 		</TouchableOpacity>
 
-		<TouchableOpacity onPress={()=>{}} activeOpacity={1} style={styles.menuButton}>
+		<TouchableOpacity onPress={this.editMusic} activeOpacity={1} style={styles.menuButton}>
 			<CustomIcon name='edit-music' size={30} color={COLORS.grayMiddle}/>
 			<Text style={styles.menuText}>노래 편집</Text>
 		</TouchableOpacity>	
@@ -1263,8 +1275,9 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "render");
 		console.log(TAG, "isPlayAnim:", this.isPlayAnim);
 
+		this.setDancer();
 		if(!this.state.isPlay){
-			this.setDancer();
+			// this.setDancer();
 			this.isPlayAnim = false;
 		}
 
@@ -1291,116 +1304,124 @@ export default class FormationScreen extends React.Component {
 					{ this.dancers }
 				</View>
 
-				{this.selectView()}
-
 				{/* 노래 플레이어 */}
 				<MusicPlayer
 				noteInfo={this.state.noteInfo}
 				onPlaySubmit={this.onPlaySubmit}
 				beat={this.state.beat}/>
 
-				<View flexDirection='row' style={{flex: 1}}>
-					<View flexDirection='column'>
-						
-						{/* dancer 이름 리스트 위 공백 */}
-						<View style={{height: this.boxHeight + 10}}/>
+				<View flex={1}>
+					{/* 선택한 POSITION 정보 */}
+					{this.selectView()}
 
-						{/* dancer 이름 */}
-						<ScrollView
-						bounces={false}						// 오버스크롤 막기 (iOS)
-						decelerationRate={0}			// 스크롤 속도 (iOS)
-						showsVerticalScrollIndicator={false}
-						ref={ref => (this.nameScroll = ref)}
-						scrollEventThrottle={16}
-						// music box list와 동시에 움직이는 것처럼 보이기 위해 scrollTo의 animated를 false로 한다.
-						onScroll={event => this.positionBoxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}
-						// onScrollEndDrag={event => {
-						// 	// ceil로 한 이유: floor/round로 하면 맨 마지막 항목이 일부 짤리는 경우가 생길 수 있다.
-						// 	this.scrollOffset = Math.ceil(event.nativeEvent.contentOffset.y/this.boxHeight) * this.boxHeight;
-						// 	this.nameScroll.scrollTo({y: this.scrollOffset});
-						// 	this.positionBoxScrollVertical.scrollTo({y: this.scrollOffset});}}
-						>
-							<View style={{flexDirection: 'column'}}>
-								{ this.nameColumn }
-							</View>
+					<View flexDirection='row' style={{flex: 1}}>
+						<View flexDirection='column'>
+							
+							{/* dancer 이름 리스트 위 공백 */}
+							<View style={{height: this.boxHeight + 10}}/>
+
+							{/* dancer 이름 */}
+							<ScrollView
+							bounces={false}						// 오버스크롤 막기 (iOS)
+							decelerationRate={0}			// 스크롤 속도 (iOS)
+							showsVerticalScrollIndicator={false}
+							ref={ref => (this.nameScroll = ref)}
+							scrollEventThrottle={16}
+							// music box list와 동시에 움직이는 것처럼 보이기 위해 scrollTo의 animated를 false로 한다.
+							onScroll={event => this.positionBoxScrollVertical.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}
+							// onScrollEndDrag={event => {
+							// 	// ceil로 한 이유: floor/round로 하면 맨 마지막 항목이 일부 짤리는 경우가 생길 수 있다.
+							// 	this.scrollOffset = Math.ceil(event.nativeEvent.contentOffset.y/this.boxHeight) * this.boxHeight;
+							// 	this.nameScroll.scrollTo({y: this.scrollOffset});
+							// 	this.positionBoxScrollVertical.scrollTo({y: this.scrollOffset});}}
+							>
+								<View style={{flexDirection: 'column'}}>
+									{ this.nameColumn }
+								</View>
+							</ScrollView>
+						</View>
+
+						{/* BEAT + POSITION */}
+						<ScrollView 
+						horizontal={true}
+						bounces={false} 					// 오버스크롤 막기 (iOS)
+						decelerationRate={0.5}		// 스크롤 속도 (iOS)
+						scrollEnabled={!this.state.isEditing}
+						showsHorizontalScrollIndicator={false}
+						ref={ref => (this.positionBoxScrollHorizontal = ref)}>
+
+							<ScrollView
+							bounces={false} 						// 오버스크롤 막기 (iOS)
+							stickyHeaderIndices={[0]}		// 0번째 View (BEAT 숫자) 고정
+							// scrollEnabled={false}				// 스크롤 막기
+							showsVerticalScrollIndicator={false}
+							ref={ref => (this.positionBoxScrollVertical = ref)}
+							scrollEventThrottle={16}
+							onScroll={event => this.nameScroll.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}>
+
+								{/* BEAT 숫자 표시 */}
+								<View flexDirection='row' style={{backgroundColor: COLORS.grayLight}}>
+									<View style={{width: this.boxWidth/2}}/>
+									{ this.beatBoxs }
+									{ this.beatMarker(this.state.beat) }
+									<View style={{width: this.boxWidth/2}}/>
+								</View>
+
+								{/* POSITION 박스들 */}
+								<View style={{flexDirection: 'row', paddingHorizontal: this.boxWidth/2, height: this.boxHeight * this.dancerList.length}}>
+									{/* <View style={{width: this.boxWidth/2}}/> */}
+									<View>
+										{ this.positionBoxTouchZone }
+										<View flexDirection='column'>
+											{ this.positionBox }
+										</View>
+									</View>
+									{/* <View style={{width: this.boxWidth/2}}/> */}
+								</View>
+
+							</ScrollView>
+
+							<PositionChecker
+							boxWidth={this.boxWidth}
+							boxInfo={this.selectedBoxInfo}
+							setScrollEnable={this.setScrollEnable}
+							resizePositionboxLeft={this.resizePositionboxLeft}
+							resizePositionboxRight={this.resizePositionboxRight}
+							movePositionbox={this.movePositionbox}
+							unselectPosition={this.unselectPosition}
+							containerStyle={{
+								height: this.boxHeight, 
+								width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
+								position: 'absolute',
+								flexDirection: 'row',
+								alignItems: 'center',
+								justifyContent: 'space-between',
+								borderWidth: 2,
+								borderColor: COLORS.green,
+								borderRadius: 5,
+								left: this.boxWidth * this.selectedBoxInfo.beat,
+								top: (this.boxHeight + 10) + this.boxHeight * this.selectedBoxInfo.did,
+							}}
+							boxStyle={[this.styles('checkedBox'), {
+								width: this.positionboxWidth + this.boxWidth * this.selectedBoxInfo.duration,
+								backgroundColor: COLORS.green,
+							}]}
+							buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: 5}}
+							/>
+							{/* {this.positionChecker()} */}
+							{/* { this.selectedBoxInfo.posIndex != -1 ? this.positionChecker() : <View/> } */}
+
 						</ScrollView>
 					</View>
 
-					{/* BEAT + POSITION */}
-					<ScrollView 
-					horizontal={true}
-					bounces={false} 					// 오버스크롤 막기 (iOS)
-					decelerationRate={0.5}		// 스크롤 속도 (iOS)
-					scrollEnabled={!this.state.isEditing}
-					showsHorizontalScrollIndicator={false}
-					ref={ref => (this.positionBoxScrollHorizontal = ref)}>
+					{/* 하단 메뉴 */}
+					{this.menuView()}
 
-						<ScrollView
-						bounces={false} 						// 오버스크롤 막기 (iOS)
-						stickyHeaderIndices={[0]}		// 0번째 View (BEAT 숫자) 고정
-						// scrollEnabled={false}				// 스크롤 막기
-						showsVerticalScrollIndicator={false}
-						ref={ref => (this.positionBoxScrollVertical = ref)}
-						scrollEventThrottle={16}
-						onScroll={event => this.nameScroll.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}>
-
-							{/* BEAT 숫자 표시 */}
-							<View flexDirection='row' style={{backgroundColor: COLORS.grayLight}}>
-								<View style={{width: this.boxWidth/2}}/>
-								{ this.beatBoxs }
-								{ this.beatMarker(this.state.beat) }
-								<View style={{width: this.boxWidth/2}}/>
-							</View>
-
-							{/* POSITION 박스들 */}
-							<View style={{flexDirection: 'row', paddingHorizontal: this.boxWidth/2, height: this.boxHeight * this.dancerList.length}}>
-								{/* <View style={{width: this.boxWidth/2}}/> */}
-								<View>
-									{ this.positionBoxTouchZone }
-									<View flexDirection='column'>
-										{ this.positionBox }
-									</View>
-								</View>
-								{/* <View style={{width: this.boxWidth/2}}/> */}
-							</View>
-
-						</ScrollView>
-
-						<PositionChecker
-						boxWidth={this.boxWidth}
-						boxInfo={this.selectedBoxInfo}
-						setScrollEnable={this.setScrollEnable}
-						resizePositionboxLeft={this.resizePositionboxLeft}
-						resizePositionboxRight={this.resizePositionboxRight}
-						movePositionbox={this.movePositionbox}
-						unselectPosition={this.unselectPosition}
-						containerStyle={{
-							height: this.boxHeight, 
-							width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
-							position: 'absolute',
-							flexDirection: 'row',
-							alignItems: 'center',
-							justifyContent: 'space-between',
-							borderWidth: 2,
-							borderColor: COLORS.green,
-							borderRadius: 5,
-							left: this.boxWidth * this.selectedBoxInfo.beat,
-							top: (this.boxHeight + 10) + this.boxHeight * this.selectedBoxInfo.did,
-						}}
-						boxStyle={[this.styles('checkedBox'), {
-							width: this.positionboxWidth + this.boxWidth * this.selectedBoxInfo.duration,
-							backgroundColor: COLORS.green,
-						}]}
-						buttonStyle={{height: this.boxHeight, width: this.boxWidth/2,  backgroundColor: COLORS.green, borderRadius: 5}}
-						/>
-						{/* {this.positionChecker()} */}
-						{/* { this.selectedBoxInfo.posIndex != -1 ? this.positionChecker() : <View/> } */}
-
-					</ScrollView>
+					{/* PLAY 중일 때 터치 막는 VIEW */}
+					{this.state.isPlay ?
+					<View style={{width: '100%', height: '100%', position: 'absolute', backgroundColor: '#00000099'}}/>
+					: <View/>}
 				</View>
-
-				{/* 하단 메뉴 */}
-				{this.menuView()}
 
 				{/* 팝업 메뉴 */}
 				{ this.state.isMenuPop ? 

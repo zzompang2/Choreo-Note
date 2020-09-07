@@ -56,8 +56,6 @@ export default class MusicPlayer extends React.Component{
 			fileName = this.state.noteInfo.music;
 			filePath = Sound.DOCUMENT;
 		}
-		
-		console.log(TAG, 'SOUND(', fileName, filePath, ')');
 
 		this.sound = new Sound(fileName, filePath, (error) => {
 			if (error) {
@@ -173,15 +171,10 @@ export default class MusicPlayer extends React.Component{
 	 * @param {number} sec 
 	 * @returns {string} 'min:sec'
 	 */
-	timeFormat = (sec) => {
-		console.log(TAG, 'timeFormat(', sec, ')');
-		console.log(Math.floor(sec/60) + ':' + Math.floor(sec%60) )
-		return(
-			Math.floor(sec/60) + ':' +  
-			(Math.floor(sec%60) < 10 ? '0' : '') +
-			Math.floor(sec%60)
-		)
-	}
+	timeFormat = (sec) => 
+		Math.floor(sec/60) + ':' +  
+		(Math.floor(sec%60) < 10 ? '0' : '') +
+		Math.floor(sec%60)
 
 	beatFormat = (beat) => {
 		console.log(TAG, 'beatFormat(', beat, ')');

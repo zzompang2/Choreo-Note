@@ -35,7 +35,7 @@ export default class Dancer extends React.Component {
       // 터치이벤트 발생할 때
       onPanResponderGrant: (e, gesture) => {
         // drag되기 전 초기 위치 저장
-        this._prevVal = {x: this._val.x, y: this._val.y}
+        this._prevVal = {...this._val}
 
         this.state.pan.setOffset({
         x: this._val.x,
@@ -64,9 +64,9 @@ export default class Dancer extends React.Component {
         // this._val = {x: this._prevVal.x+gesture.dx, y: this._prevVal.y+gesture.dy};
 
         // 영역 밖으로 나간 경우
-        if(Math.abs(this._val.x) > (width-6)/2-10 || Math.abs(this._val.y) > height/5-10){
-          this._val.x = this._prevVal.x;
-          this._val.y = this._prevVal.y;
+        if(Math.abs(this._val.x) > this.props.stageWidth/2 || Math.abs(this._val.y) > this.props.stageHeight/2){
+          this._val = {...this._prevVal};
+          console.log('영역 밖으로 나갔어요!');
         }
         else{
           // alignWithCoordinate = true 라면 좌표축에 맞춘다.
@@ -78,10 +78,9 @@ export default class Dancer extends React.Component {
             this._val.x = Math.round(this._val.x);
             this._val.y = Math.round(this._val.y);
           }
-
-          // 부모 컴포넌트로 값 보내기
-          this.props.dropPosition(this.props.did, this._val.x, this._val.y);
         }
+        // 부모 컴포넌트로 값 보내기
+        this.props.dropPosition(this.props.did, this._val.x, this._val.y);
         this.state.pan.setOffset({x: 0, y: 0});
         // this.forceUpdate();
       }
