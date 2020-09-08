@@ -32,7 +32,7 @@ export default class MakeNoteScreen1 extends React.Component {
 		super(props);
 		this.state = {
 			nid: this.props.route.params.nid,
-			beat: 0,
+			beat: 1,
 			time: 0,
 			isPlay: false,
 		};
@@ -50,6 +50,7 @@ export default class MakeNoteScreen1 extends React.Component {
 			musicLength: 0,
 			bpm: 120,
 			sync: 0,
+			beatUnit: 4,
 			radiusLevel: 3, 
 			coordinateLevel: 3, 
 			alignWithCoordinate: 1,
@@ -143,7 +144,7 @@ export default class MakeNoteScreen1 extends React.Component {
 
 	onPlaySubmit = (sec, beat, isPlay = this.state.isPlay) => {
 		console.log(TAG, 'onPlaySubmit(', sec, beat, isPlay, ')');
-		this.scrollHorizontal.scrollTo({x: beat*30, animated: false});
+		this.scrollHorizontal.scrollTo({x: (beat - 1) * 30, animated: false});
 		this.setState({time: sec, beat: beat, isPlay: isPlay});
 	}
 
@@ -170,28 +171,49 @@ export default class MakeNoteScreen1 extends React.Component {
 
 		if(this.state.isPlay) return;
 		
-		this.beatBoxs = [];
-		for(let beat=0; beat <= this.noteInfo.musicLength/60*this.noteInfo.bpm; beat++){
-			this.beatBoxs.push(
-				<View key={this.beatBoxs.length} style={{flexDirection: 'column'}}>
-					<TouchableOpacity
-					style={styles.beatBox}
-					onPress={()=>{
-						this.setState({beat: beat});
-						}}>
-						<Text style={{fontSize: 11}}>{beat}</Text>
-					</TouchableOpacity>
-					<View style={[styles.uncheckedBox, {height: 10}]}/>
+		let beatTexts = [];
+		for(let beat=1; beat <= this.noteInfo.musicLength/60*this.noteInfo.bpm; beat++){
+			beatTexts.push(
+				<View key={beatTexts.length} style={{width: 30, height: 40, alignItems: 'center', justifyContent: 'center'}}>
+					{/* ? 비트마다 표시 */}
+					{beat%this.noteInfo.beatUnit==1 ? 
+					<View style={{width: 2, height: 2, backgroundColor: COLORS.grayMiddle, position: 'absolute', top: 5}}/> 
+					: <View/>}
+					<View style={{flexDirection: 'column'}}>
+						<TouchableOpacity
+						style={styles.beatBox}
+						onPress={()=>{
+							this.setState({beat: beat});
+							}}>
+							<Text style={{fontSize: 11}}>{beat}</Text>
+						</TouchableOpacity>
+						<View style={[styles.uncheckedBox, {height: 10}]}/>
+					</View>
 				</View>
 			)
 		}
+
+		this.beatBoxs =
+			<View>
+				<View style={{flexDirection: 'row', height: 40, alignItems: 'center'}}>{beatTexts}</View>
+				{/* <View style={{height: 10}}></View> */}
+				{/* BEAT 터치 박스 */}
+				<TouchableOpacity 
+				style={{width: 30*(this.noteInfo.musicLength/60*this.noteInfo.bpm+1), height: 40, position: 'absolute', alignItems: 'center'}}
+				onPress={this.onPressBeat}/>
+			</View>
+	}
+
+	onPressBeat = (event) => {
+		const beat = Math.floor(event.nativeEvent.locationX / 30) + 1;
+		this.setState({beat: beat});
 	}
 
 	beatMarker = (markedBeat) =>
 	<View
 	style={[styles.beatBox, {
 		position: 'absolute',
-		left: 30/2 + 30*markedBeat,
+		left: 30/2 + 30* (markedBeat - 1),
 		borderColor: COLORS.grayMiddle, 
 		borderRadius: 99, 
 		borderWidth: 1}]}>
@@ -229,7 +251,8 @@ export default class MakeNoteScreen1 extends React.Component {
 					</TextInput>
 
 					<View style={{flexDirection: 'row'}}>
-						<View flex={1}>
+						{/* 선택한 노래 */}
+						<View flex={2}>
 							<Text style={{fontSize: 14, color: COLORS.grayMiddle, marginTop: 10}}>선택한 노래</Text>
 							<View style={styles.rowContainer}>
 								<IconIonicons name="musical-notes" size={15} color={COLORS.grayMiddle}/>
@@ -237,6 +260,7 @@ export default class MakeNoteScreen1 extends React.Component {
 							</View>
 						</View>
 
+						{/* BPM */}
 						<View flex={1}>
 							<Text style={{fontSize: 14, color: COLORS.grayMiddle, marginTop: 10}}>BPM</Text>
 							<TextInput 
@@ -261,12 +285,13 @@ export default class MakeNoteScreen1 extends React.Component {
 							<Text style={{fontSize: 12, color: COLORS.grayMiddle, marginBottom: 10}}>비트 / 1분</Text>
 						</View>
 
+						{/* SYNC */}
 						<View flex={1}>
 							<Text style={{fontSize: 14, color: COLORS.grayMiddle, marginTop: 10}}>싱크(초)</Text>
 							<TextInput 
 							maxLength={5}
 							style={[styles.textInput, {width: 50}]}
-							placeholder="120"
+							placeholder="0"
 							placeholderTextColor={COLORS.grayMiddle}
 							onEndEditing={event=>{
 								const sync = this.parseTextToNum(event.nativeEvent.text);
@@ -282,6 +307,31 @@ export default class MakeNoteScreen1 extends React.Component {
 								{this.noteInfo.sync}
 							</TextInput>
 							<Text style={{fontSize: 12, color: COLORS.grayMiddle, marginBottom: 10}}>비트를 ?초 늦게 시작</Text>
+						</View>
+
+						{/* BEAT UNIT */}
+						<View flex={1}>
+							<Text style={{fontSize: 14, color: COLORS.grayMiddle, marginTop: 10}}>비트 단위</Text>
+							<TextInput 
+							maxLength={5}
+							style={[styles.textInput, {width: 50}]}
+							placeholder="4"
+							placeholderTextColor={COLORS.grayMiddle}
+							onEndEditing={event=>{
+								const beatUnit = this.parseTextToNum(event.nativeEvent.text);
+								if(isNaN(beatUnit))
+									Alert.alert('비트 단위', '숫자를 입력해 주세요.')
+								else if(beatUnit < 2 || beatUnit > 16)
+									Alert.alert('비트 단위', '싱크는 2~16 값으로 입력해 주세요.')
+								else{
+									this.noteInfo.beatUnit = beatUnit;
+									this.setBeatbox();
+									this.forceUpdate();
+								}
+							}}>
+								{this.noteInfo.beatUnit}
+							</TextInput>
+							<Text style={{fontSize: 12, color: COLORS.grayMiddle, marginBottom: 10}}>비트 위에 점 표시</Text>
 						</View>
 
 					</View>

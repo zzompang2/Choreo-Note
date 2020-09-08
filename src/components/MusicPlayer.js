@@ -97,17 +97,14 @@ export default class MusicPlayer extends React.Component{
 
 		this.props.onPlaySubmit(this.state.time, this.state.beat, true);
 		
-		this.interval = setInterval(() => {	
-			// 다음 beat으로 체크마크 붙이기
-			// this.setBeatBoxViewsWithMark(this.state.beat+1);
-
-			// beat에 맞게 scroll view를 강제 scroll하기
-			// this.scrollHorizontal.scrollToIndex({animated: false, index: this.state.beat+1});
+		this.interval = setInterval(() => {
 			// state 값 업데이트
 			this.sound.getCurrentTime((sec, isPlaying) => {
-				const changedBeat = (sec-this.state.noteInfo.sync < 0 ? 0 : sec-this.state.noteInfo.sync) * this.state.noteInfo.bpm/60;
-				this.props.onPlaySubmit(sec, Math.round(changedBeat));
-				this.setState({time: sec, beat: Math.round(changedBeat)});
+				// sync 맞추기
+				const changedBeat = (sec-this.state.noteInfo.sync < 0 ? 0 : sec-this.state.noteInfo.sync) * this.state.noteInfo.bpm/60+1;
+				// submit
+				this.props.onPlaySubmit(sec, Math.floor(changedBeat));
+				this.setState({time: sec, beat: Math.floor(changedBeat)});
 			});
 		}, 
 		// 1000*60/this.state.noteInfo.bpm
@@ -148,7 +145,7 @@ export default class MusicPlayer extends React.Component{
 	jumpTo = (beat) => {
 		console.log(TAG, 'jumpTo', beat);
 		let destination = this.state.beat + beat;
-		if(destination < 0) destination = 0;
+		if(destination < 1) destination = 1;
 		else if (destination > this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm) 
 			destination = Math.ceil(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm);
 
@@ -176,16 +173,11 @@ export default class MusicPlayer extends React.Component{
 		(Math.floor(sec%60) < 10 ? '0' : '') +
 		Math.floor(sec%60)
 
-	beatFormat = (beat) => {
-		console.log(TAG, 'beatFormat(', beat, ')');
-		console.log(Math.floor(beat/this.state.noteInfo.bpm) + ':' + Math.floor((beat*60/this.state.noteInfo.bpm)%60) )
-		return(
-			Math.floor(beat/this.state.noteInfo.bpm) + ':' +  
-			(Math.floor((beat*60/this.state.noteInfo.bpm)%60) < 10 ? '0' : '') +
-			Math.floor((beat*60/this.state.noteInfo.bpm)%60) 
-		)
-	}
-
+	beatFormat = (beat) => 
+		Math.floor(beat/this.state.noteInfo.bpm) + ':' +  
+		(Math.floor((beat*60/this.state.noteInfo.bpm)%60) < 10 ? '0' : '') +
+		Math.floor((beat*60/this.state.noteInfo.bpm)%60) 
+	
 	componentDidMount(){
 		console.log(TAG, "componentDidMount");
 		this.load();

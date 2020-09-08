@@ -235,13 +235,13 @@ export default class MakeNoteScreen2 extends React.Component {
 			});
 		}
 
-		console.log('INSERT INTO note VALUES (', this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm, this.noteInfo.sync,
+		console.log('INSERT INTO note VALUES (', this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm, this.noteInfo.sync,this.noteInfo.beatUnit,
 		this.noteInfo.radiusLevel, this.noteInfo.coordinateLevel, this.noteInfo.stageWidth, this.noteInfo.stageHeight, ')');
 		// DB note 추가하고 리스트로 이동
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
-				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm, this.noteInfo.sync,
+				"INSERT INTO note VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?);", 
+				[this.noteInfo.nid, this.noteInfo.title, this.noteInfo.date, this.noteInfo.music, this.noteInfo.musicLength, this.noteInfo.bpm, this.noteInfo.sync, this.noteInfo.beatUnit,
 					this.noteInfo.radiusLevel, this.noteInfo.coordinateLevel, this.noteInfo.stageWidth, this.noteInfo.stageHeight],
 				() => {
 					this.props.route.params.updateNoteList(this.noteInfo);

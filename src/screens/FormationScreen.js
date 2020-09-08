@@ -32,7 +32,7 @@ export default class FormationScreen extends React.Component {
 		this.state = {
       db,
 			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, bpm, radiusLevel, coordinateLevel, alignWithCoordinate, stageWidth, stageHeight}
-			beat: 0,
+			beat: 1,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <Positionbox>를 편집중인가?
 			isMenuPop: false,	// 세팅 모드인가?
@@ -167,9 +167,15 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, 'setBeatBox');		
 
 		let beatTexts = [];
-		for(let beat=0; beat <= this.BEAT_LENGTH; beat++){
+		for(let beat=1; beat <= this.BEAT_LENGTH; beat++){
 			beatTexts.push(
-				<Text key={beatTexts.length} style={{width: this.boxWidth, fontSize: 11, textAlign: 'center'}}>{beat}</Text>
+				<View key={beatTexts.length} style={{width: this.boxWidth, height: this.boxHeight, alignItems: 'center', justifyContent: 'center'}}>
+					{/* ? 비트마다 표시 */}
+					{beat%this.state.noteInfo.beatUnit==1 ? 
+					<View style={{width: 2, height: 2, backgroundColor: COLORS.grayMiddle, position: 'absolute', top: 5}}/> 
+					: <View/>}
+					<Text style={{fontSize: 11, textAlign: 'center'}}>{beat}</Text>
+				</View>
 			)
 		}
 
@@ -179,29 +185,35 @@ export default class FormationScreen extends React.Component {
 				<View style={{height: 10}}></View>
 				{/* BEAT 터치 박스 */}
 				<TouchableOpacity 
-				style={{width: this.boxWidth*(this.BEAT_LENGTH+1), height: this.boxHeight+10, position: 'absolute', alignItems: 'center'}}
+				style={{width: this.boxWidth*this.BEAT_LENGTH, height: this.boxHeight+10, position: 'absolute', alignItems: 'center'}}
 				onPress={this.onPressBeat}/>
 			</View>
 	}
 
 	onPressBeat = (event) => {
-		const beat = Math.floor(event.nativeEvent.locationX / this.boxWidth);
+		const beat = Math.floor(event.nativeEvent.locationX / this.boxWidth) + 1;
 		this.setState({beat: beat});
 	}
 
 	beatMarker = (markedBeat) =>
 	<View
-	style={[this.styles('beatBox'), {
+	style={{
+		height: this.boxHeight, 
+		width: this.boxWidth,
+		justifyContent: 'center', 
+		alignItems: 'center',
 		position: 'absolute',
-		left: this.boxWidth/2 + this.boxWidth*markedBeat,
+		left: this.boxWidth/2 + this.boxWidth * (markedBeat-1),
 		borderColor: COLORS.grayMiddle, 
 		borderRadius: 99, 
-		borderWidth: 1}]}>
+		borderWidth: 1,
+		}}>
 	</View>
 
 	setPositionBoxTouchZone = () => {
 		let horizontalLines = [];
-		for(let beat=0; beat<=this.BEAT_LENGTH; beat++){
+		// 세로 기준선들
+		for(let beat=1; beat <= this.BEAT_LENGTH; beat++){
 			horizontalLines.push(
 				<View
 				key={horizontalLines.length}
@@ -215,11 +227,11 @@ export default class FormationScreen extends React.Component {
 		}
 		this.positionBoxTouchZone =
 			<TouchableOpacity 
-			style={{flexDirection: 'row', position: 'absolute', width: this.boxWidth * (this.BEAT_LENGTH+1), height: this.boxHeight * this.dancerList.length}}
-			activeOpacity={0.7}
+			style={{flexDirection: 'row', position: 'absolute', width: this.boxWidth * this.BEAT_LENGTH, height: this.boxHeight * this.dancerList.length}}
+			activeOpacity={1}
 			onLongPress={(event)=>{
 				const did = Math.floor(event.nativeEvent.locationY/this.boxHeight);
-				const beat = Math.floor(event.nativeEvent.locationX/this.boxWidth);
+				const beat = Math.floor(event.nativeEvent.locationX/this.boxWidth) + 1;
 				this.addPosition(did, beat);
 			}}>
 				{horizontalLines}
@@ -251,7 +263,7 @@ export default class FormationScreen extends React.Component {
 					justifyContent: 'center', 
 					height: this.boxHeight, 
 					width: this.boxWidth * (posList[i].duration+1),
-					position: 'absolute', left: this.boxWidth * posList[i].beat, top: this.boxHeight * did}}>
+					position: 'absolute', left: this.boxWidth * (posList[i].beat - 1), top: this.boxHeight * did}}>
 					<View style={[this.styles('checkedBox'), {
 						position: 'absolute',
 						width: this.positionboxWidth + this.boxWidth * posList[i].duration, 
@@ -486,11 +498,6 @@ export default class FormationScreen extends React.Component {
 	deletePosition = (did, beat) => {
 		console.log(TAG, "deletePosition(",did,beat,")");
 
-		// if(this.posList[did].length == 1) {
-		// 	Alert.alert("경고", "댄서당 최소 하나의 위치는 표시해야 합니다!");
-		// 	return;
-		// }
-
 		let posList = this.allPosList[did];
 		for(let i=0; i<posList.length; i++){
 			if(beat == posList[i].beat){
@@ -502,14 +509,7 @@ export default class FormationScreen extends React.Component {
 		this.DB_DELETE('position', 
 	  	['nid=?', 'did=?', 'beat=?'], 
 	  	[this.state.noteInfo.nid, did, beat]);
-		// this.DB_DELETE(
-		// 	'position', 
-		// 	[
-		// 		'nid='  + this.state.noteInfo.nid, 
-		// 		'did='  + did,
-		// 		'beat=' + beat
-		// 	]
-		// )
+
 		this.setPositionBox(did);
 		this.forceUpdate();
 	}
@@ -541,7 +541,6 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		// this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, {nid: ['=',this.state.noteInfo.nid]});
 		this.DB_UPDATE('note', {coordinateLevel: this.coordinateLevel}, ['nid=?'], [this.state.noteInfo.nid]);
 		this.setCoordinate();
 		this.forceUpdate();	// dancer에게 coordinateLevel 전달하기 위해
@@ -573,20 +572,18 @@ export default class FormationScreen extends React.Component {
 			default:
 				console.log('Wrong parameter...');
 		}
-		// this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, {nid: ['=',this.state.noteInfo.nid]});
 		this.DB_UPDATE('note', {radiusLevel: this.radiusLevel}, ['nid=?'], [this.state.noteInfo.nid]);
 		this.forceUpdate();
 	}
 
-	resizeMusicList = (type) => {
-		console.log(TAG, 'resizeMusicList');
+	resizePositionList = (type) => {
+		console.log(TAG, 'resizePositionList');
 
 		switch(type){
 			case 'expand':
 				if(this.boxWidth < 40){
 					this.boxWidth += 2;
 					this.positionboxWidth += 2;
-					// this.positionboxHeight ++;
 					this.setPositionBox();
 					this.forceUpdate();
 					break;
@@ -597,7 +594,6 @@ export default class FormationScreen extends React.Component {
 				if(this.boxWidth > 20){
 					this.boxWidth -= 2;
 					this.positionboxWidth -= 2;
-					// this.positionboxHeight --;
 					this.setPositionBoxs();
 					this.forceUpdate();
 					break;
@@ -681,12 +677,12 @@ export default class FormationScreen extends React.Component {
 		 */
 		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 		
-		// 변경했을 때 시간이 0보다 작아지는 것을 방지하기 위해
+		// 변경했을 때 시간이 1보다 작아지는 것을 방지하기 위해
 		// 변경 후 시간을 계산
 		for(let i=0; i<posList.length; i++){
 			if(posList[i].beat == beat){
 				const leftEndBeat = beat + posList[i].duration - duration;
-				if(leftEndBeat < 0) {
+				if(leftEndBeat < 1) {
 					console.log(TAG, '왼쪽 끝이에요.');
 					return;
 				}
@@ -1139,12 +1135,12 @@ export default class FormationScreen extends React.Component {
 			<Text style={styles.menuText}>댄서</Text>
 		</TouchableOpacity>
 
-		<TouchableOpacity onPress={()=>this.resizeMusicList('reduce')} activeOpacity={1} style={styles.menuButton}>
+		<TouchableOpacity onPress={()=>this.resizePositionList('reduce')} activeOpacity={1} style={styles.menuButton}>
 			<CustomIcon name='box-width-down' size={30} color={COLORS.grayMiddle}/>
 			<Text style={styles.menuText}>표간격 좁게</Text>
 		</TouchableOpacity>
 
-		<TouchableOpacity onPress={()=>this.resizeMusicList('expand')} activeOpacity={1} style={styles.menuButton}>
+		<TouchableOpacity onPress={()=>this.resizePositionList('expand')} activeOpacity={1} style={styles.menuButton}>
 			<CustomIcon name='box-width-up' size={30} color={COLORS.grayMiddle}/>
 			<Text style={styles.menuText}>표간격 넓게</Text>
 		</TouchableOpacity>
@@ -1201,7 +1197,7 @@ export default class FormationScreen extends React.Component {
 
 	onPlaySubmit = (time, beat, isPlay = this.state.isPlay) => {
 		console.log(TAG, 'onPlaySubmit(', time, beat, isPlay, ')');
-		this.positionBoxScrollHorizontal.scrollTo({x: beat*this.boxWidth, animated: false});
+		this.positionBoxScrollHorizontal.scrollTo({x: (beat-1)*this.boxWidth, animated: false});
 
 		// <Dancer> 애니메이션 시작
 		if(isPlay != this.isPlayAnim){
@@ -1210,6 +1206,18 @@ export default class FormationScreen extends React.Component {
 		}
 
 		this.setState({beat: beat, isPlay: isPlay});
+	}
+
+	getStageSizeOnScreen = () => {
+		let screenWidth = width;
+		let screenHeight = width * this.state.noteInfo.stageHeight / this.state.noteInfo.stageWidth;
+		if(screenHeight > height/3){
+			console.log(screenHeight, '>', height/3);
+			screenHeight = height/3;
+			screenWidth = height/3 * this.state.noteInfo.stageWidth / this.state.noteInfo.stageHeight;
+		}
+
+		return {width: screenWidth, height: screenHeight};
 	}
 
 	componentDidMount() {
@@ -1275,9 +1283,9 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "render");
 		console.log(TAG, "isPlayAnim:", this.isPlayAnim);
 
-		this.setDancer();
+		// this.setDancer();
 		if(!this.state.isPlay){
-			// this.setDancer();
+			this.setDancer();
 			this.isPlayAnim = false;
 		}
 
@@ -1396,10 +1404,10 @@ export default class FormationScreen extends React.Component {
 								flexDirection: 'row',
 								alignItems: 'center',
 								justifyContent: 'space-between',
-								borderWidth: 2,
-								borderColor: COLORS.green,
-								borderRadius: 5,
-								left: this.boxWidth * this.selectedBoxInfo.beat,
+								// borderWidth: 2,
+								// borderColor: COLORS.red,
+								// borderRadius: 5,
+								left: this.boxWidth * (this.selectedBoxInfo.beat - 1),
 								top: (this.boxHeight + 10) + this.boxHeight * this.selectedBoxInfo.did,
 							}}
 							boxStyle={[this.styles('checkedBox'), {
@@ -1427,24 +1435,6 @@ export default class FormationScreen extends React.Component {
 				{ this.state.isMenuPop ? 
 				<Menu
 				closeMenu={()=>{this.setState({isMenuPop: false})}}
-				resizeDancer={this.resizeDancer}
-				radiusLevel={this.radiusLevel}
-				resizeCoordinate={this.resizeCoordinate}
-				coordinateLevel={this.coordinateLevel}
-				resizeMusicList={this.resizeMusicList}
-				boxWidth={this.boxWidth}
-				alignWithCoordinate={this.alignWithCoordinate}
-				changeAlignWithCoordinate={this.changeAlignWithCoordinate}
-				moveToDancer={() => {
-					if(this.state.isPlay) { this.setState({isPlay: false}); }
-					this.props.navigation.navigate('Dancer', {
-						noteId: this.state.noteInfo.nid, 
-						dancerList: this.dancerList, 
-						allPosList: this.allPosList, 
-						changeDancerList: this.changeDancerList,
-					})
-					this.setState({isMenuPop: false});
-				}}
 				openDBScreen={()=>{console.log('open DB'); this.setState({isMenuPop: false, isDBPop: true});}}/> 
 				: 
 				<View/> 
@@ -1468,13 +1458,13 @@ export default class FormationScreen extends React.Component {
 
 	styles = (name) => {
 		switch(name){
-			case 'uncheckedBox':
-				return({
-					height: this.boxHeight, 
-					width: 1, 
-					marginHorizontal: (this.boxWidth-1)/2, 
-					backgroundColor: COLORS.grayMiddle,
-				})
+			// case 'uncheckedBox':
+			// 	return({
+			// 		height: this.boxHeight, 
+			// 		width: 1, 
+			// 		marginHorizontal: (this.boxWidth-1)/2, 
+			// 		backgroundColor: COLORS.grayMiddle,
+			// 	})
 			case 'checkedBox':
 				return({
 					height: this.positionboxHeight, 
