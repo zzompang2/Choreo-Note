@@ -45,25 +45,33 @@ export default class MusicPlayer extends React.Component{
 		// console.log(Sound.LIBRARY);
 		// console.log(Sound.CACHES);
 		
-		let fileName;
-		let filePath;
+		if(this.sound)
+			// Release the audio player resource
+			this.sound.release();
+		
+		if(this.state.isPlay)
+			this.pause();
 
-		if(this.state.noteInfo.music == 'Sample'){
-			fileName = 'Sample.mp3';
-			filePath = Sound.MAIN_BUNDLE;
+		// let fileName;
+		// let filePath;
+
+		if(this.state.noteInfo.music == 'Sample.mp3'){
+			this.fileName = 'Sample.mp3';
+			this.filePath = Sound.MAIN_BUNDLE;
 		}
 		else{
-			fileName = this.state.noteInfo.music;
-			filePath = Sound.DOCUMENT;
+			this.fileName = this.state.noteInfo.music;
+			this.filePath = Sound.DOCUMENT;
 		}
 
-		this.sound = new Sound(fileName, filePath, (error) => {
+		this.sound = new Sound(this.fileName, this.filePath, (error) => {
 			if (error) {
-				console.log('failed to load the sound', error);
+				console.log('failed to load the sound');
 				return;
 			}
 			// this.sound == TRUE
 			// loaded successfully!
+			this.sound.setCurrentTime(0);
 			console.log('duration in seconds: ' + this.sound.getDuration(), 'number of channels: ' + this.sound.getNumberOfChannels());
 		});
 		// Reduce the volume by half
@@ -92,7 +100,7 @@ export default class MusicPlayer extends React.Component{
 			return;
 
 		// // state의 시간값과 맞추기
-		this.sound.setCurrentTime(this.state.beat * 60/this.state.noteInfo.bpm);
+		this.sound.setCurrentTime((this.state.beat-1) * 60/this.state.noteInfo.bpm);
 		this.sound.play(this.playComplete);
 
 		this.props.onPlaySubmit(this.state.time, this.state.beat, true);
@@ -185,8 +193,11 @@ export default class MusicPlayer extends React.Component{
 	
 	componentDidUpdate(){
 		console.log(TAG, "componentDidUpdate");
-		if(!this.sound.isLoaded()) 
+		if(this.fileName != this.props.noteInfo.music){
 			this.load();
+			this.props.onPlaySubmit(0, 1, false);
+			this.setState({beat: 1, time: 0});
+		}
 	}
 
 	componentWillUnmount(){

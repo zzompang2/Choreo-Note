@@ -53,8 +53,8 @@ export default class FormationScreen extends React.Component {
 		this.boxHeight = 30;
 		this.positionboxWidth = this.boxWidth - 8;
 		this.positionboxHeight = this.boxHeight - 8;
-		this.stageWidth = width;
-		this.stageHeight = width * this.state.noteInfo.stageHeight / this.state.noteInfo.stageWidth;
+		// this.stageWidth = width;
+		// this.stageHeight = width * this.state.noteInfo.stageHeight / this.state.noteInfo.stageWidth;
 		this.scrollOffset = 0;		// 세로 스크롤 위치
 
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;
@@ -169,20 +169,22 @@ export default class FormationScreen extends React.Component {
 		let beatTexts = [];
 		for(let beat=1; beat <= this.BEAT_LENGTH; beat++){
 			beatTexts.push(
-				<View key={beatTexts.length} style={{width: this.boxWidth, height: this.boxHeight, alignItems: 'center', justifyContent: 'center'}}>
+				<View key={beatTexts.length} style={{flexDirection: 'column', alignItems: 'center'}}>
 					{/* ? 비트마다 표시 */}
 					{beat%this.state.noteInfo.beatUnit==1 ? 
 					<View style={{width: 2, height: 2, backgroundColor: COLORS.grayMiddle, position: 'absolute', top: 5}}/> 
 					: <View/>}
-					<Text style={{fontSize: 11, textAlign: 'center'}}>{beat}</Text>
+					<View style={{width: this.boxWidth, height: this.boxHeight, justifyContent: 'center'}}>
+						<Text style={{fontSize: 11, textAlign: 'center'}}>{beat}</Text>
+					</View>
+					<View style={{height: 10, width: 1, backgroundColor: COLORS.grayMiddle}}/>
 				</View>
 			)
 		}
 
 		this.beatBoxs =
 			<View>
-				<View style={{flexDirection: 'row', height: this.boxHeight, alignItems: 'center'}}>{beatTexts}</View>
-				<View style={{height: 10}}></View>
+				<View style={{flexDirection: 'row', height: this.boxHeight+10, alignItems: 'center'}}>{beatTexts}</View>
 				{/* BEAT 터치 박스 */}
 				<TouchableOpacity 
 				style={{width: this.boxWidth*this.BEAT_LENGTH, height: this.boxHeight+10, position: 'absolute', alignItems: 'center'}}
@@ -310,8 +312,11 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, 'setCoordinate:', this.coordinateLevel);
 		const coordinateSpace = 15 + this.coordinateLevel*5;
 		this.coordinate = [];
-		for(let x=Math.round((-width/2)/coordinateSpace)*coordinateSpace; x<width/2; x=x+coordinateSpace){
-			for(let y=Math.ceil((-this.stageHeight/2+1)/coordinateSpace)*coordinateSpace; y<this.stageHeight/2; y=y+coordinateSpace){
+
+		const screen = this.getStageSizeOnScreen();
+
+		for(let x=Math.ceil((-screen.width/2)/coordinateSpace)*coordinateSpace; x<screen.width/2; x=x+coordinateSpace){
+			for(let y=Math.ceil((-screen.height/2+1)/coordinateSpace)*coordinateSpace; y<screen.height/2; y=y+coordinateSpace){
 				this.coordinate.push(
 				<View 
 				key={this.coordinate.length} 
@@ -1084,23 +1089,26 @@ export default class FormationScreen extends React.Component {
 		return (
 			<View style={styles.selectContainer}>
 
-				<Text style={styles.selectText}>idx:</Text>
+				{/* <Text style={styles.selectText}>idx:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editBeat(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.posIndex : ''}
-				</TextInput>
+				</TextInput> */}
 
 				<Text style={styles.selectText}>시작:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editBeat(event.nativeEvent.text)}>
 					{/* {isSelected ? this.timeFormat(this.selectedBoxInfo.beat) : ''} */}
 					{isSelected ? this.selectedBoxInfo.beat : ''}
 				</TextInput>
-				<Text style={styles.selectText}> 길이:</Text>
+
+				<Text style={styles.selectText}>  길이:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editDuration(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.duration : ''}</TextInput>
-				<Text style={styles.selectText}> X:</Text>
+				<Text style={styles.selectText}>  X:</Text>
+
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editX(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.posx : ''}</TextInput>
-				<Text style={styles.selectText}> Y:</Text>
+
+				<Text style={styles.selectText}>  Y:</Text>
 				<TextInput style={styles.selectTextInput} editable={isSelected} onEndEditing={(event)=>this.editY(event.nativeEvent.text)}>
 					{isSelected ? this.selectedBoxInfo.posy : ''}</TextInput>
 			</View>
@@ -1306,8 +1314,9 @@ export default class FormationScreen extends React.Component {
 				</View>
 				
 				{/* 무대 및 댄서 */}
-				<View style={{height: this.stageHeight, alignItems: 'center', justifyContent: 'center'}}>
-					<View style={{width: width, height: this.stageHeight, backgroundColor: COLORS.white}}/>
+				<View style={{width: width, height: height/3, alignItems: 'center', justifyContent: 'center'}}>
+					<View style={{position: 'absolute', width: '100%', height: '100%', backgroundColor: COLORS.grayLight}}/>
+					<View style={[this.getStageSizeOnScreen(), {backgroundColor: COLORS.white}]}/>
 					{ this.coordinate }
 					{ this.dancers }
 				</View>
@@ -1528,7 +1537,7 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		textAlign: 'left',
 		color: COLORS.grayMiddle,
-		padding: 3,
+		paddingLeft: 3,
 	},
 	selectTextInput: {
 		flex: 1,

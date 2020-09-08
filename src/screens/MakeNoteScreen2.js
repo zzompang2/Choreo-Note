@@ -56,7 +56,6 @@ export default class MakeNoteScreen2 extends React.Component {
 	setCoordinate = () => {
 		console.log(TAG, 'setCoordinate');
 		const coordinateSpace = 15 + this.noteInfo.coordinateLevel*5;
-		const stageHeight = width * this.noteInfo.stageHeight / this.noteInfo.stageWidth;
 		this.coordinate = [];
 
 		const screen = this.getStageSizeOnScreen();
@@ -227,7 +226,7 @@ export default class MakeNoteScreen2 extends React.Component {
 		for(let i=0; i<this.allPosList.length; i++){
 			db.transaction(txn => {
 				txn.executeSql(
-					"INSERT INTO position VALUES (?, ?, 0, ?, ?, 0);",
+					"INSERT INTO position VALUES (?, ?, 1, ?, ?, 0);",
 					[this.noteInfo.nid, this.allPosList[i].did, this.allPosList[i].posx, this.allPosList[i].posy],
 					() => {console.log('success!');},
 					(e) => {console.log('ERROR', e);}

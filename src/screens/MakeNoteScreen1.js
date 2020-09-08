@@ -109,7 +109,7 @@ export default class MakeNoteScreen1 extends React.Component {
 			else{
 				console.log('sample music load 성공');
 				sound.release();
-				this.musicList.push({music: 'Sample', musicLength: Math.ceil(sound.getDuration()), bpm: 120})
+				this.musicList.push({music: 'Sample.mp3', musicLength: Math.ceil(sound.getDuration()), bpm: 120})
 				this.forceUpdate();
 			}
 		});
@@ -118,9 +118,12 @@ export default class MakeNoteScreen1 extends React.Component {
 		// readDir(dirpath: string)
 		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
 			// console.log('file:', files);
-
 			// 각 파일들에 대해 sound load 시도
 			for(let i=0; i<files.length; i++){
+				if(files[i].name == 'Sample.mp3'){
+					console.log('Sample.mp3라는 이름의 파일은 피해주세요.');
+					continue;
+				}
 				const sound = new Sound(files[i].name, Sound.DOCUMENT, (error)  => {
 					// load 실패한 경우
 					if (error)
@@ -174,21 +177,15 @@ export default class MakeNoteScreen1 extends React.Component {
 		let beatTexts = [];
 		for(let beat=1; beat <= this.noteInfo.musicLength/60*this.noteInfo.bpm; beat++){
 			beatTexts.push(
-				<View key={beatTexts.length} style={{width: 30, height: 40, alignItems: 'center', justifyContent: 'center'}}>
+				<View key={beatTexts.length} style={{flexDirection: 'column', alignItems: 'center'}}>
 					{/* ? 비트마다 표시 */}
 					{beat%this.noteInfo.beatUnit==1 ? 
 					<View style={{width: 2, height: 2, backgroundColor: COLORS.grayMiddle, position: 'absolute', top: 5}}/> 
 					: <View/>}
-					<View style={{flexDirection: 'column'}}>
-						<TouchableOpacity
-						style={styles.beatBox}
-						onPress={()=>{
-							this.setState({beat: beat});
-							}}>
-							<Text style={{fontSize: 11}}>{beat}</Text>
-						</TouchableOpacity>
-						<View style={[styles.uncheckedBox, {height: 10}]}/>
+					<View style={{width: 30, height: 30, justifyContent: 'center'}}>
+						<Text style={{fontSize: 11, textAlign: 'center'}}>{beat}</Text>
 					</View>
+					<View style={{height: 10, width: 1, backgroundColor: COLORS.grayMiddle}}/>
 				</View>
 			)
 		}
@@ -372,7 +369,7 @@ export default class MakeNoteScreen1 extends React.Component {
 								<Text style={{flex: 1}}>{item.size}MB</Text>
 							</View>
 							{index == 0 ?
-							<Text style={{fontSize: 10, color: COLORS.grayDark, backgroundColor: COLORS.grayLight, margin: 10, padding: 10}}>
+							<Text style={{fontSize: 10, color: COLORS.grayMiddle, marginHorizontal: 15, marginBottom: 10}}>
 							Sample Music 정보{'\n'}
 							Song : OpticalNoise - Colorless{'\n'}
 							Follow Artist : https://opticalnoise.biglink.to/platf...{'\n'}
