@@ -28,12 +28,12 @@ export default class PositionChecker extends React.Component {
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
 				// this.initialValue.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
-				// this.props.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
+				// this.props.boxInfo.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
 				// changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
 				const changedDuration = this.initialValue.duration - Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.duration != changedDuration && changedDuration >= 0)
+				if(this.props.boxInfo.duration != changedDuration && changedDuration >= 0)
 					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.beat);
 			},
 
@@ -60,13 +60,15 @@ export default class PositionChecker extends React.Component {
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
 				this.initialValue = {beat: this.boxInfo.beat, duration: this.boxInfo.duration};
+				console.log('initial value: ', this.initialValue);
       },
 
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
 				const changedBeat = this.initialValue.beat + Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.beat != changedBeat)
+				console.log(this.props.boxInfo.beat, 'vs.', changedBeat);
+				if(this.props.boxInfo.beat != changedBeat)
 					this.props.movePositionbox(false, changedBeat, this.initialValue.beat);
 			},
 
@@ -103,12 +105,12 @@ export default class PositionChecker extends React.Component {
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
 				// this.initialValue.duration : 드래그를 시작하기 전 duration 값 (드래그 도중 변하지 않음)
-				// this.props.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
+				// this.props.boxInfo.duration : FormationScreen 에서의 duration 값 (드래그 도중 변함)
 				// changedDuration : 드래그 거리 기반으로 계산한 duration 값 (드래그 도중 변함)
 
 				const changedDuration = this.initialValue.duration + Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.duration != changedDuration && changedDuration >= 0)
+				if(this.props.boxInfo.duration != changedDuration && changedDuration >= 0)
 					this.props.resizePositionboxRight(false, changedDuration);
 			},
 
@@ -119,7 +121,7 @@ export default class PositionChecker extends React.Component {
 				// scroll unlock
 				this.props.setScrollEnable(false);
 
-				// this.boxInfo.duration = this.props.duration;	// 바뀐 duration 값 저장
+				// this.boxInfo.duration = this.props.boxInfo.duration;	// 바뀐 duration 값 저장
 				this.props.resizePositionboxRight(true);
       }
 		})

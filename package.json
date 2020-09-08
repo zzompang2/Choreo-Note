@@ -24,7 +24,8 @@
     "react-native-sqlite-storage": "^5.0.0",
     "react-native-vector-icons": "^7.0.0",
     "react-redux": "^7.2.1",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "why-did-you-update": "^1.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
@@ -34,7 +35,8 @@
     "eslint": "^6.5.1",
     "jest": "^25.1.0",
     "metro-react-native-babel-preset": "^0.59.0",
-    "react-test-renderer": "16.13.1"
+    "react-test-renderer": "16.13.1",
+    "redux-devtools-extension": "^2.13.8"
   },
   "jest": {
     "preset": "react-native"

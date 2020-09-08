@@ -26,6 +26,11 @@ const CustomIcon = createIconSetFromFontello(fontelloConfig);
 // 화면의 가로, 세로 길이 받아오기
 const {width, height} = Dimensions.get('window');
 
+// if (process.env.NODE_ENV !== 'production') {
+//   const {whyDidYouUpdate} = require('why-did-you-update');
+//   whyDidYouUpdate(React);
+// }
+
 export default class FormationScreen extends React.Component {
 	constructor(props){
 		super(props);
@@ -867,7 +872,7 @@ export default class FormationScreen extends React.Component {
 	movePositionbox = (doUpdate, to, from = this.selectedBoxInfo.beat, did = this.selectedBoxInfo.did) => {
 		console.log(TAG, 'movePositionbox (', doUpdate, to, from, did, ')');
 
-		if(to < 0 || this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm < to + this.selectedBoxInfo.duration) return;
+		if(to < 1 || this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm < to + this.selectedBoxInfo.duration) return;
 
 		let posList = JSON.parse(JSON.stringify(this.allPosList[did]));
 		let myPosInfo;
