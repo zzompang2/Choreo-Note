@@ -37,6 +37,10 @@ export default class PositionChecker extends React.Component {
 					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.beat);
 			},
 
+			// (추측) 터치이벤트가 비정상적으로 종료될 때
+			// onPanResponderRelease를 실행한다.
+			onPanResponderTerminationRequest: (event, gesture) => false,
+
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
 				console.log(TAG, 'leftResponder/', "터치 끝");
@@ -71,6 +75,10 @@ export default class PositionChecker extends React.Component {
 					this.props.movePositionbox(false, changedBeat, this.initialValue.beat);
 			},
 
+			// (추측) 터치이벤트가 비정상적으로 종료될 때
+			// onPanResponderRelease를 실행한다.
+			onPanResponderTerminationRequest: (event, gesture) => false,
+
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
 				console.log(TAG, 'centerResponder/', "터치 끝");
@@ -85,7 +93,7 @@ export default class PositionChecker extends React.Component {
 					// 이동!
 					this.props.movePositionbox(true, this.boxInfo.beat, this.initialValue.beat);
 				}
-      }
+			},
 		})
 
 		this.rightResponder = PanResponder.create({
@@ -113,6 +121,10 @@ export default class PositionChecker extends React.Component {
 					this.props.resizePositionboxRight(false, changedDuration);
 			},
 
+			// (추측) 터치이벤트가 비정상적으로 종료될 때
+			// onPanResponderRelease를 실행한다.
+			onPanResponderTerminationRequest: (event, gesture) => false,
+
       // 터치이벤트 끝날 때.
       onPanResponderRelease: (e, gesture) => {
 				console.log(TAG, 'rightResponder/', "터치 끝");
@@ -122,7 +134,7 @@ export default class PositionChecker extends React.Component {
 
 				// this.boxInfo.duration = this.props.boxInfo.duration;	// 바뀐 duration 값 저장
 				this.props.resizePositionboxRight(true);
-      }
+      },
 		})
 	}
 

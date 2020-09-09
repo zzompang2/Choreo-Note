@@ -194,9 +194,13 @@ export default class FormationScreen extends React.Component {
 	setBeatBoxTouchZone = () => {
 		console.log(TAG, 'setBeatBoxTouchZone');
 		this.beatBoxTouchZone =
-			<TouchableOpacity 
-				style={{width: this.boxWidth*this.BEAT_LENGTH, height: this.BOX_HEIGHT_MIN+10, position: 'absolute'}}
-				onPress={this.onPressBeat}/>
+		<TouchableOpacity 
+			style={{
+				width: this.boxWidth*this.BEAT_LENGTH, 
+				height: this.BOX_HEIGHT_MIN+10, 
+				position: 'absolute',
+			}}
+			onPress={this.onPressBeat}/>
 	}
 
 	onPressBeat = (event) => {
@@ -245,8 +249,8 @@ export default class FormationScreen extends React.Component {
 		this.positionBoxTouchZone =
 			<TouchableOpacity 
 			style={{
-				flexDirection: 'row', 
-				position: 'absolute', 
+				flexDirection: 'row',
+				position: 'absolute',
 				width: this.boxWidth * this.BEAT_LENGTH, 
 				height: this.boxHeight * this.dancerList.length,
 				// backgroundColor: COLORS.purple
@@ -335,7 +339,6 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, "setPositionBoxs");
 
 		this.positionBox = [];	// 제거된 dancer가 있을 수 있으므로 초기화.
-		this.setPositionBoxTouchZone();
 
 		for(let did=0; did<this.dancerList.length; did++)
 			this.setPositionBox(did);
@@ -619,8 +622,8 @@ export default class FormationScreen extends React.Component {
 		this.forceUpdate();
 	}
 
-	resizePositionList = (type) => {
-		console.log(TAG, 'resizePositionList');
+	resizeBoxWidth = (type) => {
+		console.log(TAG, 'resizeBoxWidth');
 
 		switch(type){
 			case 'expand':
@@ -628,24 +631,28 @@ export default class FormationScreen extends React.Component {
 					this.boxWidth += 2;
 					this.positionboxWidth += 2;
 					this.setPositionBoxs();
+					this.setPositionBoxTouchZone();
+					this.setBeatBoxTouchZone();
 					this.forceUpdate();
-					break;
 				}
-				return;
+				break;
 				
 			case 'reduce':
 				if(this.boxWidth > 20){
 					this.boxWidth -= 2;
 					this.positionboxWidth -= 2;
 					this.setPositionBoxs();
+					this.setPositionBoxTouchZone();
+					this.setBeatBoxTouchZone();
 					this.forceUpdate();
-					break;
 				}
-				return;
-				
+				break;
+
 			default:
 				console.log('Wrong parameter...');
 		}
+
+		this.positionBoxScrollHorizontal.scrollTo({x: (this.state.beat-1)*this.boxWidth, animated: false});
 	}
 
 	/** <DancerScreen>에서 수정된 정보를 적용한다.
@@ -1224,12 +1231,12 @@ export default class FormationScreen extends React.Component {
 			<Text style={styles.menuText}>댄서</Text>
 		</TouchableOpacity>
 
-		<TouchableOpacity onPress={()=>this.resizePositionList('reduce')} activeOpacity={1} style={styles.menuButton}>
+		<TouchableOpacity onPress={()=>this.resizeBoxWidth('reduce')} activeOpacity={1} style={styles.menuButton}>
 			<CustomIcon name='box-width-down' size={30} color={COLORS.grayMiddle}/>
 			<Text style={styles.menuText}>표간격 좁게</Text>
 		</TouchableOpacity>
 
-		<TouchableOpacity onPress={()=>this.resizePositionList('expand')} activeOpacity={1} style={styles.menuButton}>
+		<TouchableOpacity onPress={()=>this.resizeBoxWidth('expand')} activeOpacity={1} style={styles.menuButton}>
 			<CustomIcon name='box-width-up' size={30} color={COLORS.grayMiddle}/>
 			<Text style={styles.menuText}>표간격 넓게</Text>
 		</TouchableOpacity>
@@ -1352,8 +1359,10 @@ export default class FormationScreen extends React.Component {
 								}
 								this.setDancerName();
 								this.setBeatBox();
+								this.setBeatBoxTouchZone();
 								this.setHorizontalLine();
 								this.setPositionBoxs();
+								this.setPositionBoxTouchZone();
 								this.setDancer();
 								this.forceUpdate();
 							},
