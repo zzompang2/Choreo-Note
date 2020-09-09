@@ -19,13 +19,10 @@ import {createIconSetFromFontello} from 'react-native-vector-icons';
 import fontelloConfig from '../../assets/font/config.json';
 const CustomIcon = createIconSetFromFontello(fontelloConfig);
 
-const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
 let db = SQLite.openDatabase({ name: 'ChoreoNoteDB.db' });
-const TAG = "MakeNoteScreen/";
-
-const {width, height} = Dimensions.get('window');
-const STAGE_SIZE_MIN = 500;
-const STAGE_SIZE_MAX = 3000;
+const TAG = "MakeNoteScreen1/";
+const BOX_WIDTH_MIN = 20;
+const BOX_HEIGHT_MIN = 30;
 
 export default class MakeNoteScreen1 extends React.Component {
 	constructor(props){
@@ -33,9 +30,8 @@ export default class MakeNoteScreen1 extends React.Component {
 		this.state = {
 			nid: this.props.route.params.nid,
 			beat: 1,
-			time: 0,
-			isPlay: false,
 		};
+		this.isPlay = false;
 		this.ratio = 1;					// 무대 세로/가로
 		this.dancerList = [];		// {nid, did, name, color}
 		this.allPosList = [];		// {nid, did, beat, posx, posy, duration}
@@ -57,12 +53,18 @@ export default class MakeNoteScreen1 extends React.Component {
 			stageWidth: 1200,
 			stageHeight: 600,
 		};
+
+		this.boxWidth = 30;				// BOX 가로 길이
+		this.boxHeight = 30;			// BOX 세로 길이
 	}
 
 	// flatList 구분선
 	listViewItemSeparator = () => <View style={{ height: 0.5, width: '100%', backgroundColor: COLORS.grayMiddle }}/>
 	
-	timeFormat = (sec) => Math.floor(sec/60) + ':' + ( Math.floor(sec%60) < 10 ? '0'+Math.floor(sec%60) : Math.floor(sec%60) )
+	secToTimeFormat = (sec) => 
+		Math.floor(sec/60) + ':' +  
+		(Math.floor(sec%60) < 10 ? '0' : '') +
+		Math.floor(sec%60)
 
 	completeMakingNote = () => {
 		// 이름이 공백인 경우
@@ -78,7 +80,7 @@ export default class MakeNoteScreen1 extends React.Component {
 			return;
 		}
 
-		if(this.state.isPlay){
+		if(this.isPlay){
 			Alert.alert('노래 재생중', '노래를 꺼주세요.');
 			return;
 		}
@@ -97,7 +99,6 @@ export default class MakeNoteScreen1 extends React.Component {
 	}
 
 	componentDidMount() {
-
 		// Sample.mp3 길이 찾아 music list에 넣기
 		const sound = new Sound('Sample.mp3', Sound.MAIN_BUNDLE, (error)  => {
 			// load 실패한 경우
@@ -145,10 +146,11 @@ export default class MakeNoteScreen1 extends React.Component {
 		});
 	}
 
-	onPlaySubmit = (sec, beat, isPlay = this.state.isPlay) => {
-		console.log(TAG, 'onPlaySubmit(', sec, beat, isPlay, ')');
+	onPlaySubmit = (beat, isPlay = this.isPlay) => {
+		console.log(TAG, 'onPlaySubmit(', beat, isPlay, ')');
 		this.scrollHorizontal.scrollTo({x: (beat - 1) * 30, animated: false});
-		this.setState({time: sec, beat: beat, isPlay: isPlay});
+		this.setState({beat: beat});
+		this.isPlay = isPlay;
 	}
 
 	parseTextToNum = (text) => {
@@ -169,36 +171,41 @@ export default class MakeNoteScreen1 extends React.Component {
 	 * - re-render: NO
 	 * - update: this.musicbox(, this.beatText)
 	 */
-	setBeatbox = () => {
-		console.log(TAG, 'setBeatbox');
+	setBeatBox = () => {
+		console.log(TAG, 'setBeatBox');		
+		const BEAT_LENGTH = Math.ceil(this.noteInfo.musicLength/60*this.noteInfo.bpm);
 
-		if(this.state.isPlay) return;
-		
-		let beatTexts = [];
-		for(let beat=1; beat <= this.noteInfo.musicLength/60*this.noteInfo.bpm; beat++){
-			beatTexts.push(
-				<View key={beatTexts.length} style={{flexDirection: 'column', alignItems: 'center'}}>
-					{/* ? 비트마다 표시 */}
+		this.beatBoxs = [];
+		for(let beat=1; beat <= BEAT_LENGTH; beat++){
+			this.beatBoxs.push(
+				<View key={beat} style={{flexDirection: 'column', alignItems: 'center'}}>
+					{/* beat unit마다 표시 */}
 					{beat%this.noteInfo.beatUnit==1 ? 
 					<View style={{width: 2, height: 2, backgroundColor: COLORS.grayMiddle, position: 'absolute', top: 5}}/> 
 					: <View/>}
-					<View style={{width: 30, height: 30, justifyContent: 'center'}}>
+					{/* beat 숫자 */}
+					<View style={{width: BOX_WIDTH_MIN, height: BOX_HEIGHT_MIN, justifyContent: 'center'}}>
 						<Text style={{fontSize: 11, textAlign: 'center'}}>{beat}</Text>
 					</View>
 					<View style={{height: 10, width: 1, backgroundColor: COLORS.grayMiddle}}/>
 				</View>
 			)
 		}
+	}
 
-		this.beatBoxs =
-			<View>
-				<View style={{flexDirection: 'row', height: 40, alignItems: 'center'}}>{beatTexts}</View>
-				{/* <View style={{height: 10}}></View> */}
-				{/* BEAT 터치 박스 */}
-				<TouchableOpacity 
-				style={{width: 30*(this.noteInfo.musicLength/60*this.noteInfo.bpm+1), height: 40, position: 'absolute', alignItems: 'center'}}
-				onPress={this.onPressBeat}/>
-			</View>
+	setBeatBoxTouchZone = () => {
+		console.log(TAG, 'setBeatBoxTouchZone');
+		this.beatBoxTouchZone =
+		<TouchableOpacity 
+			style={{
+				width: this.boxWidth*this.BEAT_LENGTH, 
+				height: BOX_HEIGHT_MIN+10, 
+				position: 'absolute',
+			}}
+			onPress={(event) => {
+				const beat = Math.floor(event.nativeEvent.locationX / this.boxWidth) + 1;
+				this.setState({beat: beat});
+			}}/>
 	}
 
 	onPressBeat = (event) => {
@@ -322,7 +329,7 @@ export default class MakeNoteScreen1 extends React.Component {
 									Alert.alert('비트 단위', '싱크는 2~16 값으로 입력해 주세요.')
 								else{
 									this.noteInfo.beatUnit = beatUnit;
-									this.setBeatbox();
+									this.setBeatBox();
 									this.forceUpdate();
 								}
 							}}>
@@ -360,12 +367,12 @@ export default class MakeNoteScreen1 extends React.Component {
 						activeOpacity={.7}
 						onPress={()=>{
 							this.getMusicInfo(item);
-							this.setBeatbox();
+							this.setBeatBox();
 							this.forceUpdate();
 						}}>
 							<View style={styles.musicItem}>
 								<Text style={{flex: 2}}>{item.music}</Text>
-								<Text style={{flex: 1}}>{this.timeFormat(item.musicLength)}</Text>
+								<Text style={{flex: 1}}>{this.secToTimeFormat(item.musicLength)}</Text>
 								<Text style={{flex: 1}}>{item.size}MB</Text>
 							</View>
 							{index == 0 ?
@@ -382,7 +389,7 @@ export default class MakeNoteScreen1 extends React.Component {
 
 				{/* 노래 플레이어 */}
 				<MusicPlayer
-				noteInfo={this.noteInfo}
+				noteInfo={{music: this.noteInfo.music, musicLength: this.noteInfo.musicLength, bpm: this.noteInfo.bpm, sync: this.noteInfo.sync}}
 				onPlaySubmit={this.onPlaySubmit}
 				beat={this.state.beat}/>
 
@@ -396,12 +403,41 @@ export default class MakeNoteScreen1 extends React.Component {
 				ref={ref => (this.scrollHorizontal = ref)}>
 
 					<View flexDirection='row' style={{backgroundColor: COLORS.grayLight}}>
-						<View style={{width: 15}}/>
-						<View key={0} flexDirection='row'>
-							{ this.beatBoxs }
+						<View style={{width: this.boxWidth/2}}/>
+						
+						<View>
+							{/* BEAT 숫자 박스들 */}
+							<View 
+							style={{
+								flexDirection: 'row', 
+								// width: this.boxWidth*this.BEAT_LENGTH, 
+								height: BOX_HEIGHT_MIN+10, 
+								paddingHorizontal: (this.boxWidth - BOX_WIDTH_MIN)/2,
+								alignItems: 'center', justifyContent: 'space-between'
+								}}>
+								{this.beatBoxs }
+							</View>
+
+							{/* BEAT 터치 박스 */}
+							{ this.beatBoxTouchZone }
 						</View>
-						{ this.beatMarker(this.state.beat) }
-						<View style={{width: 15}}/>
+
+						{/* BEAT Marker */}
+						<View
+						style={{
+							height: this.boxHeight, 
+							width: this.boxWidth,
+							justifyContent: 'center', 
+							alignItems: 'center',
+							position: 'absolute',
+							left: this.boxWidth/2 + this.boxWidth * (this.state.beat-1),
+							borderColor: COLORS.grayMiddle, 
+							borderRadius: 99,
+							borderWidth: 1,
+							}}>
+						</View>
+
+						<View style={{width: this.boxWidth/2}}/>
 					</View>
 
 				</ScrollView>

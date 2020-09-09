@@ -18,72 +18,44 @@ export default class MusicPlayer extends React.Component{
 	constructor(props){
     super(props);
     console.log(TAG, "constructor");
-    this.state = {
-			noteInfo: this.props.noteInfo,
-			beat: this.props.beat,
+    this.state = {	
 			time: 0,
-			isPlay: false,
 		}
-		this.load();
+		this.isPlay = false;
+		this.noteInfo = this.props.noteInfo;
+		this.BEAT_LENGTH = Math.ceil(this.noteInfo.musicLength/60*this.noteInfo.bpm);
 	}
 
-	// Seek to a specific point in seconds
-	// this.sound.setCurrentTime(2.5);
-	
-	// Get the current playback point in seconds
-	// this.sound.getCurrentTime((seconds) => console.log('at ' + seconds));
-		
-	// Release the audio player resource
-	// this.sound.release();
-
-	// Load the sound file '[your_music_title].mp3' from the app bundle
-	// See notes below about preloading sounds within initialization code below.
 	load = () => {
 		console.log(TAG, 'load');
-		// console.log(Sound.MAIN_BUNDLE);
-		// console.log(Sound.DOCUMENT);
-		// console.log(Sound.LIBRARY);
-		// console.log(Sound.CACHES);
-		
+
 		if(this.sound)
 			// Release the audio player resource
 			this.sound.release();
 		
-		if(this.state.isPlay)
+		if(this.isPlay)
 			this.pause();
 
-		// let fileName;
-		// let filePath;
-
-		if(this.state.noteInfo.music == 'Sample.mp3'){
+		if(this.noteInfo.music == 'Sample.mp3'){
 			this.fileName = 'Sample.mp3';
 			this.filePath = Sound.MAIN_BUNDLE;
 		}
 		else{
-			this.fileName = this.state.noteInfo.music;
+			this.fileName = this.noteInfo.music;
 			this.filePath = Sound.DOCUMENT;
 		}
 
 		this.sound = new Sound(this.fileName, this.filePath, (error) => {
 			if (error) {
-				console.log('failed to load the sound');
+				console.log('failed to load the sound:', this.fileName);
 				return;
 			}
 			// this.sound == TRUE
 			// loaded successfully!
 			this.sound.setCurrentTime(0);
 			console.log('duration in seconds: ' + this.sound.getDuration(), 'number of channels: ' + this.sound.getNumberOfChannels());
+			this.props.onPlaySubmit(1, false);
 		});
-		// Reduce the volume by half
-		// this.sound.setVolume(1);
-
-		// Set the pan value.
-		// Position the sound to the full right in a stereo field
-		// ranging from -1.0 (full left) through 1.0 (full right).
-		// this.sound.setPan(1);
-		
-		// Loop indefinitely until stop() is called
-		// this.sound.setNumberOfLoops(-1);
 	}
 
 	// Play the sound with an onEnd callback
@@ -91,36 +63,28 @@ export default class MusicPlayer extends React.Component{
 		console.log(TAG, "play");
 
 		// 음악이 load되지 않은 경우
-		// 음악이 이미 플레이 중인 경우
 		if(!this.sound.isLoaded()){
 			Alert.alert('노래 로드 에러', '노래 파일을 로드할 수 없습니다. 노래를 다시 선택해 주세요.');
 			return;
 		}
-		if(this.state.isPlay) 
+		// 음악이 이미 플레이 중인 경우
+		if(this.isPlay) 
 			return;
 
-		// // state의 시간값과 맞추기
-		this.sound.setCurrentTime((this.state.beat-1) * 60/this.state.noteInfo.bpm);
+		// state의 시간값과 맞추고 플레이
+		this.sound.setCurrentTime(this.state.time);
 		this.sound.play(this.playComplete);
-
-		this.props.onPlaySubmit(this.state.time, this.state.beat, true);
+		this.isPlay = true;
+		this.forceUpdate();	// isPlay 가 바뀐 것을 인지하기 위해
 		
+		this.props.onPlaySubmit(this.secToBeat(this.state.time), true);
 		this.interval = setInterval(() => {
-			// state 값 업데이트
 			this.sound.getCurrentTime((sec, isPlaying) => {
-				// sync 맞추기
-				const changedBeat = (sec-this.state.noteInfo.sync < 0 ? 0 : sec-this.state.noteInfo.sync) * this.state.noteInfo.bpm/60+1;
-				// submit
-				this.props.onPlaySubmit(sec, Math.floor(changedBeat));
-				this.setState({time: sec, beat: Math.floor(changedBeat)});
+				this.props.onPlaySubmit(this.secToBeat(sec));
 			});
 		}, 
-		// 1000*60/this.state.noteInfo.bpm
 		100
 		);
-
-		// 애니메이션 재생
-		this.setState({isPlay: true});
 	}
 
 	playComplete = (success) => {
@@ -130,9 +94,7 @@ export default class MusicPlayer extends React.Component{
         console.log('successfully finished playing');
       } else {
         console.log('playback failed due to audio decoding errors');
-        //Alert.alert('Notice', 'audio file error. (Error code : 2)');
-      }
-      this.setState({isPlay: false, beat: 0});
+			}
 			this.sound.setCurrentTime(0);
 			this.pause();
     }
@@ -144,21 +106,16 @@ export default class MusicPlayer extends React.Component{
 	
 		// music pause
 		this.sound.pause();
-		this.props.onPlaySubmit(this.state.time, this.state.beat, false);
-		
-		// state 변경 후 dancer 위치 업데이트
-		this.setState({isPlay: false});
+		this.props.onPlaySubmit(this.secToBeat(this.state.time), false);
+		this.isPlay = false;
+		this.forceUpdate();
 	}
 
-	jumpTo = (beat) => {
-		console.log(TAG, 'jumpTo', beat);
-		let destination = this.state.beat + beat;
-		if(destination < 1) destination = 1;
-		else if (destination > this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm) 
-			destination = Math.ceil(this.state.noteInfo.musicLength/60*this.state.noteInfo.bpm);
-
-		this.props.onPlaySubmit(this.state.time, destination);
-		this.setState({beat: destination});
+	jumpTo = (time) => {
+		console.log(TAG, 'jumpTo', time);
+		// onPlaySubmit 으로 부모에 beat 값을 보내면
+		// props 로 변경된 time을 받아 rerender 된다.
+		this.props.onPlaySubmit(this.secToBeat(this.state.time + time));
 	}
 
 	// Stop the sound and rewind to the beginning
@@ -176,15 +133,26 @@ export default class MusicPlayer extends React.Component{
 	 * @param {number} sec 
 	 * @returns {string} 'min:sec'
 	 */
-	timeFormat = (sec) => 
+	secToTimeFormat = (sec) => 
 		Math.floor(sec/60) + ':' +  
 		(Math.floor(sec%60) < 10 ? '0' : '') +
 		Math.floor(sec%60)
+	
 
-	beatFormat = (beat) => 
-		Math.floor(beat/this.state.noteInfo.bpm) + ':' +  
-		(Math.floor((beat*60/this.state.noteInfo.bpm)%60) < 10 ? '0' : '') +
-		Math.floor((beat*60/this.state.noteInfo.bpm)%60) 
+	secToBeat = (sec) => {
+		let beat = Math.floor((sec-this.noteInfo.sync) * this.noteInfo.bpm/60 + 1);
+		if(beat < 1) beat = 1;
+		else if(beat > this.BEAT_LENGTH) beat = this.BEAT_LENGTH;
+		return beat;
+	}
+
+	beatToSec = (beat) => {
+		let sec = Math.round((beat-1)*60/this.noteInfo.bpm);
+		if(sec < 0) sec = 0;
+		else if(sec > this.noteInfo.musicLength) sec = this.noteInfo.musicLength;
+		return sec;
+	}
+	
 	
 	componentDidMount(){
 		console.log(TAG, "componentDidMount");
@@ -194,10 +162,13 @@ export default class MusicPlayer extends React.Component{
 	componentDidUpdate(){
 		console.log(TAG, "componentDidUpdate");
 		if(this.fileName != this.props.noteInfo.music){
+			this.noteInfo = this.props.noteInfo;
 			this.load();
-			this.props.onPlaySubmit(0, 1, false);
-			this.setState({beat: 1, time: 0});
+			// this.props.onPlaySubmit(1, false);
 		}
+		const time = Math.round((this.props.beat-1)*60/this.noteInfo.bpm)
+		if(this.state.time != time)
+			this.setState({time: time});
 	}
 
 	componentWillUnmount(){
@@ -205,31 +176,34 @@ export default class MusicPlayer extends React.Component{
 	}
 
 	shouldComponentUpdate(nextProps){
-		// console.log(TAG, 'shouldComponentUpdate');
-		return JSON.stringify(nextProps.noteInfo)!==JSON.stringify(this.props.noteInfo) || nextProps.beat != this.props.beat;
+		console.log(TAG, 'shouldComponentUpdate');
+		console.log(JSON.stringify(nextProps.noteInfo), JSON.stringify(this.props.noteInfo));
+		console.log(this.beatToSec(nextProps.beat), this.state.time);
+		return(
+			JSON.stringify(nextProps.noteInfo)!==JSON.stringify(this.props.noteInfo) || 
+			this.beatToSec(nextProps.beat) != this.state.time);
 	}
 
   render(){
-    console.log(TAG, "render");
-
-		if(this.state.beat != this.props.beat) this.setState({beat: this.props.beat});
-		const buttonColor = this.state.isPlay ? COLORS.grayMiddle : COLORS.blackDark;
+		console.log(TAG, "render");
+		 
+		const buttonColor = this.isPlay ? COLORS.grayMiddle : COLORS.blackDark;
 
     return (
 			<View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
 
-				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.time)}</Text>
+				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.secToTimeFormat(this.state.time)}</Text>
 
 				<TouchableOpacity onPress={()=>this.jumpTo(-30)} 
-				disabled={this.state.isPlay} style={{margin: 10}} activeOpacity={.7}>
+				disabled={this.isPlay} style={{margin: 10}} activeOpacity={.7}>
 					<MaterialCommunityIcons name='rewind-30' size={28} color={buttonColor}/>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={()=>this.jumpTo(-10)} 
-				disabled={this.state.isPlay} style={{margin: 10}} activeOpacity={.7}>
+				disabled={this.isPlay} style={{margin: 10}} activeOpacity={.7}>
 					<MaterialCommunityIcons name='rewind-10' size={28} color={buttonColor}/>
 				</TouchableOpacity>
 
-				{ this.state.isPlay ? 
+				{ this.isPlay ? 
 				<TouchableOpacity onPress={()=>{this.pause()}} style={{margin: 1}} activeOpacity={.9}>
 					<IconIonicons name="pause-circle-outline" size={40}/>
 				</TouchableOpacity>
@@ -240,15 +214,15 @@ export default class MusicPlayer extends React.Component{
 				}
 
 				<TouchableOpacity onPress={()=>this.jumpTo(10)} 
-				disabled={this.state.isPlay} style={{margin: 10}} activeOpacity={.7}>
+				disabled={this.isPlay} style={{margin: 10}} activeOpacity={.7}>
 					<MaterialCommunityIcons name='fast-forward-10' size={28} color={buttonColor}/>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={()=>this.jumpTo(30)} 
-				disabled={this.state.isPlay} style={{margin: 10}} activeOpacity={.7}>
+				disabled={this.isPlay} style={{margin: 10}} activeOpacity={.7}>
 					<MaterialCommunityIcons name='fast-forward-30' size={28} color={buttonColor}/>
 				</TouchableOpacity>
 
-				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.timeFormat(this.state.noteInfo.musicLength)}</Text>
+				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.secToTimeFormat(this.noteInfo.musicLength)}</Text>
 
 			</View>
     )
