@@ -4,7 +4,7 @@ import {
 } from "react-native";
 import { COLORS } from '../values/Colors'
 
-const TAG = "Positionbox/";
+const TAG = "PositionChecker/";
 
 export default class PositionChecker extends React.Component {
 	constructor(props) {
@@ -67,7 +67,6 @@ export default class PositionChecker extends React.Component {
 			onPanResponderMove: (e, gesture) => {
 				const changedBeat = this.initialValue.beat + Math.round(gesture.dx / this.props.boxWidth);
 
-				console.log(this.props.boxInfo.beat, 'vs.', changedBeat);
 				if(this.props.boxInfo.beat != changedBeat)
 					this.props.movePositionbox(false, changedBeat, this.initialValue.beat);
 			},

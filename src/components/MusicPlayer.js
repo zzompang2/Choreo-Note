@@ -204,6 +204,11 @@ export default class MusicPlayer extends React.Component{
 		this.pause();
 	}
 
+	shouldComponentUpdate(nextProps){
+		// console.log(TAG, 'shouldComponentUpdate');
+		return JSON.stringify(nextProps.noteInfo)!==JSON.stringify(this.props.noteInfo) || nextProps.beat != this.props.beat;
+	}
+
   render(){
     console.log(TAG, "render");
 

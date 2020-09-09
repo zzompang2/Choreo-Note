@@ -54,14 +54,14 @@ export default class DancerScreen extends React.Component {
 				[this.state.noteId, dancerNum]
 			);
 			txn.executeSql(
-				"INSERT INTO position VALUES (?, ?, 0, 0, 0, 0);",
+				"INSERT INTO position VALUES (?, ?, 1, 0, 0, 0);",
 				[this.state.noteId, dancerNum]
 			);
 		});
 
 		let _dancerList = [...this.state.dancerList];
 		_dancerList.push({did: dancerNum, name: "", color: 0}); // {did, name}
-		this.allPosList.push([{did: dancerNum, beat: 0, posx: 0, posy: 0, duration: 0}]);
+		this.allPosList.push([{did: dancerNum, beat: 1, posx: 0, posy: 0, duration: 0}]);
 		this.setState({dancerList: _dancerList});
 	}
 
@@ -178,6 +178,11 @@ export default class DancerScreen extends React.Component {
 
 		</View>
 
+	componentWillUnmount(){
+		console.log(TAG, 'componentWillUnmount');
+		this.props.route.params.changeDancerList(this.state.dancerList, this.allPosList);
+	}
+
 	render(){
 		console.log(TAG, 'render');
 
@@ -205,11 +210,6 @@ export default class DancerScreen extends React.Component {
 				/>
 			</SafeAreaView>
 		)
-	}
-
-	componentWillUnmount(){
-		console.log(TAG, 'componentWillUnmount');
-		this.props.route.params.changeDancerList(this.state.dancerList, this.allPosList);
 	}
 }
 
