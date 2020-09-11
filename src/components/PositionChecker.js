@@ -22,7 +22,7 @@ export default class PositionChecker extends React.Component {
 				// scroll lock
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
-				this.initialValue = {beat: this.boxInfo.beat, duration: this.boxInfo.duration};
+				this.initialValue = {frame: this.boxInfo.frame, duration: this.boxInfo.duration};
       },
 
 			// 터치이벤트 진행중...
@@ -34,7 +34,7 @@ export default class PositionChecker extends React.Component {
 				const changedDuration = this.initialValue.duration - Math.round(gesture.dx / this.props.boxWidth);
 
 				if(this.props.boxInfo.duration != changedDuration && changedDuration >= 0)
-					this.props.resizePositionboxLeft(false, changedDuration, this.initialValue.beat);
+					this.props.resizePositionBoxLeft(false, changedDuration, this.initialValue.frame);
 			},
 
 			// (추측) 터치이벤트가 비정상적으로 종료될 때
@@ -49,7 +49,7 @@ export default class PositionChecker extends React.Component {
 
 				// const changedDuration = this.initialValue.duration - Math.round(gesture.dx / this.props.boxWidth);
 				const changedDuration = this.boxInfo.duration;
-				this.props.resizePositionboxLeft(true, changedDuration, this.initialValue.beat);
+				this.props.resizePositionBoxLeft(true, changedDuration, this.initialValue.frame);
       }
 		})
 
@@ -63,16 +63,16 @@ export default class PositionChecker extends React.Component {
 				// scroll lock
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
-				this.initialValue = {beat: this.boxInfo.beat, duration: this.boxInfo.duration};
+				this.initialValue = {frame: this.boxInfo.frame, duration: this.boxInfo.duration};
 				console.log('initial value: ', this.initialValue);
       },
 
 			// 터치이벤트 진행중...
 			onPanResponderMove: (e, gesture) => {
-				const changedBeat = this.initialValue.beat + Math.round(gesture.dx / this.props.boxWidth);
+				const changedBeat = this.initialValue.frame + Math.round(gesture.dx / this.props.boxWidth);
 
-				if(this.props.boxInfo.beat != changedBeat)
-					this.props.movePositionbox(false, changedBeat, this.initialValue.beat);
+				if(this.props.boxInfo.frame != changedBeat)
+					this.props.movePositionBox(false, changedBeat, this.initialValue.frame);
 			},
 
 			// (추측) 터치이벤트가 비정상적으로 종료될 때
@@ -91,7 +91,7 @@ export default class PositionChecker extends React.Component {
 				}
 				else{
 					// 이동!
-					this.props.movePositionbox(true, this.boxInfo.beat, this.initialValue.beat);
+					this.props.movePositionBox(true, this.boxInfo.frame, this.initialValue.frame);
 				}
 			},
 		})
@@ -106,7 +106,7 @@ export default class PositionChecker extends React.Component {
 				// scroll lock
 				this.props.setScrollEnable(true);
 				// 초기 상태 저장
-				this.initialValue = {beat: this.boxInfo.beat, duration: this.boxInfo.duration};
+				this.initialValue = {frame: this.boxInfo.frame, duration: this.boxInfo.duration};
       },
 
 			// 터치이벤트 진행중...
@@ -118,7 +118,7 @@ export default class PositionChecker extends React.Component {
 				const changedDuration = this.initialValue.duration + Math.round(gesture.dx / this.props.boxWidth);
 
 				if(this.props.boxInfo.duration != changedDuration && changedDuration >= 0)
-					this.props.resizePositionboxRight(false, changedDuration);
+					this.props.resizePositionBoxRight(false, changedDuration);
 			},
 
 			// (추측) 터치이벤트가 비정상적으로 종료될 때
@@ -133,7 +133,7 @@ export default class PositionChecker extends React.Component {
 				this.props.setScrollEnable(false);
 
 				// this.boxInfo.duration = this.props.boxInfo.duration;	// 바뀐 duration 값 저장
-				this.props.resizePositionboxRight(true);
+				this.props.resizePositionBoxRight(true);
       },
 		})
 	}

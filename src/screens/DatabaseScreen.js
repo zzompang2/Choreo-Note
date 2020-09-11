@@ -47,7 +47,7 @@ export default class DatabaseScreen extends React.Component {
         (tx, res) => {
 					console.log(TAG, "DB SELECT SUCCESS!");
 					for (let i = 0; i < res.rows.length; i++) {
-						this.positionList.push({...res.rows.item(i), key: this.positionList.length}); // {nid, did, beat, posx, posy, duration}
+						this.positionList.push({...res.rows.item(i), key: this.positionList.length}); // {nid, did, frame, posx, posy, duration}
 					}
 					this.forceUpdate();
 				},
@@ -68,7 +68,7 @@ export default class DatabaseScreen extends React.Component {
 		});
 		
 		return(
-			<View style={{flexDirection: 'column', height: '40%', backgroundColor: COLORS.blackLight}}>
+			<View style={{flexDirection: 'column', height: '30%', backgroundColor: COLORS.blackLight}}>
 				<View style={styles.toolbar}>
 					<TouchableOpacity onPress={this.props.closeDBScreen} style={styles.toolbarButton}>
 						<IconIonicons name="close-outline" size={20} color="#ffffff"/>
@@ -106,7 +106,7 @@ export default class DatabaseScreen extends React.Component {
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>beat</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>frame</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
@@ -120,7 +120,7 @@ export default class DatabaseScreen extends React.Component {
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.nid}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.beat}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.frame}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
@@ -156,7 +156,7 @@ export default class DatabaseScreen extends React.Component {
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>beat</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>frame</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
@@ -169,7 +169,7 @@ export default class DatabaseScreen extends React.Component {
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.beat}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.frame}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>
@@ -181,7 +181,7 @@ export default class DatabaseScreen extends React.Component {
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>nid</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>did</Text>
-								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>beat</Text>
+								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>frame</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posx</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>posy</Text>
 								<Text numberOfLines={1} style={[styles.columnText, {flex:1}]}>duration</Text>
@@ -194,7 +194,7 @@ export default class DatabaseScreen extends React.Component {
 							<View style={{flexDirection: 'row'}}>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{this.props.nid}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.did}</Text>
-								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.beat}</Text>
+								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.frame}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posx}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.posy}</Text>
 								<Text numberOfLines={1} style={[styles.rowText, {flex:1}]}>{item.duration}</Text>

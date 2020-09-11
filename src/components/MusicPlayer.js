@@ -13,17 +13,18 @@ import { DebugInstructions } from "react-native/Libraries/NewAppScreen"
 import { Alert } from "react-native";
 
 const TAG = "MusicPlayer/";
+const fps = 12;
 
 export default class MusicPlayer extends React.Component{
 	constructor(props){
     super(props);
     console.log(TAG, "constructor");
-    this.state = {	
-			time: 0,
+    this.state = {
+			frame: 0,
 		}
 		this.isPlay = false;
 		this.noteInfo = this.props.noteInfo;
-		this.BEAT_LENGTH = Math.ceil(this.noteInfo.musicLength/60*this.noteInfo.bpm);
+		this.FRAME_LENGTH = this.noteInfo.musicLength*fps;
 	}
 
 	load = () => {
@@ -54,7 +55,7 @@ export default class MusicPlayer extends React.Component{
 			// loaded successfully!
 			this.sound.setCurrentTime(0);
 			console.log('duration in seconds: ' + this.sound.getDuration(), 'number of channels: ' + this.sound.getNumberOfChannels());
-			this.props.onPlaySubmit(1, false);
+			this.props.onPlaySubmit(0, false);
 		});
 	}
 
@@ -72,18 +73,18 @@ export default class MusicPlayer extends React.Component{
 			return;
 
 		// state의 시간값과 맞추고 플레이
-		this.sound.setCurrentTime(this.state.time);
+		this.sound.setCurrentTime(this.state.frame/fps);
 		this.sound.play(this.playComplete);
 		this.isPlay = true;
 		this.forceUpdate();	// isPlay 가 바뀐 것을 인지하기 위해
 		
-		this.props.onPlaySubmit(this.secToBeat(this.state.time), true);
+		this.props.onPlaySubmit(this.state.frame, true);
 		this.interval = setInterval(() => {
 			this.sound.getCurrentTime((sec, isPlaying) => {
-				this.props.onPlaySubmit(this.secToBeat(sec));
+				this.props.onPlaySubmit(this.secToFrame(sec));
 			});
 		}, 
-		100
+		1000/fps
 		);
 	}
 
@@ -106,16 +107,21 @@ export default class MusicPlayer extends React.Component{
 	
 		// music pause
 		this.sound.pause();
-		this.props.onPlaySubmit(this.secToBeat(this.state.time), false);
+		this.props.onPlaySubmit(this.state.frame, false);
 		this.isPlay = false;
 		this.forceUpdate();
 	}
 
-	jumpTo = (time) => {
-		console.log(TAG, 'jumpTo', time);
-		// onPlaySubmit 으로 부모에 beat 값을 보내면
-		// props 로 변경된 time을 받아 rerender 된다.
-		this.props.onPlaySubmit(this.secToBeat(this.state.time + time));
+	jumpTo = (sec) => {
+		console.log(TAG, 'jumpTo', sec);
+		// onPlaySubmit 으로 부모에 frame 값을 보내면
+		// props 로 변경된 frame을 받아 rerender 된다.
+
+		let dest = this.state.frame + sec*fps;
+		if(dest < 0) dest = 0;
+		else if(dest > this.noteInfo.musicLength*fps) dest = this.noteInfo.musicLength*fps;
+
+		this.props.onPlaySubmit(dest);
 	}
 
 	// Stop the sound and rewind to the beginning
@@ -134,20 +140,24 @@ export default class MusicPlayer extends React.Component{
 	 * @returns {string} 'min:sec'
 	 */
 	secToTimeFormat = (sec) => 
-		Math.floor(sec/60) + ':' +  
-		(Math.floor(sec%60) < 10 ? '0' : '') +
-		Math.floor(sec%60)
+	Math.floor(sec/60) + ':' +  
+	(Math.floor(sec%60) < 10 ? '0' : '') +
+	Math.floor(sec%60)
 	
+	frameToTimeFormat = (frame) =>
+	Math.floor(frame/fps/60) + ':' +  
+	(Math.floor(frame/fps%60) < 10 ? '0' : '') + Math.floor(frame/fps%60) + ':' +
+	(Math.floor(frame%fps) < 10 ? '0' : '') + Math.floor(frame%fps)
 
-	secToBeat = (sec) => {
-		let beat = Math.floor((sec-this.noteInfo.sync) * this.noteInfo.bpm/60 + 1);
-		if(beat < 1) beat = 1;
-		else if(beat > this.BEAT_LENGTH) beat = this.BEAT_LENGTH;
-		return beat;
+	secToFrame = (sec) => {
+		let frame = (sec-this.noteInfo.sync) * fps;
+		if(frame < 0) frame = 0;
+		else if(frame > this.FRAME_LENGTH) frame = this.FRAME_LENGTH;
+		return Math.floor(frame);
 	}
 
-	beatToSec = (beat) => {
-		let sec = Math.round((beat-1)*60/this.noteInfo.bpm);
+	frameToSec = (frame) => {
+		let sec = Math.floor(frame/fps);
 		if(sec < 0) sec = 0;
 		else if(sec > this.noteInfo.musicLength) sec = this.noteInfo.musicLength;
 		return sec;
@@ -166,9 +176,8 @@ export default class MusicPlayer extends React.Component{
 			this.load();
 			// this.props.onPlaySubmit(1, false);
 		}
-		const time = Math.round((this.props.beat-1)*60/this.noteInfo.bpm)
-		if(this.state.time != time)
-			this.setState({time: time});
+		if(this.state.frame != this.props.frame)
+			this.setState({frame: this.props.frame});
 	}
 
 	componentWillUnmount(){
@@ -178,10 +187,10 @@ export default class MusicPlayer extends React.Component{
 	shouldComponentUpdate(nextProps){
 		console.log(TAG, 'shouldComponentUpdate');
 		console.log(JSON.stringify(nextProps.noteInfo), JSON.stringify(this.props.noteInfo));
-		console.log(this.beatToSec(nextProps.beat), this.state.time);
+		console.log('frame 비교:', nextProps.frame, this.state.frame);
 		return(
 			JSON.stringify(nextProps.noteInfo)!==JSON.stringify(this.props.noteInfo) || 
-			this.beatToSec(nextProps.beat) != this.state.time);
+			nextProps.frame != this.state.frame);
 	}
 
   render(){
@@ -192,7 +201,7 @@ export default class MusicPlayer extends React.Component{
     return (
 			<View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
 
-				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.secToTimeFormat(this.state.time)}</Text>
+				<Text style={{flex: 1, width: 40, fontSize: 14, textAlign: 'center'}}>{this.frameToTimeFormat(this.state.frame)}</Text>
 
 				<TouchableOpacity onPress={()=>this.jumpTo(-30)} 
 				disabled={this.isPlay} style={{margin: 10}} activeOpacity={.7}>

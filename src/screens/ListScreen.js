@@ -62,11 +62,11 @@ export default class ListScreen extends React.Component {
 				'CREATE TABLE IF NOT EXISTS position(' +
 					'nid INTEGER NOT NULL, ' +
 					'did INTEGER NOT NULL, ' +
-					'beat INTEGER NOT NULL, ' +
+					'frame INTEGER NOT NULL, ' +
 					'posx INTEGER NOT NULL, ' +
 					'posy INTEGER NOT NULL, ' +
 					'duration INTEGER NOT NULL, ' +
-					'PRIMARY KEY(nid, did, beat) );'
+					'PRIMARY KEY(nid, did, frame) );'
 			);
 
 			// 앱을 시작할 때 노트가 하나도 없다면 test note를 만든다.
@@ -114,82 +114,82 @@ export default class ListScreen extends React.Component {
 				['홍길동', 2]
 			);
 
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 1, -180, 60, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 8, 0, 60, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 13, 0, -30, 4);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 21, 0, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 28, 0, -60, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 31, 0, -30, 5);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 37, 0, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 42, 60, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 46, 0, 35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 49, -35, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 50, 0, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 51, 35, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 52, 0, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 53, -35, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 54, -35, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 58, -70, -35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 59, -35, -35, 1);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 62, -35, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 65, -70, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 69, -35, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 74, -70, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 76, 0, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 77, 35, 35, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 82, 17, 35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 0, 86, 17, 0, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 17, -180, 60, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 21, -60, 60, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 28, -60, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 32, -30, 0, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 33, -60, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 40, -60, -60, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 42, -60, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 46, 0, 0, 4);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 51, -35, 0, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 52, 0, 0, 4);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 58, 0, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 59, 0, 70, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 60, 0, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 62, 0, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 65, -35, 35, 1);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 67, 0, 70, 1);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 69, 0, 35, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 74, 35, 70, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 76, 35, 0, 1);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 78, 35, -35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 82, 70, -35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 1, 86, 52, -1, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 17, 180, 60, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 21, 60, 60, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 28, 60, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 32, 30, 0, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 33, 60, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 40, 60, -60, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 42, 0, -60, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 46, 0, -35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 49, 35, -35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 50, 0, -35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 53, 35, -35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 54, 35, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 58, 70, -35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 59, 35, -35, 1);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 62, 35, 0, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 65, 70, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 69, 35, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 74, 70, -35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 76, 0, -35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 79, -35, -35, 1);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 82, -18, -37, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 2, 86, -18, -1, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 64, 0, 70, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 68, 0, -35, 4);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 74, -35, -70, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 76, -35, 0, 3);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 80, -35, 35, 0);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 82, -70, 35, 2);");
-			txn.executeSql("INSERT INTO position VALUES (0, 3, 86, -52, -1, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 12, -180, 60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 96, 0, 60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 156, 0, -30, 4);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 252, 0, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 336, 0, -60, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 372, 0, -30, 5);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 444, 0, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 504, 60, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 552, 0, 35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 588, -35, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 600, 0, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 612, 35, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 624, 0, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 636, -35, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 648, -35, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 696, -70, -35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 708, -35, -35, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 744, -35, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 780, -70, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 828, -35, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 888, -70, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 912, 0, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 924, 35, 35, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 984, 17, 35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 0, 1032, 17, 0, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 204, -180, 60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 252, -60, 60, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 336, -60, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 384, -30, 0, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 396, -60, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 480, -60, -60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 504, -60, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 552, 0, 0, 4);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 612, -35, 0, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 624, 0, 0, 4);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 696, 0, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 708, 0, 70, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 720, 0, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 744, 0, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 780, -35, 35, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 804, 0, 70, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 828, 0, 35, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 888, 35, 70, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 912, 35, 0, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 936, 35, -35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 984, 70, -35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 1, 1032, 52, -1, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 204, 180, 60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 252, 60, 60, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 336, 60, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 384, 30, 0, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 396, 60, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 480, 60, -60, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 504, 0, -60, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 552, 0, -35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 588, 35, -35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 600, 0, -35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 636, 35, -35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 648, 35, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 696, 70, -35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 708, 35, -35, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 744, 35, 0, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 780, 70, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 828, 35, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 888, 70, -35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 912, 0, -35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 948, -35, -35, 1);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 984, -18, -37, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 2, 1032, -18, -1, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 768, 0, 70, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 816, 0, -35, 4);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 888, -35, -70, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 912, -35, 0, 3);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 960, -35, 35, 0);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 984, -70, 35, 2);");
+			txn.executeSql("INSERT INTO position VALUES (0, 3, 1032, -52, -1, 0);");
 		});
 	}
 

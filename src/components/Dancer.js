@@ -9,6 +9,7 @@ const {width, height} = Dimensions.get('window');
 
 const TAG = "Dancer/";
 const dancerColor = [COLORS.yellow, COLORS.red, COLORS.blue, COLORS.purple];
+const fps = 12;
 
 export default class Dancer extends React.Component {
   constructor(props) {
@@ -87,13 +88,13 @@ export default class Dancer extends React.Component {
     });
   }
 
-  // 전달받은 curBeat에 어느 위치에 놓여져 있는지 계산한다.
+  // 전달받은 curFrame에 어느 위치에 놓여져 있는지 계산한다.
   getCurPosition = () => {
     const posList = [...this.props.posList];
-    const curBeat = this.props.curBeat;
+    const curFrame = this.props.curFrame;
 
     // 맨 앞의 checked point보다 작거나 같은 경우
-    if(curBeat < posList[0].beat){
+    if(curFrame < posList[0].frame){
       this.fadeAnim = new Animated.Value(0);
       return({x: posList[0].posx, y: posList[0].posy});
     }
@@ -101,7 +102,7 @@ export default class Dancer extends React.Component {
 
     // 어떤 checked point들 사이에 있는지 계산 ( [i-1] < ... <= [i] )
     for(var i=0; i<posList.length; i++)
-      if(curBeat <= posList[i].beat) break;
+      if(curFrame <= posList[i].frame) break;
 
     // 최종 checked point의 시간보다 큰 경우
     if(i == posList.length){
@@ -109,16 +110,16 @@ export default class Dancer extends React.Component {
     }
 
     // 어떤 checked point와 시간이 같은 경우
-    if(curBeat == posList[i].beat)
+    if(curFrame == posList[i].frame)
       return({x: posList[i].posx, y: posList[i].posy});
 
     // 이전 checked point(i-1 번째)의 duration 중인 경우
-    const leftedDuration = posList[i-1].beat + posList[i-1].duration - this.props.curBeat;
+    const leftedDuration = posList[i-1].frame + posList[i-1].duration - this.props.curFrame;
     if(leftedDuration >= 0)
       return({x: posList[i-1].posx, y: posList[i-1].posy});
 
-    const dx = Math.round( (posList[i].posx - posList[i-1].posx) * (curBeat - posList[i-1].beat - posList[i-1].duration) / (posList[i].beat - posList[i-1].beat - posList[i-1].duration) );
-    const dy = Math.round( (posList[i].posy - posList[i-1].posy) * (curBeat - posList[i-1].beat - posList[i-1].duration) / (posList[i].beat - posList[i-1].beat - posList[i-1].duration) );
+    const dx = Math.round( (posList[i].posx - posList[i-1].posx) * (curFrame - posList[i-1].frame - posList[i-1].duration) / (posList[i].frame - posList[i-1].frame - posList[i-1].duration) );
+    const dy = Math.round( (posList[i].posy - posList[i-1].posy) * (curFrame - posList[i-1].frame - posList[i-1].duration) / (posList[i].frame - posList[i-1].frame - posList[i-1].duration) );
     
     return({x: posList[i-1].posx + dx, y: posList[i-1].posy + dy});
   }
@@ -148,18 +149,18 @@ export default class Dancer extends React.Component {
     // 현재 시간에 어느 위치에 있는지 찾는다.
     let i=0;
     for(; i<posList.length; i++){
-      if(this.props.curBeat < posList[i].beat)
+      if(this.props.curFrame < posList[i].frame)
         break;
     }
     // 최초 좌표 이전의 시간인 경우: 무대 등장하기 전이므로 대기
     if(i == 0){
-      leftedDuration = posList[0].beat - this.props.curBeat;
+      leftedDuration = posList[0].frame - this.props.curFrame;
     }
     // 최종 좌표 이후의 시간인 경우: 애니메이션 필요 없음
     else if(i == posList.length) return;
     else{
       // 이전 좌표의 duration이 아직 진행중인 경우를 체크
-      leftedDuration = posList[i-1].beat + posList[i-1].duration - this.props.curBeat;
+      leftedDuration = posList[i-1].frame + posList[i-1].duration - this.props.curFrame;
       leftedDuration = ( leftedDuration > 0 ? leftedDuration : 0 );
     }
     // 첫번째 애니메이션: 현재 시간 ~ 처음으로 나오는 좌표의 위치
@@ -168,9 +169,9 @@ export default class Dancer extends React.Component {
         this.state.pan,
         {
           toValue: {x: posList[i].posx, y: posList[i].posy, opacity: .7},
-          duration: (posList[i].beat - this.props.curBeat - leftedDuration) * 1000*60/this.props.bpm,
+          duration: (posList[i].frame - this.props.curFrame - leftedDuration) / fps * 1000,
           useNativeDriver: true,
-          delay: leftedDuration * 1000*60/this.props.bpm,
+          delay: leftedDuration / fps * 1000,
         }
       ),
       Animated.timing(
@@ -186,9 +187,9 @@ export default class Dancer extends React.Component {
           this.state.pan,
           {
             toValue: {x: posList[j].posx, y: posList[j].posy},
-            duration: (posList[j].beat - posList[j-1].beat - posList[j-1].duration) * 1000*60/this.props.bpm,
+            duration: (posList[j].frame - posList[j-1].frame - posList[j-1].duration) * 1000 / fps,
             useNativeDriver: true,
-            delay: posList[j-1].duration * 1000*60/this.props.bpm,
+            delay: posList[j-1].duration * 1000 / fps,
           }
         )
       );
