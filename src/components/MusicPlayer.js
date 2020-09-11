@@ -186,8 +186,8 @@ export default class MusicPlayer extends React.Component{
 
 	shouldComponentUpdate(nextProps){
 		console.log(TAG, 'shouldComponentUpdate');
-		console.log(JSON.stringify(nextProps.noteInfo), JSON.stringify(this.props.noteInfo));
-		console.log('frame 비교:', nextProps.frame, this.state.frame);
+		// console.log(JSON.stringify(nextProps.noteInfo), JSON.stringify(this.props.noteInfo));
+		// console.log('frame 비교:', nextProps.frame, this.state.frame);
 		return(
 			JSON.stringify(nextProps.noteInfo)!==JSON.stringify(this.props.noteInfo) || 
 			nextProps.frame != this.state.frame);

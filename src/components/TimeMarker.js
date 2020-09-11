@@ -5,7 +5,7 @@ import {
 import { COLORS } from '../values/Colors'
 
 const TAG = "TimeMarker/";
-const BOX_WIDTH_MAX = 30;
+const BOX_WIDTH_MAX = 16;
 
 export default class TimeMarker extends React.Component {
 	constructor(props) {
@@ -48,6 +48,10 @@ export default class TimeMarker extends React.Component {
 		})
 	}
 
+	shouldComponentUpdate(nextProps){
+		return this.props.frame != nextProps.frame || this.props.boxWidth != nextProps.boxWidth || this.props.boxHeight != nextProps.boxHeight;
+	}
+
 	render(){
 		console.log(TAG, 'render');
 
@@ -56,9 +60,9 @@ export default class TimeMarker extends React.Component {
 		return(
 			<View 
 			style={{
-				width: this.props.boxWidth,
+				width: 1,
 				position: 'absolute', 
-				left: BOX_WIDTH_MAX/2 + this.props.boxWidth * this.props.frame,
+				left: BOX_WIDTH_MAX + this.props.boxWidth * this.props.frame,
 				top: this.props.boxHeight - 10,
 				justifyContent: 'center', 
 				alignItems: 'center',}}>

@@ -149,13 +149,13 @@ export default class PositionChecker extends React.Component {
 			:
 			<View style={this.props.containerStyle}>
 				<Animated.View {...this.leftResponder.panHandlers}
-				style={this.props.buttonStyle}/>
+				style={[this.props.buttonStyle, {left: -10}]}/>
 
 				<Animated.View {...this.centerResponder.panHandlers} 
 				style={this.props.boxStyle}/>
 
 				<Animated.View {...this.rightResponder.panHandlers}
-				style={this.props.buttonStyle}/>
+				style={[this.props.buttonStyle, {right:-10}]}/>
 			</View>
 		)
 	}

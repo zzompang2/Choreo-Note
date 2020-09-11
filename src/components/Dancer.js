@@ -198,7 +198,7 @@ export default class Dancer extends React.Component {
   }
 
   render() {
-    console.log(TAG, "render");
+    // console.log(TAG, "render");
 
     // 위치 정보가 없는 경우: view 숨기기
     if(this.props.posList.length == 0){

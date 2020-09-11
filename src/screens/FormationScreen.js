@@ -26,8 +26,8 @@ const CustomIcon = createIconSetFromFontello(fontelloConfig);
 
 // 화면의 가로, 세로 길이 받아오기
 const {width, height} = Dimensions.get('window');
-const BOX_WIDTH_MIN = 4;
-const BOX_WIDTH_MAX = 30;
+const BOX_WIDTH_MIN = 1;
+const BOX_WIDTH_MAX = 16;
 const BOX_HEIGHT_MIN = 30;
 const fps = 12;
 
@@ -36,7 +36,7 @@ export default class FormationScreen extends React.Component {
 		super(props);
 		this.state = {
       db,
-			noteInfo: {...props.route.params.noteInfo, musicLength: 30},	// {nid, title, date, music, bpm, radiusLevel, coordinateLevel, alignWithCoordinate, stageWidth, stageHeight}
+			noteInfo: props.route.params.noteInfo,	// {nid, title, date, music, bpm, radiusLevel, coordinateLevel, alignWithCoordinate, stageWidth, stageHeight}
 			frame: 0,
 			isPlay: false,		// play 중인가?
 			isEditing: false,	// <PositionBox>를 편집중인가?
@@ -48,14 +48,15 @@ export default class FormationScreen extends React.Component {
 		this.dancerList = [];			// nid, did, name
 		this.dancers = [];				// <Dancer> 아이콘 모음
 		this.selectedBoxInfo = {posIndex: -1, did: -1, frame: 0, posx: 0, posy: 0, duration: 0, name: ''};	// 선택한 POSITION BOX 정보
-
-		this.boxWidth = 10;			// BOX 가로 길이
+		
+		this.boxWidth = 6;			// BOX 가로 길이
 		this.boxHeight = 30;			// BOX 세로 길이
 		this.positionboxWidth = this.boxWidth-1;
 		this.positionboxHeight = this.boxHeight-2;
 		this.coordinateLevel = this.state.noteInfo.coordinateLevel;		// 좌표 간격 레벨
 		this.radiusLevel = this.state.noteInfo.radiusLevel;						// 댄서 크기 레벨
 		this.alignWithCoordinate = this.state.noteInfo.alignWithCoordinate ? true : false;	// 좌표에 맞물릴 것인가
+		this.timeSpace = 1;	// 몇 초 간격으로 text를 표시할지
 
 		this.FRAME_LENGTH = this.state.noteInfo.musicLength*fps;
 	}
@@ -153,23 +154,44 @@ export default class FormationScreen extends React.Component {
 	Math.floor(sec/60) + ':' +  
 	(Math.floor(sec%60) < 10 ? '0' : '') +
 	Math.floor(sec%60)
-	
+
 	/** frame box를 초기화.
 	 * - re-render: NO
-	 * - update: this.positionBox(, this.frameBoxs)
+	 * - update: this.positionBox(, this.timeBoxs)
 	 */
 	setTimeBox = () => {
-		console.log(TAG, 'setTimeBox');		
+		console.log(TAG, 'setTimeBox');
 
-		this.frameBoxs = [];
+		this.timeBoxs = [];
 		for(let frame=0; frame <= this.FRAME_LENGTH; frame++){
-			this.frameBoxs.push(
-				<View key={frame} style={{width: BOX_WIDTH_MIN, flexDirection: 'column', alignItems: 'center'}}>
+			this.timeBoxs.push(
+				<View key={frame} style={{height: 10, justifyContent: 'flex-end'}}>
 					{/* frame 숫자 */}
-					<View style={{height: BOX_HEIGHT_MIN, alignItems: 'center', justifyContent: 'center'}}>
-						{frame%fps==0 ? <Text style={{position: 'absolute', width: 30, fontSize: 11, textAlign: 'center'}}>{this.secToTimeFormat(frame/fps)}</Text> : <View/>}
-					</View>
-					<View style={{height: 10, width: 1, backgroundColor: COLORS.grayMiddle}}/>
+						{frame%fps==0 ? 
+						<View style={{height: 10, width: 1, backgroundColor: COLORS.grayMiddle}}/>
+						:
+						<View style={{height: 5, width: 1, backgroundColor: COLORS.grayMiddle}}/>
+						}
+				</View>
+			)
+		}
+	}
+
+	setTimeTexts = () => {
+		console.log(TAG, 'setTimeTexts');
+
+		// 텍스트 중심 거리 : boxWidth * 12
+		// 텍스트 사이 거리 : boxWidth * 12 - 26
+		this.timeTexts = [];
+
+		for(let frame=0; frame <= this.FRAME_LENGTH; frame++){
+			this.timeTexts.push(
+				<View key={frame} style={{alignItems: 'center', justifyContent: 'center'}}>
+					{/* frame 숫자 */}
+					{frame%(fps*this.timeSpace)==0 ? 
+					<Text style={{position: 'absolute', width: 26, fontSize: 11, textAlign: 'center'}}>{this.secToTimeFormat(frame/fps)}</Text>
+					:
+					<View/>}
 				</View>
 			)
 		}
@@ -191,24 +213,6 @@ export default class FormationScreen extends React.Component {
 			}}/>
 	}
 
-	// setHorizontalLine = () => {
-	// 	console.log(TAG, 'setHorizontalLine');	
-	// 	this.horizontalLines = [];
-	// 	// 세로 기준선들
-	// 	for(let frame=0; frame <= this.FRAME_LENGTH; frame++){
-	// 		this.horizontalLines.push(
-	// 			<View
-	// 			key={frame}
-	// 			style={{
-	// 				// height: this.boxHeight * this.dancerList.length, 
-	// 				width: 1,
-	// 				marginHorizontal: (BOX_WIDTH_MIN-1)/2,
-	// 				backgroundColor: COLORS.grayMiddle,
-	// 			}}/>
-	// 		)
-	// 	}
-	// }
-
 	setPositionBoxTouchZone = () => {
 		this.positionBoxTouchZone =
 			<TouchableOpacity 
@@ -220,10 +224,9 @@ export default class FormationScreen extends React.Component {
 			}}
 			activeOpacity={1}
 			onPress={(event)=>{
-				// console.log('Touch Point:', event.nativeEvent.locationX, event.nativeEvent.locationY);
 				const did = Math.floor(event.nativeEvent.locationY/this.boxHeight);
 				const frame = Math.floor(event.nativeEvent.locationX/this.boxWidth);
-				console.log('Touch Point:', did, frame);
+				console.log('positionBoxTouchZone/ 리스트 터치함', did, frame);
 				this.selectPosition(did, frame);
 			}}
 			onLongPress={this.onLongPressTouchZone}/>
@@ -293,7 +296,7 @@ export default class FormationScreen extends React.Component {
 
 	/** music box 전체를 초기화한다.
 	 * - re-render: NO
-	 * - update: this.positionBox(, this.frameBoxs)
+	 * - update: positionBox(, timeBoxs)
 	 */
 	setPositionBoxs = () => {
 		console.log(TAG, "setPositionBoxs");
@@ -588,29 +591,48 @@ export default class FormationScreen extends React.Component {
 	}
 
 	resizeBoxWidth = (type) => {
-		console.log(TAG, 'resizeBoxWidth');
+		console.log(TAG, 'resizeBoxWidth:', type);
 
 		switch(type){
-			case 'expand':
-				if(this.boxWidth < BOX_WIDTH_MAX){
-					this.boxWidth += 2;
-					this.positionboxWidth += 2;
+			case 'reduce':
+				if(this.boxWidth > BOX_WIDTH_MIN){
+					this.boxWidth -= 0.5;
+					this.positionboxWidth -= 0.5;
+
+					if(this.boxWidth*12*this.timeSpace-26 <= 1){
+						this.timeSpace++;
+						this.setTimeTexts();
+					}
+					this.setTimeBoxTouchZone();
 					this.setPositionBoxs();
 					this.setPositionBoxTouchZone();
-					this.setTimeBoxTouchZone();
 					this.forceUpdate();
 				}
 				break;
 				
-			case 'reduce':
-				if(this.boxWidth > BOX_WIDTH_MIN){
-					this.boxWidth -= 2;
-					this.positionboxWidth -= 2;
+			case 'expand':
+				if(this.boxWidth < BOX_WIDTH_MAX){
+					this.boxWidth += 0.5;
+					this.positionboxWidth += 0.5;
+
+					if(this.boxWidth*12*(this.timeSpace-1)-26 > 1){
+						this.timeSpace--;
+						this.setTimeTexts();
+					}
+					this.setTimeBoxTouchZone();
 					this.setPositionBoxs();
 					this.setPositionBoxTouchZone();
-					this.setTimeBoxTouchZone();
 					this.forceUpdate();
 				}
+				// else if(this.fpb > 1){
+				// 	this.boxWidth = BOX_WIDTH_MIN;
+				// 	this.fpb /= 2;
+				// 	this.setTimeTexts();
+				// 	this.setTimeBoxTouchZone();
+				// 	this.setPositionBoxs();
+				// 	this.setPositionBoxTouchZone();
+				// 	this.forceUpdate();
+				// }
 				break;
 
 			default:
@@ -658,7 +680,6 @@ export default class FormationScreen extends React.Component {
 			this.unselectPosition();
 			// posIndex 찾기
 			for(let i=0; i<this.allPosList[did].length; i++){
-				console.log('IF', this.allPosList[did][i].frame, '<=', frame);
 				if(this.allPosList[did][i].frame <= frame){
 					if(frame <= this.allPosList[did][i].frame + this.allPosList[did][i].duration){
 						this.selectedBoxInfo = {...this.dancerList[did], ...this.allPosList[did][i], posIndex: i};
@@ -796,6 +817,7 @@ export default class FormationScreen extends React.Component {
 			this.allPosList[did][i].frame = this.selectedBoxInfo.frame;
 			this.allPosList[did][i].duration = duration;
 			this.setPositionBox(did);
+			this.setDancer();
 			this.forceUpdate();
 		}
 	}
@@ -859,6 +881,7 @@ export default class FormationScreen extends React.Component {
 				i--;
 			}
 			this.setPositionBox(did);
+			this.setDancer();
 			this.forceUpdate();
 		}
 	}
@@ -896,7 +919,7 @@ export default class FormationScreen extends React.Component {
 		for(let i=0; i<posList.length; i++){
 			// 자기 자신 정보를 저장해놓고 삭제
 			if(posList[i].frame == from){
-				console.log('case 1: 자기 자신 제거');
+				// console.log('case 1: 자기 자신 제거');
 				myPosInfo = {...posList.splice(i, 1)[0], frame: to};
 				shouldDelete.push(from);
 				i--;
@@ -906,7 +929,7 @@ export default class FormationScreen extends React.Component {
 
 			// selected box 왼쪽 끝보다 뒤에 있는 경우: 무시 (continue)
 			if(posList[i].frame + posList[i].duration < this.selectedBoxInfo.frame) {
-				console.log('case 2: 뒤에 있는 경우 무시');
+				// console.log('case 2: 뒤에 있는 경우 무시');
 				continue;
 			}
 
@@ -914,14 +937,14 @@ export default class FormationScreen extends React.Component {
 			if(posList[i].frame < this.selectedBoxInfo.frame){
 				// 시작 시간은 뒤에 있으나 조금 잘리는 경우: duration 줄이기
 				if(posList[i].frame + posList[i].duration <= rightEndFrame){
-					console.log('case 3-1: 시작 시간은 뒤에 있으나 조금 잘리는 경우 duration 줄이기');
+					// console.log('case 3-1: 시작 시간은 뒤에 있으나 조금 잘리는 경우 duration 줄이기');
 					posList[i].duration = this.selectedBoxInfo.frame - posList[i].frame - 1;
 					shouldUpdate.push([posList[i].frame, {duration: posList[i].duration}]);
 					continue;
 				}
 				// 시작 시간은 뒤에 있으나 중간에 잘리는 경우: 둘로 나누기
 				else{
-					console.log('case 3-2: 시작 시간은 뒤에 있으나 중간에 잘리는 경우 둘로 나누기');
+					// console.log('case 3-2: 시작 시간은 뒤에 있으나 중간에 잘리는 경우 둘로 나누기');
 					const newPos = {...posList[i], frame: rightEndFrame+1, duration: posList[i].duration+posList[i].frame-rightEndFrame-1};
 					posList[i].duration = this.selectedBoxInfo.frame - posList[i].frame - 1;
 					posList.splice(i+1, 0, newPos);
@@ -929,7 +952,7 @@ export default class FormationScreen extends React.Component {
 					shouldInsert.push(newPos);
 					i++;
 					if(!findIndex){
-						console.log('FIND INDEX::', i);
+						// console.log('FIND INDEX::', i);
 						this.selectedBoxInfo.posIndex = i;
 						findIndex = true;
 					}
@@ -939,7 +962,7 @@ export default class FormationScreen extends React.Component {
 
 			// 완전히 포개진 경우: 삭제
 			if(this.selectedBoxInfo.frame <= posList[i].frame && posList[i].frame + posList[i].duration <= rightEndFrame){
-				console.log('case 4: 완전히 포개진 경우 삭제');
+				// console.log('case 4: 완전히 포개진 경우 삭제');
 				shouldDelete.push(posList[i].frame);
 				posList.splice(i, 1);
 				i--;
@@ -949,13 +972,13 @@ export default class FormationScreen extends React.Component {
 			// 시작 시간은 포함되지만 duration을 줄이면 되는 경우: frame 증가 && duration 감소
 			// 이후로는 겹치지 않는 것들이지만, 본인의 box가 아직 뒤에 있다면 break 하지 않는다.
 			if(this.selectedBoxInfo.frame <= posList[i].frame && posList[i].frame <= rightEndFrame  && rightEndFrame < posList[i].frame + posList[i].duration){
-				console.log('case 5: 시작 시간은 포함되지만 duration을 줄이면 되는 경우: frame 증가 && duration 감소');
+				// console.log('case 5: 시작 시간은 포함되지만 duration을 줄이면 되는 경우: frame 증가 && duration 감소');
 				
 				posList[i].duration -= (rightEndFrame + 1 - posList[i].frame);
 				shouldUpdate.push([posList[i].frame, {frame: rightEndFrame + 1, duration: posList[i].duration}]);
 				posList[i].frame = rightEndFrame + 1;
 				if(!findIndex) {
-					console.log('FIND INDEX::', i);
+					// console.log('FIND INDEX::', i);
 					this.selectedBoxInfo.posIndex = i;
 					findIndex = true;
 				}
@@ -969,9 +992,9 @@ export default class FormationScreen extends React.Component {
 			// 시간이 바뀐 길이보다 큰 경우: 무시 (continue)
 			// 이후로는 겹치지 않는 것들이지만, 본인의 box가 아직 뒤에 있다면 break 하지 않는다.
 			if(rightEndFrame < posList[i].frame) {
-				console.log('case 6: 시간이 바뀐 길이보다 큰 경우: 무시 (continue)');
+				// console.log('case 6: 시간이 바뀐 길이보다 큰 경우: 무시 (continue)');
 				if(!findIndex) {
-					console.log('FIND INDEX::', i);
+					// console.log('FIND INDEX::', i);
 					this.selectedBoxInfo.posIndex = i;
 					findIndex = true;
 				}
@@ -984,16 +1007,16 @@ export default class FormationScreen extends React.Component {
 		}
 
 		if(!findIndex) {
-			console.log('FIND INDEX::', posList.length);
+			// console.log('FIND INDEX::', posList.length);
 			this.selectedBoxInfo.posIndex = posList.length;
 		}
 		posList.splice(this.selectedBoxInfo.posIndex, 0, myPosInfo);
 		shouldInsert.push(myPosInfo);
 
 		this.posList = posList; 	// for DB debug
-		console.log('shouldDelete:', shouldDelete);
-		console.log('shouldUpdate:', shouldUpdate);
-		console.log('shouldInsert:', shouldInsert);
+		// console.log('shouldDelete:', shouldDelete);
+		// console.log('shouldUpdate:', shouldUpdate);
+		// console.log('shouldInsert:', shouldInsert);
 
 		if(!doUpdate){
 			// this.setPositionBox(did, posList);
@@ -1012,6 +1035,7 @@ export default class FormationScreen extends React.Component {
 
 			this.allPosList[did] = posList;
 			this.setPositionBox(did);
+			this.setDancer();
 			this.forceUpdate();
 		}
 	}
@@ -1122,7 +1146,6 @@ export default class FormationScreen extends React.Component {
 	onPlaySubmit = (frame, isPlay = this.state.isPlay) => {
 		console.log(TAG, 'onPlaySubmit(', frame, isPlay, ')');
 
-		console.log(this.positionBoxScrollHorizontal);
 		this.positionBoxScrollHorizontal.scrollTo({x: frame*this.boxWidth, animated: false});
 
 		// <Dancer> 애니메이션 시작
@@ -1193,6 +1216,7 @@ export default class FormationScreen extends React.Component {
 
 								this.setDancerName();
 
+								this.setTimeTexts();
 								this.setTimeBox();
 								this.setTimeBoxTouchZone();
 
@@ -1290,19 +1314,6 @@ export default class FormationScreen extends React.Component {
 						showsHorizontalScrollIndicator={false}
 						ref={ref => (this.positionBoxScrollHorizontal = ref)}>
 
-							{/* 세로선들 */}
-							{/* <View 
-							style={{
-								flexDirection: 'row', 
-								position: 'absolute', 
-								width: '100%',
-								height: '100%',
-								paddingHorizontal: (this.boxWidth-BOX_WIDTH_MIN)/2 + this.boxWidth/2,
-								justifyContent: 'space-between',
-								}}>
-								{ this.horizontalLines }
-							</View> */}
-
 							{/* 세로 스크롤 */}
 							<ScrollView
 							bounces={false} 						// 오버스크롤 막기 (iOS)
@@ -1314,49 +1325,43 @@ export default class FormationScreen extends React.Component {
 							scrollEventThrottle={16}
 							onScroll={event => this.nameScroll.scrollTo({y: event.nativeEvent.contentOffset.y, animated: false})}>
 
-								{/* BEAT 숫자 표시 */}
-								<View flexDirection='row' style={{backgroundColor: COLORS.grayLight, marginHorizontal: BOX_WIDTH_MAX/2}}>
-									{/* <View style={{width: BOX_WIDTH_MAX/2}}/> */}
-									
-									<View>
-										{/* BEAT 숫자 박스들 */}
+								{/* TIME 숫자 표시 */}
+								<View
+								style={{
+									flexDirection: 'column',
+									paddingHorizontal: BOX_WIDTH_MAX,}}>
+										{/* TIME 숫자 텍스트 */}
 										<View 
 										style={{
 											flexDirection: 'row', 
 											width: this.boxWidth*(this.FRAME_LENGTH+1), 
-											height: BOX_HEIGHT_MIN+10, 
-											paddingHorizontal: (this.boxWidth - BOX_WIDTH_MIN)/2,
+											height: BOX_HEIGHT_MIN, 
+											// paddingHorizontal: BOX_WIDTH_MAX/2,
 											alignItems: 'center', justifyContent: 'space-between',
 											}}>
-											{this.frameBoxs }
+											{this.timeTexts }
+										</View>
+										{/* TIME 눈금 */}
+										<View 
+										style={{
+											flexDirection: 'row', 
+											width: this.boxWidth*(this.FRAME_LENGTH+1), 
+											height: 10, 
+											// paddingHorizontal: BOX_WIDTH_MAX/2,
+											alignItems: 'center', justifyContent: 'space-between',
+											}}>
+											{this.timeBoxs }
 										</View>
 
 										{/* BEAT 터치 박스 */}
 										{ this.timeBoxTouchZone }
-									</View>
-
-									{/* Time Marker */}
-									{/* <View
-									style={{
-										height: this.boxHeight, 
-										width: this.boxWidth,
-										justifyContent: 'center', 
-										alignItems: 'center',
-										position: 'absolute',
-										left: this.boxWidth * this.state.frame,
-										borderColor: COLORS.grayMiddle, 
-										borderRadius: 99,
-										borderWidth: 1,
-										}}>
-									</View> */}
-
-									{/* <View style={{width: BOX_WIDTH_MAX/2}}/> */}
+									
 								</View>
 
 								{/* POSITION 박스들 */}
 								<View 
 								style={{
-									marginHorizontal: BOX_WIDTH_MAX/2, 
+									marginHorizontal: BOX_WIDTH_MAX - this.boxWidth/2, 
 									}}>
 									<View flexDirection='column'>
 										{ this.positionBox }
@@ -1376,12 +1381,12 @@ export default class FormationScreen extends React.Component {
 								unselectPosition={this.unselectPosition}
 								containerStyle={{
 									height: this.boxHeight, 
-									width: this.boxWidth * (this.selectedBoxInfo.duration+2), 
+									width: this.boxWidth * (this.selectedBoxInfo.duration+1), 
 									position: 'absolute',
 									flexDirection: 'row',
 									alignItems: 'center',
-									justifyContent: 'space-between',
-									left: this.boxWidth * this.selectedBoxInfo.frame,
+									justifyContent: 'center',
+									left: (BOX_WIDTH_MAX - this.boxWidth/2) + this.boxWidth * this.selectedBoxInfo.frame,
 									top: (this.boxHeight + 10) + this.boxHeight * this.selectedBoxInfo.did,
 								}}
 								boxStyle={{
@@ -1391,11 +1396,17 @@ export default class FormationScreen extends React.Component {
 									borderColor: COLORS.green,
 									borderWidth: 2,
 								}}
-								buttonStyle={{height: this.boxHeight, width: BOX_WIDTH_MAX/2,  backgroundColor: COLORS.green, borderRadius: 5}}
+								buttonStyle={{
+									position: 'absolute',
+									height: this.boxHeight, 
+									width: 10,  
+									backgroundColor: COLORS.green, 
+									borderRadius: 5}}
 								/>
 								
 							</ScrollView>
 							
+							{/* TIME MARKER */}
 							<TimeMarker
 							frame={this.state.frame}
 							boxWidth={this.boxWidth}
@@ -1403,13 +1414,13 @@ export default class FormationScreen extends React.Component {
 							setScrollEnable={this.setScrollEnable}
 							moveTimeMarker={this.moveTimeMarker}/>
 
+							{/* TIME MARKER 세로선 */}
 							<View
 							pointerEvents='none'	// 뒤에 있는 POSITION BOX를 터치 가능하도록 하기 위해
 							style={{
 								height: '100%', 
-								width: this.boxWidth,
 								position: 'absolute', 
-								left: BOX_WIDTH_MAX/2 + this.boxWidth * this.state.frame,
+								left: BOX_WIDTH_MAX + this.boxWidth * this.state.frame,
 								top: this.boxHeight,
 								alignItems: 'center',
 								}}>
