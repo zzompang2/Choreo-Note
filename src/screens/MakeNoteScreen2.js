@@ -226,7 +226,7 @@ export default class MakeNoteScreen2 extends React.Component {
 		for(let i=0; i<this.allPosList.length; i++){
 			db.transaction(txn => {
 				txn.executeSql(
-					"INSERT INTO position VALUES (?, ?, 1, ?, ?, 0);",
+					"INSERT INTO position VALUES (?, ?, 1, ?, ?, 1);",
 					[this.noteInfo.nid, this.allPosList[i].did, this.allPosList[i].posx, this.allPosList[i].posy],
 					() => {console.log('success!');},
 					(e) => {console.log('ERROR', e);}

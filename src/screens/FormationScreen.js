@@ -238,7 +238,7 @@ export default class FormationScreen extends React.Component {
 		for(let i=0; i<this.allPosList[did].length; i++){
 			// POSITION BOX가 있는 곳을 터치한 경우
 			if(this.allPosList[did][i].frame <= frame){
-				if(frame <= this.allPosList[did][i].frame + this.allPosList[did][i].duration){
+				if(frame < this.allPosList[did][i].frame + this.allPosList[did][i].duration){
 					this.deletePosition(did, this.allPosList[did][i].frame);
 					return;
 				}
@@ -269,7 +269,7 @@ export default class FormationScreen extends React.Component {
 				style={{
 					position: 'absolute', 
 					left: this.boxWidth * posList[i].frame,
-					width: this.positionboxWidth + this.boxWidth * posList[i].duration, 
+					width: this.positionboxWidth + this.boxWidth * (posList[i].duration-1), 
 					height: this.positionboxHeight, 
 					borderRadius: this.positionboxWidth/2,
 					backgroundColor: dancerColor[this.dancerList[did].color],
@@ -287,6 +287,7 @@ export default class FormationScreen extends React.Component {
 				alignItems: 'center', 
 				position: 'absolute',
 				top: this.boxHeight * did,
+				backgroundColor: COLORS.blue
 			}}>
 				{positionBoxRow}
 				<View style={{position: 'absolute', bottom: 0, width: '100%', height: .5, backgroundColor: COLORS.grayMiddle}}/>
@@ -418,14 +419,14 @@ export default class FormationScreen extends React.Component {
     console.log(TAG + "dropPosition");
 		
 		// state 업데이트
-		let newPos = {did: did, posx: posx, posy: posy, frame: frame, duration: 0};
+		let newPos = {did: did, posx: posx, posy: posy, frame: frame, duration: 1};
 		let posList = this.allPosList[did];	// 참조 형식
 
 		for(var i=0; i<posList.length; i++){	// for문 밖에서도 사용하므로 let이 아닌 var
 			// 0번째보다 이전 시간인 경우는 존재하지 않는다. 드래그할 수 없게 막았기 때문.
 
 			// i번째 box에 속한 경우: UPDATE
-			if(posList[i].frame <= frame && frame <= posList[i].frame + posList[i].duration){
+			if(posList[i].frame <= frame && frame < posList[i].frame + posList[i].duration){
 				// selected box인 경우
 				if(this.selectedBoxInfo.posIndex != -1 && this.selectedBoxInfo.did == did && this.selectedBoxInfo.frame == posList[i].frame){
 					this.selectedBoxInfo.posx = posx;
@@ -435,6 +436,7 @@ export default class FormationScreen extends React.Component {
 				posList.splice(i, 1, newPos);
 				this.DB_UPDATE('position', {posx: posx, posy: posy}, ['nid=?', 'did=?', 'frame=?'], [this.state.noteInfo.nid, did, posList[i].frame]);
 				this.setPositionBox(did);
+				this.setDancer();
 				this.forceUpdate();
 				return;
 			}
@@ -444,8 +446,9 @@ export default class FormationScreen extends React.Component {
 		}
 		// 모든 박스를 확인하고 for문을 나온 경우: INSERT
 		posList.splice(i, 0, newPos);
-		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, frame: frame, posx: posx, posy: posy, duration: 0})
+		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, frame: frame, posx: posx, posy: posy, duration: 1})
 		this.setPositionBox(did);
+		this.setDancer();
 		this.forceUpdate();
 	}
 
@@ -495,9 +498,9 @@ export default class FormationScreen extends React.Component {
 				posy = Math.round(posy);
 			}
 		}
-		posList.splice(i, 0, {did: did, posx: posx, posy: posy, frame: frame, duration: 0});
+		posList.splice(i, 0, {did: did, posx: posx, posy: posy, frame: frame, duration: 1});
 
-		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, frame: frame, posx: posx, posy: posy, duration: 0});
+		this.DB_INSERT('position', {nid: this.state.noteInfo.nid, did: did, frame: frame, posx: posx, posy: posy, duration: 1});
 		this.setPositionBox(did);
 		this.forceUpdate();	// 추가해서 댄서가 active될 수 있으므로.
 	}
@@ -591,15 +594,15 @@ export default class FormationScreen extends React.Component {
 	}
 
 	resizeBoxWidth = (type) => {
-		console.log(TAG, 'resizeBoxWidth:', type);
+		console.log(TAG, 'resizeBoxWidth:', type, this.boxWidth, this.timeSpace);
 
 		switch(type){
 			case 'reduce':
 				if(this.boxWidth > BOX_WIDTH_MIN){
-					this.boxWidth -= 0.5;
-					this.positionboxWidth -= 0.5;
+					this.boxWidth -= 0.3 * 6/this.timeSpace;
+					this.positionboxWidth -= 0.3 * 6/this.timeSpace;
 
-					if(this.boxWidth*12*this.timeSpace-26 <= 1){
+					if(this.boxWidth*12*this.timeSpace-26 <= 6){
 						this.timeSpace++;
 						this.setTimeTexts();
 					}
@@ -612,10 +615,10 @@ export default class FormationScreen extends React.Component {
 				
 			case 'expand':
 				if(this.boxWidth < BOX_WIDTH_MAX){
-					this.boxWidth += 0.5;
-					this.positionboxWidth += 0.5;
+					this.boxWidth += 0.3 * 6/this.timeSpace;
+					this.positionboxWidth += 0.3 * 6/this.timeSpace;
 
-					if(this.boxWidth*12*(this.timeSpace-1)-26 > 1){
+					if(this.boxWidth*12*(this.timeSpace-1)-26 > 6){
 						this.timeSpace--;
 						this.setTimeTexts();
 					}
@@ -681,7 +684,7 @@ export default class FormationScreen extends React.Component {
 			// posIndex 찾기
 			for(let i=0; i<this.allPosList[did].length; i++){
 				if(this.allPosList[did][i].frame <= frame){
-					if(frame <= this.allPosList[did][i].frame + this.allPosList[did][i].duration){
+					if(frame < this.allPosList[did][i].frame + this.allPosList[did][i].duration){
 						this.selectedBoxInfo = {...this.dancerList[did], ...this.allPosList[did][i], posIndex: i};
 						this.forceUpdate();	// 선택된 댄서 아이콘 보여주기 위해
 						break;
@@ -1086,10 +1089,10 @@ export default class FormationScreen extends React.Component {
 	editDuration = (text) => {
 		text = text.replace(/ /gi, '');
 
-		if(!isNaN(Number(text)) && text != '' && Number(text) >= 0)
+		if(!isNaN(Number(text)) && text != '' && Number(text) >= 1)
 			this.resizePositionBoxRight(true, Math.round( Number(text) ));
 		else
-			Alert.alert("취소", "올바르지 않은 형식입니다. 0 이상, 노래 길이를 넘어가지 않도록 입력해 주세요.");
+			Alert.alert("취소", "올바르지 않은 형식입니다. 1 이상, 노래 길이를 넘어가지 않도록 입력해 주세요.");
 	}
 
 	editX = (text) => {
@@ -1147,6 +1150,9 @@ export default class FormationScreen extends React.Component {
 		console.log(TAG, 'onPlaySubmit(', frame, isPlay, ')');
 
 		this.positionBoxScrollHorizontal.scrollTo({x: frame*this.boxWidth, animated: false});
+		
+		// 플레이 중이 아닐 경우: frame에 맞는 위치로 이동
+		if(!isPlay) this.setDancer(frame);
 
 		// <Dancer> 애니메이션 시작
 		if(isPlay != this.isPlayAnim){
@@ -1361,7 +1367,7 @@ export default class FormationScreen extends React.Component {
 								{/* POSITION 박스들 */}
 								<View 
 								style={{
-									marginHorizontal: BOX_WIDTH_MAX - this.boxWidth/2, 
+									marginHorizontal: BOX_WIDTH_MAX, 
 									}}>
 									<View flexDirection='column'>
 										{ this.positionBox }
@@ -1381,17 +1387,17 @@ export default class FormationScreen extends React.Component {
 								unselectPosition={this.unselectPosition}
 								containerStyle={{
 									height: this.boxHeight, 
-									width: this.boxWidth * (this.selectedBoxInfo.duration+1), 
+									width: this.boxWidth * this.selectedBoxInfo.duration, 
 									position: 'absolute',
 									flexDirection: 'row',
 									alignItems: 'center',
 									justifyContent: 'center',
-									left: (BOX_WIDTH_MAX - this.boxWidth/2) + this.boxWidth * this.selectedBoxInfo.frame,
+									left: BOX_WIDTH_MAX + this.boxWidth * this.selectedBoxInfo.frame,
 									top: (this.boxHeight + 10) + this.boxHeight * this.selectedBoxInfo.did,
 								}}
 								boxStyle={{
 									height: this.positionboxHeight, 
-									width: this.positionboxWidth + this.boxWidth * this.selectedBoxInfo.duration,
+									width: this.positionboxWidth + this.boxWidth * (this.selectedBoxInfo.duration-1),
 									borderRadius: this.positionboxWidth/2,
 									borderColor: COLORS.green,
 									borderWidth: 2,
