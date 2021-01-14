@@ -16,7 +16,7 @@ export default class DatabaseScreen extends React.Component {
 
 		db.transaction(txn => {
       txn.executeSql(
-				"SELECT * FROM notes;",
+				"SELECT * FROM notes",
         [],
         (txn, result) => {
 					console.log("DB SUCCESS");

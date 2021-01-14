@@ -33,7 +33,7 @@ export default class MainScreen extends React.Component {
 				'nid INTEGER NOT NULL, ' +
 				'title TEXT NOT NULL, ' +
 				'date TEXT NOT NULL, ' +
-				'PRIMARY KEY(nid) );'
+				'PRIMARY KEY(nid))'
 			);
 
 			txn.executeSql(
@@ -42,7 +42,7 @@ export default class MainScreen extends React.Component {
 				'did INTEGER NOT NULL, ' +
 				'name	TEXT NOT NULL, ' +
 				'color INTEGER NOT NULL, ' +
-				'PRIMARY KEY(nid, did) );'
+				'PRIMARY KEY(nid, did))'
 			);
 
 			txn.executeSql(
@@ -50,7 +50,7 @@ export default class MainScreen extends React.Component {
 					'nid INTEGER NOT NULL, ' +
 					'time INTEGER NOT NULL, ' +
 					'duration INTEGER NOT NULL, ' +
-					'PRIMARY KEY(nid, time) );'
+					'PRIMARY KEY(nid, time))'
 			);
 
 			txn.executeSql(
@@ -60,7 +60,7 @@ export default class MainScreen extends React.Component {
 					'did INTEGER NOT NULL, ' +
 					'posx INTEGER NOT NULL, ' +
 					'posy INTEGER NOT NULL, ' +
-					'PRIMARY KEY(nid, time, did) );'
+					'PRIMARY KEY(nid, time, did))'
 			);
 
 			// DB 에서 note 정보 가져오기
@@ -74,7 +74,7 @@ export default class MainScreen extends React.Component {
 						const date = this.dateFormat(new Date());
 
 						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?);",
+							"INSERT INTO notes VALUES (0, ?, ?)",
 							[title, date],
 							() => {
 								noteList.push({ nid: 0, title, date });
@@ -114,7 +114,7 @@ export default class MainScreen extends React.Component {
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?);",
+				"INSERT INTO notes VALUES (?, ?, ?)",
 				[nid, title, date]);
 		});
 	}
@@ -125,13 +125,6 @@ export default class MainScreen extends React.Component {
 		return(
 			<SafeAreaView>
 				<Text>MainScreen</Text>
-
-				<TouchableOpacity
-				onPress={() => {
-					this.props.navigation.navigate('Formation');
-				}}>
-					<Text>go to FormationScreen</Text>
-				</TouchableOpacity>
 
 				<TouchableOpacity
 				onPress={() => {
@@ -149,11 +142,17 @@ export default class MainScreen extends React.Component {
 				data={noteList}
 				keyExtractor={(item, idx) => idx.toString()}
 				renderItem={({ item }) =>
-					<View style={{flexDirection: 'row'}}>
+					<TouchableOpacity
+					onPress={() => {
+						this.props.navigation.navigate(
+							'Formation',
+							{ nid: item.nid });
+					}}
+					style={{flexDirection: 'row'}}>
 						<Text numberOfLines={1}>{item.nid}</Text>
 						<Text numberOfLines={1}>{item.title}</Text>
 						<Text numberOfLines={1}>{item.date}</Text>
-					</View>
+					</TouchableOpacity>
 				} />
 			</SafeAreaView>
 		)
