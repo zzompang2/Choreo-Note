@@ -47,7 +47,7 @@ export default class ListScreen extends React.Component {
 							"INSERT INTO note VALUES (0, ?, ?);",
 							[title, date],
 							() => {
-								noteList.push({nid: 0, title, date});
+								noteList.push({ nid: 0, title, date });
 								this.setState({ noteList });
 							}
 						);
@@ -72,6 +72,23 @@ export default class ListScreen extends React.Component {
 					"." + date.getDate();
 	}
 
+	addNote = () => {
+		const { noteList } = this.state;
+		const nid = noteList[noteList.length-1].nid + 1;
+		const title = '새 노트';
+		const date = this.dateFormat(new Date());
+
+		noteList.push({ nid, title, date });
+		this.setState({ noteList });
+		
+		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
+		db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO note VALUES (?, ?, ?);",
+				[nid, title, date]);
+		});
+	}
+
 	render() {
 		const { noteList } = this.state;
 
@@ -84,6 +101,12 @@ export default class ListScreen extends React.Component {
 				}}>
 					<Text>go to FormationScreen</Text>
 				</TouchableOpacity>
+
+				<TouchableOpacity
+				onPress={this.addNote}>
+					<Text>add note</Text>
+				</TouchableOpacity>
+
 				<FlatList
 				data={noteList}
 				keyExtractor={(item, idx) => idx.toString()}
