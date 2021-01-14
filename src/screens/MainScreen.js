@@ -6,7 +6,7 @@ import SQLite from "react-native-sqlite-storage";
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
-export default class ListScreen extends React.Component {
+export default class MainScreen extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -21,21 +21,51 @@ export default class ListScreen extends React.Component {
 		const { noteList } = this.state;
 
 		db.transaction(txn => {
-			/*=== 기존 table 초기화 ===*/
-			txn.executeSql('DROP TABLE IF EXISTS note');
+			/*=== 기존 TABLE 초기화(for debug) ===*/
+			txn.executeSql('DROP TABLE IF EXISTS notes');
+			txn.executeSql('DROP TABLE IF EXISTS dancers');
+			txn.executeSql('DROP TABLE IF EXISTS times');
+			txn.executeSql('DROP TABLE IF EXISTS positions');
 
-			// table 없으면 생성
+			/*=== TABLE 생성 ===*/
 			txn.executeSql(
-				'CREATE TABLE IF NOT EXISTS note(' +
+				'CREATE TABLE IF NOT EXISTS notes(' +
 				'nid INTEGER NOT NULL, ' +
 				'title TEXT NOT NULL, ' +
 				'date TEXT NOT NULL, ' +
-				'PRIMARY KEY("nid") );'
+				'PRIMARY KEY(nid) );'
+			);
+
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS dancers(' +
+				'nid INTEGER NOT NULL, ' +
+				'did INTEGER NOT NULL, ' +
+				'name	TEXT NOT NULL, ' +
+				'color INTEGER NOT NULL, ' +
+				'PRIMARY KEY(nid, did) );'
+			);
+
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS times(' +
+					'nid INTEGER NOT NULL, ' +
+					'time INTEGER NOT NULL, ' +
+					'duration INTEGER NOT NULL, ' +
+					'PRIMARY KEY(nid, time) );'
+			);
+
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS positions(' +
+					'nid INTEGER NOT NULL, ' +
+					'time INTEGER NOT NULL, ' +
+					'did INTEGER NOT NULL, ' +
+					'posx INTEGER NOT NULL, ' +
+					'posy INTEGER NOT NULL, ' +
+					'PRIMARY KEY(nid, time, did) );'
 			);
 
 			// DB 에서 note 정보 가져오기
 			txn.executeSql(
-				"SELECT * FROM note", 
+				"SELECT * FROM notes",
 				[],
         (txn, result) => {
 					// 노트가 없는 경우: default note 추가
@@ -44,7 +74,7 @@ export default class ListScreen extends React.Component {
 						const date = this.dateFormat(new Date());
 
 						txn.executeSql(
-							"INSERT INTO note VALUES (0, ?, ?);",
+							"INSERT INTO notes VALUES (0, ?, ?);",
 							[title, date],
 							() => {
 								noteList.push({ nid: 0, title, date });
@@ -84,7 +114,7 @@ export default class ListScreen extends React.Component {
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO note VALUES (?, ?, ?);",
+				"INSERT INTO notes VALUES (?, ?, ?);",
 				[nid, title, date]);
 		});
 	}
@@ -94,7 +124,7 @@ export default class ListScreen extends React.Component {
 
 		return(
 			<SafeAreaView>
-				<Text>ListScreen</Text>
+				<Text>MainScreen</Text>
 
 				<TouchableOpacity
 				onPress={() => {

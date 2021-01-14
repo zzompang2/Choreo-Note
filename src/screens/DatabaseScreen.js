@@ -16,10 +16,10 @@ export default class DatabaseScreen extends React.Component {
 
 		db.transaction(txn => {
       txn.executeSql(
-				"SELECT * FROM note;",
+				"SELECT * FROM notes;",
         [],
         (txn, result) => {
-					console.log("DB SUCCESS!");
+					console.log("DB SUCCESS");
 					for (let i = 0; i < result.rows.length; i++)
 						data.push({...result.rows.item(i), key: data.length});
 					this.setState({ data });
