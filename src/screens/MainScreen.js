@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-  SafeAreaView, Text, TouchableOpacity, FlatList, View
+	SafeAreaView, View, Text, TouchableOpacity, FlatList
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
+import getStyleSheet from '../values/styles';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
@@ -11,14 +12,14 @@ export default class MainScreen extends React.Component {
 		super(props);
 
 		this.state = {
-			noteList: []
+			notes: []
 		};
 
 		this.getDatabaseData();
 	}
 
 	getDatabaseData() {
-		const { noteList } = this.state;
+		const { notes } = this.state;
 
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
@@ -32,7 +33,8 @@ export default class MainScreen extends React.Component {
 				'CREATE TABLE IF NOT EXISTS notes(' +
 				'nid INTEGER NOT NULL, ' +
 				'title TEXT NOT NULL, ' +
-				'date TEXT NOT NULL, ' +
+				'createDate TEXT NOT NULL, ' +
+				'editDate TEXT NOT NULL, ' +
 				'PRIMARY KEY(nid))'
 			);
 
@@ -58,8 +60,8 @@ export default class MainScreen extends React.Component {
 					'nid INTEGER NOT NULL, ' +
 					'time INTEGER NOT NULL, ' +
 					'did INTEGER NOT NULL, ' +
-					'posx INTEGER NOT NULL, ' +
-					'posy INTEGER NOT NULL, ' +
+					'x INTEGER NOT NULL, ' +
+					'y INTEGER NOT NULL, ' +
 					'PRIMARY KEY(nid, time, did))'
 			);
 
@@ -71,22 +73,22 @@ export default class MainScreen extends React.Component {
 					// 노트가 없는 경우: default note 추가
 					if(result.rows.length == 0) {
 						const title = 'Choreo Note에 오신걸 환영해요!';
-						const date = this.dateFormat(new Date());
+						const createDate = this.dateFormat(new Date());
 
 						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?)",
-							[title, date],
+							"INSERT INTO notes VALUES (0, ?, ?, ?)",
+							[title, createDate, createDate],
 							() => {
-								noteList.push({ nid: 0, title, date });
-								this.setState({ noteList });
+								notes.push({ nid: 0, title, createDate, editDate: createDate });
+								this.setState({ notes });
 							}
 						);
 					}
 					// note 정보 가져오기
 					else {
 						for (let i = 0; i < result.rows.length; i++)
-							noteList.push(result.rows.item(i));
-						this.setState({ noteList });
+							notes.push(result.rows.item(i));
+						this.setState({ notes });
 					}
 				}
 			);
@@ -103,58 +105,89 @@ export default class MainScreen extends React.Component {
 	}
 
 	addNote = () => {
-		const { noteList } = this.state;
-		const nid = noteList[noteList.length-1].nid + 1;
+		const { notes } = this.state;
+		const nid = notes[notes.length-1].nid + 1;
 		const title = '새 노트';
-		const date = this.dateFormat(new Date());
+		const createDate = this.dateFormat(new Date());
 
-		noteList.push({ nid, title, date });
-		this.setState({ noteList });
+		notes.push({ nid, title, createDate, editDate: createDate });
+		this.setState({ notes });
 		
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?)",
-				[nid, title, date]);
-		});
+				"INSERT INTO notes VALUES (?, ?, ?, ?)",
+				[nid, title, createDate, createDate]);
+
+			txn.executeSql(
+				"INSERT INTO dancers VALUES (?, 0, 'ham', 0)",
+				[nid]);
+
+			txn.executeSql(
+				"INSERT INTO dancers VALUES (?, 1, 'Juicy', 1)",
+				[nid]);
+
+			txn.executeSql(
+				"INSERT INTO times VALUES (?, 0, 500)",
+				[nid]);
+
+			txn.executeSql(
+				"INSERT INTO positions VALUES (?, 0, 0, -50, 0)",
+				[nid]);
+
+			txn.executeSql(
+				"INSERT INTO positions VALUES (?, 0, 1, 50, 0)",
+				[nid]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
 	}
 
 	render() {
-		const { noteList } = this.state;
+		const { notes } = this.state;
+		const styles = getStyleSheet();
 
 		return(
-			<SafeAreaView>
-				<Text>MainScreen</Text>
-
-				<TouchableOpacity
-				onPress={() => {
-					this.props.navigation.navigate('Database');
-				}}>
-					<Text>go to Database</Text>
-				</TouchableOpacity>
-
-				<TouchableOpacity
-				onPress={this.addNote}>
-					<Text>add note</Text>
-				</TouchableOpacity>
-
-				<FlatList
-				data={noteList}
-				keyExtractor={(item, idx) => idx.toString()}
-				renderItem={({ item }) =>
-					<TouchableOpacity
-					onPress={() => {
-						this.props.navigation.navigate(
-							'Formation',
-							{ nid: item.nid });
-					}}
-					style={{flexDirection: 'row'}}>
-						<Text numberOfLines={1}>{item.nid}</Text>
-						<Text numberOfLines={1}>{item.title}</Text>
-						<Text numberOfLines={1}>{item.date}</Text>
+			// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
+			// style of SafeAreaView: 자식들의 flex 적용을 위해 부모도 적용
+			<View style={styles.bg}>
+			<SafeAreaView style={styles.bg}>
+				{/* Tool Bar */}
+				<View style={styles.toolbar}>
+					<Text numberOfLines={1} style={styles.toolbarTitle}>Choreo Note</Text>
+					<TouchableOpacity onPress={this.addNote}>
+						<Text style={styles.toolbarButton}>추가</Text>
 					</TouchableOpacity>
+				</View>
+
+				{/* Note 리스트 */}
+				<FlatList
+				style={styles.notes}
+				data={notes}
+				keyExtractor={(item, idx) => idx.toString()}
+				renderItem={({ item, index }) =>
+					<View>
+						<TouchableOpacity
+						onPress={() => {
+							this.props.navigation.navigate('Formation', { nid: item.nid });
+						}}
+						style={styles.noteEntry}>
+							{/* <Text numberOfLines={1}>{item.nid}</Text> */}
+							<Text numberOfLines={1} style={styles.noteTitle}>{item.title}</Text>
+							<Text numberOfLines={1} style={styles.noteSubInfo}>수정일 {item.editDate}</Text>
+						</TouchableOpacity>
+					</View>
 				} />
+
+				{/* Footer (for debug) */}
+				<View style={styles.toolbar}>
+					<TouchableOpacity
+					onPress={() => this.props.navigation.navigate('Database')}>
+						<Text style={styles.toolbarButton}>DB</Text>
+					</TouchableOpacity>
+				</View>
 			</SafeAreaView>
+			</View>
 		)
 	}
 }

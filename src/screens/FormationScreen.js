@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-  SafeAreaView, Text, TouchableOpacity
+  SafeAreaView, View, Text, TouchableOpacity
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
+import getStyleSheet from '../values/styles';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
@@ -32,17 +33,20 @@ export default class FormationScreen extends React.Component {
 
 	render() {
 		const { noteInfo } = this.state;
+		const styles = getStyleSheet();
 
 		return(
-			<SafeAreaView>
-				<Text>{noteInfo.title}</Text>
-				<TouchableOpacity
-				onPress={() => {
-					this.props.navigation.goBack();
-				}}>
-					<Text>go back</Text>
-				</TouchableOpacity>
+			<View style={styles.bg}>
+			<SafeAreaView style={styles.bg}>
+				{/* Tool Bar */}
+				<View style={styles.toolbar}>
+					<Text numberOfLines={1} style={styles.toolbarTitle}>{noteInfo.title}</Text>
+					<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+						<Text style={styles.toolbarButton}>뒤로</Text>
+					</TouchableOpacity>
+				</View>
 			</SafeAreaView>
+			</View>
 		)
 	}
 }
