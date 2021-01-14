@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import ListScreen from './ListScreen';
 import FormationScreen from './FormationScreen';
+import DatabaseScreen from './DatabaseScreen';
 
 const Stack = createStackNavigator();
 
@@ -14,6 +15,7 @@ export default function ScreenStack() {
 		>
       <Stack.Screen name="List" component={ListScreen} />
 			<Stack.Screen name="Formation" component={FormationScreen} />
+			<Stack.Screen name="Database" component={DatabaseScreen} />
     </Stack.Navigator>
   );
 }

@@ -95,11 +95,19 @@ export default class ListScreen extends React.Component {
 		return(
 			<SafeAreaView>
 				<Text>ListScreen</Text>
+
 				<TouchableOpacity
 				onPress={() => {
 					this.props.navigation.navigate('Formation');
 				}}>
 					<Text>go to FormationScreen</Text>
+				</TouchableOpacity>
+
+				<TouchableOpacity
+				onPress={() => {
+					this.props.navigation.navigate('Database');
+				}}>
+					<Text>go to Database</Text>
 				</TouchableOpacity>
 
 				<TouchableOpacity
