@@ -23,15 +23,14 @@ export default class Stage extends React.Component {
 			if(time.time <= curTime && curTime < time.time + time.duration)
 				break;
 		}
-		for(let j = 0; j < positions.length; j++) {
-			if(positions[j].time == time.time) {
-				for(let k = j; k < positions.length && positions[k].time == time.time; k++)
-					positionAtTime.push(positions[k]);
+		for(let i = 0; i < positions.length; i++) {
+			if(positions[i].time == time.time) {
+				for(let j = i; j < positions.length && positions[j].time == time.time; j++)
+					positionAtTime.push(positions[j]);
 				break;
 			}
 		}
 
-		console.log(positionAtTime);
 		return (
 			<View style={{...styles.stage, height: height}}>
 				<Coordinate height={height} />

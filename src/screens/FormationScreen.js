@@ -9,19 +9,42 @@ import Stage from '../components/Stage';
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
 export default class FormationScreen extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			noteInfo: undefined,
-			dancers: [],
-			times: [],
-			positions: [],
-			curTime: 0
-		}
+
+	state = {
+		noteInfo: undefined,
+		dancers: [],
+		times: [],
+		positions: [],
+		curTime: 0
 	}
 
-	setDancerPosition(did, newX, newY) {
-		console.log(did, newX, newY);
+	setDancerPosition = (did, newX, newY) => {
+		const { noteInfo: { nid }, times, positions, curTime } = this.state;
+		let newPositions;
+
+		let time;
+		for(let i = 0; i < times.length; i++) {
+			time = times[i];
+			if(time.time <= curTime && curTime < time.time + time.duration)
+				break;
+		}
+		for(let i = 0; i < positions.length; i++) {
+			if(positions[i].time == time.time && positions[i].did == did) {
+				newPositions = [...positions.slice(0, i), {...positions[i], x: newX, y: newY}, ...positions.slice(i+1)];
+				break;
+			}
+		}
+		this.setState({ positions: newPositions });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE positions " +
+				"SET x=?, y=? " +
+				"WHERE nid=? AND time=? AND did=?",
+				[newX, newY, nid, time.time, did],
+				() => console.log("DB SUCCESS"),
+				e => console.log("DB ERROR", e));
+		});
 	}
 
 	componentDidMount() {
@@ -72,7 +95,7 @@ export default class FormationScreen extends React.Component {
 	render() {
 		const { noteInfo, dancers, times, positions, curTime } = this.state;
 		const styles = getStyleSheet();
-		const { setDancerPosition } = this;
+		const { setDancerPosition, saveInDatabase } = this;
 
 		if(noteInfo === undefined)
 			return null;
