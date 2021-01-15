@@ -36,6 +36,8 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	toolbarButton: {
 		fontSize: 15,
+		paddingVertical: 15,
+		paddingHorizontal: 10
 	},
 	noteList: {
 		flex: 1,
@@ -74,6 +76,14 @@ const basicStyleSheet = StyleSheet.create({
 		position: 'absolute',
 		width: '100%',
 		// height: 1,
+	},
+	dancer: {
+		position: 'absolute',
+		width: 30,
+		height: 30,
+		borderRadius: 15,
+		alignItems: 'center',
+		justifyContent: 'center'
 	}
 });
 
@@ -122,6 +132,10 @@ const darkStyleSheet = StyleSheet.create({
 	stageAxisHorizontal: {
 		...basicStyleSheet.stageAxisHorizontal,
 		backgroundColor: COLORS.grayMiddle
+	},
+	dancer: {
+		...basicStyleSheet.dancer,
+		backgroundColor: COLORS.yellow
 	}
 });
 

@@ -15,19 +15,53 @@ export default class FormationScreen extends React.Component {
 			noteInfo: undefined,
 			dancers: [],
 			times: [],
-			positions: []
+			positions: [],
+			curTime: 0
 		}
+	}
 
-		const nid = props.route.params.nid;
+	setDancerPosition(did, newX, newY) {
+		console.log(did, newX, newY);
+	}
+
+	componentDidMount() {
+		const nid = this.props.route.params.nid;
+
 		db.transaction(txn => {
-			// DB 에서 note 정보 가져오기
-			txn.executeSql(
+      txn.executeSql(
 				"SELECT * FROM notes WHERE nid = ?",
 				[nid],
         (txn, result) => {
 					const noteInfo = result.rows.item(0);
-					console.log(noteInfo);
-					this.setState({ noteInfo });
+					txn.executeSql(
+						"SELECT * FROM dancers WHERE nid = ?",
+						[nid],
+						(txn, result) => {
+							const dancers = [];
+							for (let i = 0; i < result.rows.length; i++)
+								dancers.push({...result.rows.item(i), key: i});
+							txn.executeSql(
+								"SELECT * FROM times WHERE nid = ?",
+								[nid],
+								(txn, result) => {
+									const times = [];
+									for (let i = 0; i < result.rows.length; i++)
+										times.push({...result.rows.item(i), key: i});
+									txn.executeSql(
+										"SELECT * FROM positions WHERE nid = ?",
+										[nid],
+										(txn, result) => {
+											const positions = [];
+											for (let i = 0; i < result.rows.length; i++)
+												positions.push({...result.rows.item(i), key: i});
+											console.log(noteInfo);
+											this.setState({ noteInfo, dancers, times, positions });
+										}
+									);
+								}
+							);
+						}
+					);
 				}
 			);
 		},
@@ -36,8 +70,9 @@ export default class FormationScreen extends React.Component {
 	}
 
 	render() {
-		const { noteInfo } = this.state;
+		const { noteInfo, dancers, times, positions, curTime } = this.state;
 		const styles = getStyleSheet();
+		const { setDancerPosition } = this;
 
 		if(noteInfo === undefined)
 			return null;
@@ -53,8 +88,14 @@ export default class FormationScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 
-				{/* Stage */}
-				<Stage stageRatio={noteInfo.stageRatio} />
+				{/* Stage: Coordinate & Dancer */}
+				<Stage
+				stageRatio={noteInfo.stageRatio}
+				dancers={dancers}
+				times={times}
+				positions={positions}
+				curTime={curTime}
+				setDancerPosition={setDancerPosition} />
 
 				{/* Music Bar */}
 

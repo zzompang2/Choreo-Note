@@ -8,15 +8,9 @@ import getStyleSheet from '../values/styles';
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
 export default class MainScreen extends React.Component {
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			notes: []
-		};
-
-		this.getDatabaseData();
-	}
+	state = {
+		notes: []
+	};
 
 	getDatabaseData() {
 		const { notes } = this.state;
@@ -27,6 +21,42 @@ export default class MainScreen extends React.Component {
 			txn.executeSql('DROP TABLE IF EXISTS dancers');
 			txn.executeSql('DROP TABLE IF EXISTS times');
 			txn.executeSql('DROP TABLE IF EXISTS positions');
+
+			txn.executeSql(
+				'SELECT COUNT(*) FROM sqlite_master WHERE name = ?',
+				["notes"],
+				(txn, result) => {
+					// DB 에 notes 테이블이 없는 경우 (앱 최초 실행),
+					// default note 를 생성
+					const countResult = result.rows.item(0)["COUNT(*)"];
+					if(countResult == 0) {
+						const title = 'Choreo Note에 오신걸 환영해요!';
+						const createDate = this.dateFormat(new Date());
+						const stageRatio = 1;
+
+						notes.push({ nid: 0, title, createDate, editDate: createDate, stageRatio });
+						this.setState({ notes });
+
+						txn.executeSql(
+							"INSERT INTO notes VALUES (0, ?, ?, ?, ?)",
+							[title, createDate, createDate, stageRatio]);
+						txn.executeSql(
+							"INSERT INTO dancers VALUES (0, 0, 'ham', 0)", []);
+			
+						txn.executeSql(
+							"INSERT INTO dancers VALUES (0, 1, 'Juicy', 1)", []);
+			
+						txn.executeSql(
+							"INSERT INTO times VALUES (0, 0, 500)", []);
+			
+						txn.executeSql(
+							"INSERT INTO positions VALUES (0, 0, 0, -50, 0)", []);
+			
+						txn.executeSql(
+							"INSERT INTO positions VALUES (0, 0, 1, 50, 0)", []);
+					}
+				}
+			);
 
 			/*=== TABLE 생성 ===*/
 			txn.executeSql(
@@ -71,27 +101,10 @@ export default class MainScreen extends React.Component {
 				"SELECT * FROM notes",
 				[],
         (txn, result) => {
-					// 노트가 없는 경우: default note 추가
-					if(result.rows.length == 0) {
-						const title = 'Choreo Note에 오신걸 환영해요!';
-						const createDate = this.dateFormat(new Date());
-						const stageRatio = 1;
-
-						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?, ?, ?)",
-							[title, createDate, createDate, stageRatio],
-							() => {
-								notes.push({ nid: 0, title, createDate, editDate: createDate, stageRatio });
-								this.setState({ notes });
-							}
-						);
-					}
 					// note 정보 가져오기
-					else {
-						for (let i = 0; i < result.rows.length; i++)
-							notes.push(result.rows.item(i));
-						this.setState({ notes });
-					}
+					for (let i = 0; i < result.rows.length; i++)
+						notes.push(result.rows.item(i));
+					this.setState({ notes });
 				}
 			);
 		},
@@ -108,7 +121,7 @@ export default class MainScreen extends React.Component {
 
 	addNote = () => {
 		const { notes } = this.state;
-		const nid = notes[notes.length-1].nid + 1;
+		const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
 		const title = '새 노트';
 		const createDate = this.dateFormat(new Date());
 		const stageRatio = 2;
@@ -144,6 +157,10 @@ export default class MainScreen extends React.Component {
 		},
 		e => console.log("DB ERROR", e),
 		() => console.log("DB SUCCESS"));
+	}
+
+	componentDidMount() {
+		this.getDatabaseData();
 	}
 
 	render() {
