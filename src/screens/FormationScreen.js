@@ -5,6 +5,7 @@ import {
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
 import Stage from '../components/Stage';
+import Timeline from '../components/Timeline';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
@@ -45,6 +46,14 @@ export default class FormationScreen extends React.Component {
 				() => console.log("DB SUCCESS"),
 				e => console.log("DB ERROR", e));
 		});
+	}
+
+	setCurTime = (time) => {
+		const { noteInfo: { musicLength }} = this.state;
+		if(time < 0 || musicLength <= time)
+			return;
+
+		this.setState({ curTime: time });
 	}
 
 	componentDidMount() {
@@ -95,7 +104,10 @@ export default class FormationScreen extends React.Component {
 	render() {
 		const { noteInfo, dancers, times, positions, curTime } = this.state;
 		const styles = getStyleSheet();
-		const { setDancerPosition, saveInDatabase } = this;
+		const { 
+			setDancerPosition,
+			setCurTime
+		} = this;
 
 		if(noteInfo === undefined)
 			return null;
@@ -123,6 +135,13 @@ export default class FormationScreen extends React.Component {
 				{/* Music Bar */}
 
 				{/* Timeline */}
+				<Timeline
+				musicLength={noteInfo.musicLength}
+				dancers={dancers}
+				times={times}
+				positions={positions}
+				curTime={curTime}
+				setCurTime={setCurTime} />
 
 			</SafeAreaView>
 			</View>

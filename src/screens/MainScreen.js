@@ -33,13 +33,15 @@ export default class MainScreen extends React.Component {
 						const title = 'Choreo Note에 오신걸 환영해요!';
 						const createDate = this.dateFormat(new Date());
 						const stageRatio = 1;
+						const music = 'sample.mp3';
+						const musicLength = 60;
 
 						notes.push({ nid: 0, title, createDate, editDate: createDate, stageRatio });
 						this.setState({ notes });
 
 						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?, ?, ?)",
-							[title, createDate, createDate, stageRatio]);
+							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?)",
+							[title, createDate, createDate, stageRatio, music, musicLength]);
 						txn.executeSql(
 							"INSERT INTO dancers VALUES (0, 0, 'ham', 0)", []);
 			
@@ -47,13 +49,22 @@ export default class MainScreen extends React.Component {
 							"INSERT INTO dancers VALUES (0, 1, 'Juicy', 1)", []);
 			
 						txn.executeSql(
-							"INSERT INTO times VALUES (0, 0, 500)", []);
+							"INSERT INTO times VALUES (0, 0, 2)", []);
+
+						txn.executeSql(
+							"INSERT INTO times VALUES (0, 5, 3)", []);
 			
 						txn.executeSql(
 							"INSERT INTO positions VALUES (0, 0, 0, -50, 0)", []);
 			
 						txn.executeSql(
 							"INSERT INTO positions VALUES (0, 0, 1, 50, 0)", []);
+
+						txn.executeSql(
+							"INSERT INTO positions VALUES (0, 5, 0, 0, 50)", []);
+			
+						txn.executeSql(
+							"INSERT INTO positions VALUES (0, 5, 1, 0, -50)", []);
 					}
 				}
 			);
@@ -66,6 +77,8 @@ export default class MainScreen extends React.Component {
 				'createDate TEXT NOT NULL, ' +
 				'editDate TEXT NOT NULL, ' +
 				'stageRatio INTEGER NOT NULL, ' +		// (가로 / 세로)
+				'music TEXT NOT NULL, ' +
+				'musicLength INTEGER NOT NULL, ' +
 				'PRIMARY KEY(nid))'
 			);
 
@@ -125,6 +138,8 @@ export default class MainScreen extends React.Component {
 		const title = '새 노트';
 		const createDate = this.dateFormat(new Date());
 		const stageRatio = 2;
+		const music = 'sample.mp3';
+		const musicLength = 60;
 
 		notes.push({ nid, title, createDate, editDate: createDate, stageRatio });
 		this.setState({ notes });
@@ -132,8 +147,8 @@ export default class MainScreen extends React.Component {
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?, ?, ?)",
-				[nid, title, createDate, createDate, stageRatio]);
+				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?)",
+				[nid, title, createDate, createDate, stageRatio, music, musicLength]);
 
 			txn.executeSql(
 				"INSERT INTO dancers VALUES (?, 0, 'ham', 0)",

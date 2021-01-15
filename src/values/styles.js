@@ -84,6 +84,22 @@ const basicStyleSheet = StyleSheet.create({
 		borderRadius: 15,
 		alignItems: 'center',
 		justifyContent: 'center'
+	},
+	timeline: {
+		width: '100%',
+		backgroundColor: COLORS.grayLight,
+	},
+	timebox: {
+		width: 40,
+		height: 40,
+		backgroundColor: COLORS.red,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	positionbox: {
+		position: 'absolute',
+		height: 60,
+		backgroundColor: COLORS.blue
 	}
 });
 
@@ -136,6 +152,15 @@ const darkStyleSheet = StyleSheet.create({
 	dancer: {
 		...basicStyleSheet.dancer,
 		backgroundColor: COLORS.yellow
+	},
+	timeline: {
+		...basicStyleSheet.timeline
+	},
+	timebox: {
+		...basicStyleSheet.timebox
+	},
+	positionbox: {
+		...basicStyleSheet.positionbox
 	}
 });
 

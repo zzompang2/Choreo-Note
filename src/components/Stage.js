@@ -20,7 +20,7 @@ export default class Stage extends React.Component {
 		let time;
 		for(let i = 0; i < times.length; i++) {
 			time = times[i];
-			if(time.time <= curTime && curTime < time.time + time.duration)
+			if(time.time <= curTime && curTime <= time.time + time.duration)
 				break;
 		}
 		for(let i = 0; i < positions.length; i++) {
