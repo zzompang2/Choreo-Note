@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
+import Stage from '../components/Stage';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
@@ -11,7 +12,10 @@ export default class FormationScreen extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			noteInfo: {}
+			noteInfo: undefined,
+			dancers: [],
+			times: [],
+			positions: []
 		}
 
 		const nid = props.route.params.nid;
@@ -35,6 +39,9 @@ export default class FormationScreen extends React.Component {
 		const { noteInfo } = this.state;
 		const styles = getStyleSheet();
 
+		if(noteInfo === undefined)
+			return null;
+
 		return(
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
@@ -45,6 +52,14 @@ export default class FormationScreen extends React.Component {
 						<Text style={styles.toolbarButton}>뒤로</Text>
 					</TouchableOpacity>
 				</View>
+
+				{/* Stage */}
+				<Stage stageRatio={noteInfo.stageRatio} />
+
+				{/* Music Bar */}
+
+				{/* Timeline */}
+
 			</SafeAreaView>
 			</View>
 		)

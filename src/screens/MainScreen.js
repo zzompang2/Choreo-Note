@@ -35,6 +35,7 @@ export default class MainScreen extends React.Component {
 				'title TEXT NOT NULL, ' +
 				'createDate TEXT NOT NULL, ' +
 				'editDate TEXT NOT NULL, ' +
+				'stageRatio INTEGER NOT NULL, ' +		// (가로 / 세로)
 				'PRIMARY KEY(nid))'
 			);
 
@@ -74,12 +75,13 @@ export default class MainScreen extends React.Component {
 					if(result.rows.length == 0) {
 						const title = 'Choreo Note에 오신걸 환영해요!';
 						const createDate = this.dateFormat(new Date());
+						const stageRatio = 1;
 
 						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?, ?)",
-							[title, createDate, createDate],
+							"INSERT INTO notes VALUES (0, ?, ?, ?, ?)",
+							[title, createDate, createDate, stageRatio],
 							() => {
-								notes.push({ nid: 0, title, createDate, editDate: createDate });
+								notes.push({ nid: 0, title, createDate, editDate: createDate, stageRatio });
 								this.setState({ notes });
 							}
 						);
@@ -109,15 +111,16 @@ export default class MainScreen extends React.Component {
 		const nid = notes[notes.length-1].nid + 1;
 		const title = '새 노트';
 		const createDate = this.dateFormat(new Date());
+		const stageRatio = 2;
 
-		notes.push({ nid, title, createDate, editDate: createDate });
+		notes.push({ nid, title, createDate, editDate: createDate, stageRatio });
 		this.setState({ notes });
 		
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?, ?)",
-				[nid, title, createDate, createDate]);
+				"INSERT INTO notes VALUES (?, ?, ?, ?, ?)",
+				[nid, title, createDate, createDate, stageRatio]);
 
 			txn.executeSql(
 				"INSERT INTO dancers VALUES (?, 0, 'ham', 0)",

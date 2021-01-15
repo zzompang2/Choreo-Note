@@ -79,6 +79,7 @@ export default class DatabaseScreen extends React.Component {
 					<Text style={{...styles.dbTable, flex: 1}}>title</Text>
 					<Text style={{...styles.dbTable, width: 80}}>createDate</Text>
 					<Text style={{...styles.dbTable, width: 80}}>editDate</Text>
+					<Text style={{...styles.dbTable, width: 40}}>stageRatio</Text>
 				</View>
 
 				<FlatList
@@ -91,6 +92,7 @@ export default class DatabaseScreen extends React.Component {
 					<Text style={{...styles.dbText, flex: 1}}>{item.title}</Text>
 					<Text style={{...styles.dbText, width: 80}}>{item.createDate}</Text>
 					<Text style={{...styles.dbText, width: 80}}>{item.editDate}</Text>
+					<Text style={{...styles.dbText, width: 40}}>{item.stageRatio}</Text>
 				</View>
 				} />
 
