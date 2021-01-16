@@ -159,7 +159,7 @@ export default class MainScreen extends React.Component {
 				[nid]);
 
 			txn.executeSql(
-				"INSERT INTO times VALUES (?, 0, 500)",
+				"INSERT INTO times VALUES (?, 0, 5)",
 				[nid]);
 
 			txn.executeSql(
