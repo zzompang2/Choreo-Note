@@ -4,6 +4,7 @@ import {
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import getStyleSheet from "../values/styles";
+import TimeMarker from '../components/TimeMarker';
 
 const { width } = Dimensions.get('window');
 const TAG = "Timeline/";
@@ -13,7 +14,8 @@ export default class Timeline extends React.Component {
 	positionboxs = [];
 
   render() {
-		const { musicLength, dancers, times, positions, curTime, setCurTime } = this.props;
+		const { musicLength, dancers, times, positions, curTime, scrollEnable,
+						setCurTime, setScrollEnable } = this.props;
 		const styles = getStyleSheet();
 
 		this.timeboxs = [];
@@ -47,7 +49,7 @@ export default class Timeline extends React.Component {
 			horizontal={true}
 			bounces={false} 					// 오버스크롤 막기 (iOS)
 			decelerationRate={0.7}		// 스크롤 속도 (iOS)
-			>
+			scrollEnabled={scrollEnable}>
 				<View style={styles.timeline}>
 					<View style={{flexDirection: 'row'}}>
 						{this.timeboxs}
@@ -55,6 +57,11 @@ export default class Timeline extends React.Component {
 					<View style={{flexDirection: 'row'}}>
 						{this.positionboxs}
 					</View>
+				
+					<TimeMarker
+					curTime={curTime}
+					setCurTime={setCurTime}
+					setScrollEnable={setScrollEnable} />
 				</View>
 			</ScrollView>
     )

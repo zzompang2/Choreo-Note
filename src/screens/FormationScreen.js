@@ -16,7 +16,12 @@ export default class FormationScreen extends React.Component {
 		dancers: [],
 		times: [],
 		positions: [],
-		curTime: 0
+		curTime: 0,
+		scrollEnable: true,
+	}
+
+	setScrollEnable = (scrollEnable) => {
+		this.setState({ scrollEnable });
 	}
 
 	setDancerPosition = (did, newX, newY) => {
@@ -26,7 +31,7 @@ export default class FormationScreen extends React.Component {
 		let time;
 		for(let i = 0; i < times.length; i++) {
 			time = times[i];
-			if(time.time <= curTime && curTime < time.time + time.duration)
+			if(time.time <= curTime && curTime <= time.time + time.duration)
 				break;
 		}
 		for(let i = 0; i < positions.length; i++) {
@@ -102,11 +107,12 @@ export default class FormationScreen extends React.Component {
 	}
 
 	render() {
-		const { noteInfo, dancers, times, positions, curTime } = this.state;
+		const { noteInfo, dancers, times, positions, curTime, scrollEnable } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			setDancerPosition,
-			setCurTime
+			setCurTime,
+			setScrollEnable,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -141,7 +147,9 @@ export default class FormationScreen extends React.Component {
 				times={times}
 				positions={positions}
 				curTime={curTime}
-				setCurTime={setCurTime} />
+				setCurTime={setCurTime}
+				scrollEnable={scrollEnable}
+				setScrollEnable={setScrollEnable} />
 
 			</SafeAreaView>
 			</View>

@@ -99,7 +99,16 @@ const basicStyleSheet = StyleSheet.create({
 	positionbox: {
 		position: 'absolute',
 		height: 60,
-		backgroundColor: COLORS.blue
+		backgroundColor: COLORS.blue,
+	},
+	timeMarker: {
+		position: 'absolute', 
+		width: 30, 
+		height: 30, 
+		borderWidth: 1, 
+		borderColor: COLORS.blackDark,
+		borderRadius: 15,
+		margin: 5
 	}
 });
 
@@ -161,6 +170,9 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	positionbox: {
 		...basicStyleSheet.positionbox
+	},
+	timeMarker: {
+		...basicStyleSheet.timeMarker
 	}
 });
 
