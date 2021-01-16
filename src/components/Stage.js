@@ -27,10 +27,11 @@ export default class Stage extends React.Component {
 				// times[i-1] ~ [i] 사이에 있는 경우
 				else {
 					for(let j=0; j<positions[i].length; j++) {
+						const prevDuration = times[i-1].duration;
 						const prev = positions[i-1][j];
 						const post = positions[i][j];
-						const x = prev.x + (post.x - prev.x) / (post.time - prev.time) * (curTime - prev.time);
-						const y = prev.y + (post.y - prev.y) / (post.time - prev.time) * (curTime - prev.time);
+						const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+						const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
 						positionAtSameTime.push({did: j, x, y});
 					}
 				}

@@ -22,6 +22,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	selectPositionBox = (time) => {
+		console.log("포지션 블럭 선택:", time);
 		this.setState({ selectedPosTime: time });
 	}
 
@@ -32,11 +33,16 @@ export default class FormationScreen extends React.Component {
 
 		let i=0;
 		let newTimeEntry;
+		let isTimeChange;
+
+		// 선택되어 있는 time entry 찾기
 		for(; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
+				isTimeChange = times[i].time != time;
 				newTimeEntry = { nid: noteInfo.nid, time, duration };
 				break;
 			}
+
 		// 유효하지 않은 time 값인 경우
 		if(newTimeEntry == undefined) 
 			return;
@@ -49,9 +55,20 @@ export default class FormationScreen extends React.Component {
 		if(i != times.length-1 && times[i+1].time <= time + duration)
 			return;
 
+		// times 없데이트
 		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i+1)];
-		console.log(newTimes);
-		this.setState({ times: newTimes, selectedPosTime: time });
+
+		// positions 업데이트
+		let newPositions = positions;
+		if(isTimeChange) {
+			const newPositionsEntry = [];
+			positions[i].forEach(pos => {
+				newPositionsEntry.push({...pos, time});
+			});
+			newPositions = [...positions.slice(0, i), newPositionsEntry, ...positions.slice(i+1)];
+		}
+
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: time });
 	}
 
 	setScrollEnable = (scrollEnable) => {
