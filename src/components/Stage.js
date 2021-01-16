@@ -12,15 +12,25 @@ const TAG = "Stage/";
 export default class Stage extends React.Component {
 
   render() {
-		const { dancers, times, positions, curTime, setDancerPosition } = this.props;
+		const { dancers, times, positions, curTime, setDancerPosition, selectedPosTime } = this.props;
 		const styles = getStyleSheet();
 		const height = width / this.props.stageRatio;
 		const positionAtSameTime = [];
 
 		/* curTime 시간에 각 Dancer 의 위치 계산하기 */
 
+		// case 0: 어떤 Position box 가 선택된 상태인 경우 
+		if(selectedPosTime !== undefined) {
+			for(let i=0; i<times.length; i++)
+				if(times[i].time == selectedPosTime) {
+					positionAtSameTime.push(...positions[i]);
+					break;
+				}
+			// if(positionAtSameTime.length == 0) ERROR
+		}
+
 		// case 1: 첫 번째 블록보다 앞에 있는 경우
-		if(times.length > 0 && curTime < times[0].time)
+		else if(times.length > 0 && curTime < times[0].time)
 			positionAtSameTime.push(...positions[0]);
 
 		// case 2: 마지막 블록보다 뒤에 있는 경우
@@ -52,14 +62,17 @@ export default class Stage extends React.Component {
 			}
 		}
 
+		const selectedStageStyle = selectedPosTime === undefined ? {} : styles.stageSelected;
+
 		return (
-			<View style={{...styles.stage, height: height}}>
+			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
 				<Coordinate height={height} />
 				{dancers.map(dancer => 
 					<Dancer
 					key={dancer.did}
 					setDancerPosition={setDancerPosition}
 					did={dancer.did}
+					selectedPosTime={selectedPosTime}
 					curPos={{
 						x: positionAtSameTime[dancer.did].x, 
 						y: positionAtSameTime[dancer.did].y

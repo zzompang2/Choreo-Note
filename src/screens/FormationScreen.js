@@ -196,7 +196,8 @@ export default class FormationScreen extends React.Component {
 				times={times}
 				positions={positions}
 				curTime={curTime}
-				setDancerPosition={setDancerPosition} />
+				setDancerPosition={setDancerPosition}
+				selectedPosTime={selectedPosTime} />
 
 				{/* Music Bar */}
 

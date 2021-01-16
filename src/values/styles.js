@@ -61,7 +61,11 @@ const basicStyleSheet = StyleSheet.create({
 		width: width,
 		height: width,
 		alignItems: 'center',
-		justifyContent: 'center'
+		justifyContent: 'center',
+	},
+	stageSelected: {
+		borderWidth: 5,
+		borderColor: COLORS.yellow,
 	},
 	stageAxis: {
 		position: 'absolute',
@@ -161,6 +165,9 @@ const darkStyleSheet = StyleSheet.create({
 	stage: {
 		...basicStyleSheet.stage,
 		backgroundColor: COLORS.grayDark
+	},
+	stageSelected: {
+		...basicStyleSheet.stageSelected,
 	},
 	stageAxis: {
 		...basicStyleSheet.stageAxis
