@@ -28,8 +28,9 @@ export default class FormationScreen extends React.Component {
 
 	changePositionboxLength = (time, duration) => {
 		const { noteInfo, times, positions, selectedPosTime } = this.state;
+
+		// 노래 밖을 나가는 경우
 		if(time < 0 || noteInfo.musicLength <= time + duration) return;
-		console.log("박스 길이 변경:", time, duration);
 
 		let i=0;
 		let newTimeEntry;
