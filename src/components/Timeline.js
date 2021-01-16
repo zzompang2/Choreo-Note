@@ -44,7 +44,7 @@ export default class Timeline extends React.Component {
 					setScrollEnable={setScrollEnable}
 					changePositionboxLength={changePositionboxLength} />
 				);
-				timesIdx ++;
+				timesIdx++;
 			}
 		}
 

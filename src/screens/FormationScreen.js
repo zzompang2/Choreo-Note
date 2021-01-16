@@ -37,11 +37,21 @@ export default class FormationScreen extends React.Component {
 				newTimeEntry = { nid: noteInfo.nid, time, duration };
 				break;
 			}
-		if(newTimeEntry != undefined) {
-			const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i+1)];
-			console.log(newTimes);
-			this.setState({ times: newTimes });
-		}
+		// 유효하지 않은 time 값인 경우
+		if(newTimeEntry == undefined) 
+			return;
+
+		// 왼쪽 블럭과 닿거나 넘어가는 경우
+		if(i != 0 && time <= times[i-1].time + times[i-1].duration)
+			return;
+
+		// 오른쪽 블럭과 닿거나 넘어가는 경우
+		if(i != times.length-1 && times[i+1].time <= time + duration)
+			return;
+
+		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i+1)];
+		console.log(newTimes);
+		this.setState({ times: newTimes });
 	}
 
 	setScrollEnable = (scrollEnable) => {

@@ -24,10 +24,9 @@ export default class PositionBox extends React.Component {
 			
       // MOVE 제스쳐가 진행 중일 때 (계속 실행)
 			onPanResponderMove: (event, gesture) => {
-				const newTime = this.preTime + Math.round(gesture.dx / 40);
-				if(this.props.time != newTime && newTime < this.endTime)
-					this.props.changePositionboxLength(newTime, this.endTime-newTime);
-					// console.log("time 변경:", this.props.time, newTime);
+				this.newTime = this.preTime + Math.round(gesture.dx / 40);
+				if(this.props.time != this.newTime && this.newTime < this.endTime)
+					this.props.changePositionboxLength(this.newTime, this.endTime-this.newTime);
 			},
 
       // 터치이벤트 끝날 때.
@@ -49,10 +48,9 @@ export default class PositionBox extends React.Component {
 			
       // MOVE 제스쳐가 진행 중일 때 (계속 실행)
 			onPanResponderMove: (event, gesture) => {
-				const newDuration = this.preDuration + Math.round(gesture.dx / 40);
-				if(this.props.duration != newDuration && 0 < newDuration)
-					this.props.changePositionboxLength(this.props.time, newDuration);
-					// console.log("duration 변경:", this.props.duration, newDuration);
+				this.newDuration = this.preDuration + Math.round(gesture.dx / 40);
+				if(this.props.duration != this.newDuration && 0 < this.newDuration)
+					this.props.changePositionboxLength(this.props.time, this.newDuration);
 			},
 
       // 터치이벤트 끝날 때.
