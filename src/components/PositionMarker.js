@@ -13,7 +13,7 @@ export default class PositionMarker extends React.Component {
 		this.movedRight = new Animated.Value(0);
 		this.movedLeft = new Animated.Value(0);
 
-		const { setScrollEnable, changePositionboxLength } = props;
+		const { setScrollEnable, changePositionboxLength, selectPositionBox } = props;
 
 		/*===== Box 드래그 앤 드랍 =====*/
 		this.boxMoveResponder = PanResponder.create({
@@ -33,9 +33,15 @@ export default class PositionMarker extends React.Component {
       onPanResponderRelease: (event, gesture) => {
 				// scroll 다시 작동
 				setScrollEnable(true);
+				
+				// 터치만 한 경우
+				if(Math.abs(gesture.dx) < 5)
+					selectPositionBox();
+
 				// state 업데이트
 				const newTime = this.props.time + Math.round(gesture.dx / 40);
-				changePositionboxLength(newTime, this.props.duration);
+				if(newTime != this.props.time)
+					changePositionboxLength(newTime, this.props.duration);
       }
 		});
 

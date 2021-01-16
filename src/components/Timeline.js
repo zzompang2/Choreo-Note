@@ -67,7 +67,8 @@ export default class Timeline extends React.Component {
 						time={selectedPosTime}
 						duration={this.selectedPosDuration}
 						setScrollEnable={setScrollEnable}
-						changePositionboxLength={changePositionboxLength} />
+						changePositionboxLength={changePositionboxLength}
+						selectPositionBox={selectPositionBox} />
 						: null}
 					</View>
 				

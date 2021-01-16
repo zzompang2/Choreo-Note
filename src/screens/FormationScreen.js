@@ -18,11 +18,10 @@ export default class FormationScreen extends React.Component {
 		positions: [],
 		curTime: 0,
 		scrollEnable: true,
-		selectedPosTime: -1
+		selectedPosTime: undefined
 	}
 
 	selectPositionBox = (time) => {
-		console.log("포지션 블럭 선택:", time);
 		this.setState({ selectedPosTime: time });
 	}
 
