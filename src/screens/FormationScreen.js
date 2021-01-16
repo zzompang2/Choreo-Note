@@ -10,7 +10,7 @@ import Timeline from '../components/Timeline';
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
 export default class FormationScreen extends React.Component {
-
+	
 	state = {
 		noteInfo: undefined,
 		dancers: [],
@@ -20,62 +20,110 @@ export default class FormationScreen extends React.Component {
 		scrollEnable: true,
 		selectedPosTime: undefined
 	}
-
-	selectPositionBox = (time) => {
-		this.setState({ selectedPosTime: time });
+	
+	/**
+	 * 현재 시간을 변경한다.
+	 * @param {number} time 새로운 time
+	 */
+	setCurTime = (time) => {
+		if(0 <= time && time < this.state.noteInfo.musicLength)
+			this.setState({ curTime: time });
 	}
+	
+	/**
+	 * Position box 를 선택한 상태로 만든다.
+	 * @param {number} time 선택된 box 의 time 값
+	 */
+	selectPositionBox = (time) => this.setState({ selectedPosTime: time })
 
-	changePositionboxLength = (time, duration) => {
-		const { noteInfo, times, positions, selectedPosTime } = this.state;
+	/**
+	 * ScrollView 들의 scroll 을 가능하게 또는 불가능하게 조절한다.
+	 * @param {boolean} scrollEnable true 인 경우 scroll 가능
+	 */
+	setScrollEnable = (scrollEnable) => this.setState({ scrollEnable })
+
+	/**
+	 * 선택되어 있는 Position box 의 정보를 주어진 time, duration 값으로 업데이트 한다.
+	 * (반드시 선택되어 있는 박스가 있어야 하고, 선택된 박스만 수정할 수 있음)
+	 * @param {number} time 변경된 새로운 time 값
+	 * @param {number} duration 변경된 새로운 duration 값
+	 */
+	changePositionboxLength = (newTime, newDuration) => {
+		const { noteInfo: { nid, musicLength }, times, positions, selectedPosTime } = this.state;
 
 		// 노래 밖을 나가는 경우
-		if(time < 0 || noteInfo.musicLength <= time + duration) return;
+		if(newTime < 0 || musicLength <= newTime + newDuration)
+			return;
 
-		let i=0;
-		let newTimeEntry;
-		let isTimeChange;
+		let newTimes;
+		let newPositions = positions;
+		const isTimeChanged = selectedPosTime != newTime;
+		let i = 0;
 
-		// 선택되어 있는 time entry 찾기
+		// 선택되어 있는 Position box 의 index 찾기
 		for(; i<times.length; i++)
-			if(times[i].time == selectedPosTime) {
-				isTimeChange = times[i].time != time;
-				newTimeEntry = { nid: noteInfo.nid, time, duration };
+			if(times[i].time == selectedPosTime)
 				break;
-			}
 
 		// 유효하지 않은 time 값인 경우
-		if(newTimeEntry == undefined) 
+		if(i == times.length) 
 			return;
 
 		// 왼쪽 블럭과 닿거나 넘어가는 경우
-		if(i != 0 && time <= times[i-1].time + times[i-1].duration)
+		if(i != 0 && newTime <= times[i-1].time + times[i-1].duration)
 			return;
 
 		// 오른쪽 블럭과 닿거나 넘어가는 경우
-		if(i != times.length-1 && times[i+1].time <= time + duration)
+		if(i != times.length-1 && times[i+1].time <= newTime + newDuration)
 			return;
 
 		// times 없데이트
-		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i+1)];
+		newTimes = [
+			...times.slice(0, i),
+			{ nid, time: newTime, duration: newDuration },
+			...times.slice(i+1)
+		];
 
-		// positions 업데이트
-		let newPositions = positions;
-		if(isTimeChange) {
+		// time 이 수정된 경우 positions 의 time 값도 업데이트
+		if(isTimeChanged) {
 			const newPositionsEntry = [];
 			positions[i].forEach(pos => {
-				newPositionsEntry.push({...pos, time});
+				newPositionsEntry.push({...pos, time: newTime});
 			});
-			newPositions = [...positions.slice(0, i), newPositionsEntry, ...positions.slice(i+1)];
+			newPositions = [
+				...positions.slice(0, i),
+				newPositionsEntry,
+				...positions.slice(i+1)
+			];
 		}
 
-		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: time });
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: newTime });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE times " +
+				"SET time=?, duration=? " +
+				"WHERE nid=? AND time=?",
+				[newTime, newDuration, nid, selectedPosTime]);
+
+			if(isTimeChanged) {
+				txn.executeSql(
+					"UPDATE positions " +
+					"SET time=? " +
+					"WHERE nid=? AND time=?",
+					[newTime, nid, selectedPosTime]);
+			}
+		});
 	}
 
-	setScrollEnable = (scrollEnable) => {
-		this.setState({ scrollEnable });
-	}
-
-	setDancerPosition = (did, newX, newY) => {
+	/**
+	 * 선택되어 있는 Position box 의 formation 에서 Dancer 의 위치를 수정한다.
+	 * (반드시 선택되어 있는 박스가 있어야 하고, 선택된 박스의 댄서 위치만 수 있음)
+	 * @param {number} did 수정할 Dancer 의 id
+	 * @param {number} newX 새로운 X 좌표
+	 * @param {number} newY 새로운 Y 좌표
+	 */
+	changeDancerPosition = (did, newX, newY) => {
 		const { noteInfo: { nid }, times, positions, selectedPosTime } = this.state;
 
 		if(selectedPosTime === undefined)		// ERROR
@@ -100,14 +148,6 @@ export default class FormationScreen extends React.Component {
 				() => console.log("DB SUCCESS"),
 				e => console.log("DB ERROR", e));
 		});
-	}
-
-	setCurTime = (time) => {
-		const { noteInfo: { musicLength }} = this.state;
-		if(time < 0 || musicLength <= time)
-			return;
-
-		this.setState({ curTime: time });
 	}
 
 	componentDidMount() {
@@ -166,7 +206,7 @@ export default class FormationScreen extends React.Component {
 						scrollEnable, selectedPosTime } = this.state;
 		const styles = getStyleSheet();
 		const { 
-			setDancerPosition,
+			changeDancerPosition,
 			setCurTime,
 			setScrollEnable,
 			selectPositionBox,
@@ -194,7 +234,7 @@ export default class FormationScreen extends React.Component {
 				times={times}
 				positions={positions}
 				curTime={curTime}
-				setDancerPosition={setDancerPosition}
+				changeDancerPosition={changeDancerPosition}
 				selectedPosTime={selectedPosTime} />
 
 				{/* Music Bar */}
