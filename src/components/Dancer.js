@@ -26,8 +26,11 @@ export default class Dancer extends React.Component {
 
       // 터치이벤트 발생할 때
       onPanResponderGrant: (event, gesture) => {
-        this.preVal = {...this.curVal};		// 초기 위치 저장
-
+				this.preVal = {...this.curVal};		// 초기 위치 저장
+				
+				/* 터치이벤트 도중 변하는 값은 value 이다. 그러나 내가 원하는 건
+					 x = dx, y = dy 가 아닌 (기존값) + dx 이므로
+					 offset 에 (기존값) 을 저장해 놓고 value 를 0 으로 세팅한다. */
         this.pan.setOffset({ x: this.curVal.x, y: this.curVal.y })
         this.pan.setValue({ x: 0, y: 0 });
 			},
@@ -44,7 +47,7 @@ export default class Dancer extends React.Component {
 					x: this.preVal.x + gesture.dx,
 					y: this.preVal.y + gesture.dy
 				};
-
+				// 이벤트 시작 때 세팅했던 offset 을 원래대로 돌린다
 				this.pan.setOffset({ x: 0, y: 0 });
         this.props.setDancerPosition(this.props.did, this.curVal.x, this.curVal.y);
       }

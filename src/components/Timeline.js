@@ -43,7 +43,7 @@ export default class Timeline extends React.Component {
 					key={timesIdx}
 					time={times[timesIdx].time}
 					duration={times[timesIdx].duration}
-					// isSelected={selectedPosTime == times[timesIdx].time}
+					isSelected={selectedPosTime == times[timesIdx].time}
 					selectPositionBox={selectPositionBox} />
 				);
 				timesIdx++;

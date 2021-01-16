@@ -12,7 +12,8 @@ export const COLORS = {
   grayDark: '#555555',
   grayMiddle: '#707070',
   grayLight: '#aaaaaa',
-  yellow: '#EF9C1C',
+	yellow: '#EF9C1C',
+	yellowLight: '#EF9C1C88',
   red: '#D63F72',
   purple: '#B036BC',
   blue: '#4469EB',
@@ -88,23 +89,26 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	timeline: {
 		width: '100%',
-		backgroundColor: COLORS.grayLight,
 	},
 	timebox: {
 		width: 40,
 		height: 40,
-		backgroundColor: COLORS.red,
+		backgroundColor: COLORS.grayMiddle,
 		alignItems: 'center',
 		justifyContent: 'center'
 	},
 	positionbox: {
 		height: positionboxHeight,
-		backgroundColor: COLORS.blue,
+		// borderRadius: 10,
 	},
-	positionbox__btn: {
+	positionMarker: {
+		position: 'absolute',
+		height: positionboxHeight,
+		borderWidth: 5,
+	},
+	positionMarker__btn: {
 		position: 'absolute',
 		top: positionboxHeight,
-		left: -30,
 		width: 30,
 		height: 30,
 		borderRadius: 15,
@@ -174,23 +178,34 @@ const darkStyleSheet = StyleSheet.create({
 		backgroundColor: COLORS.yellow
 	},
 	timeline: {
-		...basicStyleSheet.timeline
+		...basicStyleSheet.timeline,
+		backgroundColor: COLORS.grayLight,
 	},
 	timebox: {
 		...basicStyleSheet.timebox
 	},
-	positionbox: {
-		...basicStyleSheet.positionbox
-	},
 	timeMarker: {
 		...basicStyleSheet.timeMarker
 	},
-	positionbox__leftbtn: {
-		...basicStyleSheet.positionbox__btn,
+	positionbox: {
+		...basicStyleSheet.positionbox,
+		backgroundColor: COLORS.grayDark,
+	},
+	positionboxSelected: {
+		...basicStyleSheet.positionbox,
+		backgroundColor: COLORS.yellowLight,
+	},
+	positionMarker: {
+		...basicStyleSheet.positionMarker,
+		borderColor: COLORS.white,
+		backgroundColor: COLORS.yellow
+	},
+	positionMarker__leftbtn: {
+		...basicStyleSheet.positionMarker__btn,
 		borderTopRightRadius: 0,
 	},
-	positionbox__rightbtn: {
-		...basicStyleSheet.positionbox__btn,
+	positionMarker__rightbtn: {
+		...basicStyleSheet.positionMarker__btn,
 		borderTopLeftRadius: 0,
 	}
 });
