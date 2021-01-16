@@ -15,20 +15,29 @@ export default class Stage extends React.Component {
 		const { dancers, times, positions, curTime, setDancerPosition } = this.props;
 		const styles = getStyleSheet();
 		const height = width / this.props.stageRatio;
-		const positionAtTime = [];
+		const positionAtSameTime = [];
 
-		let time;
-		for(let i = 0; i < times.length; i++) {
-			time = times[i];
-			if(time.time <= curTime && curTime <= time.time + time.duration)
-				break;
-		}
-		for(let i = 0; i < positions.length; i++) {
-			if(positions[i].time == time.time) {
-				for(let j = i; j < positions.length && positions[j].time == time.time; j++)
-					positionAtTime.push(positions[j]);
+		for(let i=0; i < times.length; i++) {
+			const time = times[i];
+			if(curTime <= time.time + time.duration) {
+				// times[i] 내에 포함된 경우
+				if(time.time <= curTime) {
+					positionAtSameTime.push(...positions[i]);
+				}
+				// times[i-1] ~ [i] 사이에 있는 경우
+				else {
+					for(let j=0; j<positions[i].length; j++) {
+						const prev = positions[i-1][j];
+						const post = positions[i][j];
+						const x = prev.x + (post.x - prev.x) / (post.time - prev.time) * (curTime - prev.time);
+						const y = prev.y + (post.y - prev.y) / (post.time - prev.time) * (curTime - prev.time);
+						positionAtSameTime.push({did: j, x, y});
+					}
+				}
 				break;
 			}
+			if(i == times.length-1)
+				positionAtSameTime.push(...positions[i]);
 		}
 
 		return (
@@ -40,8 +49,8 @@ export default class Stage extends React.Component {
 					setDancerPosition={setDancerPosition}
 					did={dancer.did}
 					curPos={{
-						x: positionAtTime[dancer.did].x, 
-						y: positionAtTime[dancer.did].y
+						x: positionAtSameTime[dancer.did].x, 
+						y: positionAtSameTime[dancer.did].y
 					}} />
 				)}
 			</View>

@@ -12,7 +12,7 @@ export default class Coordinate extends React.Component {
 
 	drawAxises = (styles) => {
 		const { height } = this.props;
-		const coordGap = 30;
+		const coordGap = 25;
 		let count = 0;
 		this.axises = [];
 
