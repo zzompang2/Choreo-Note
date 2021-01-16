@@ -28,7 +28,7 @@ export default class TimeMarker extends React.Component {
 			onPanResponderMove: (event, gesture) => {
 				console.log(gesture.dx);
 				const newTime = this.preTime + Math.round(gesture.dx / 40);
-				if(this.preTime != newTime)
+				if(this.props.curTime != newTime)
 					this.props.setCurTime(newTime);
 			},
 
