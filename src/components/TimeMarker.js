@@ -26,7 +26,6 @@ export default class TimeMarker extends React.Component {
 			
       // MOVE 제스쳐가 진행 중일 때 (계속 실행)
 			onPanResponderMove: (event, gesture) => {
-				console.log(gesture.dx);
 				const newTime = this.preTime + Math.round(gesture.dx / 40);
 				if(this.props.curTime != newTime)
 					this.props.setCurTime(newTime);

@@ -18,6 +18,30 @@ export default class FormationScreen extends React.Component {
 		positions: [],
 		curTime: 0,
 		scrollEnable: true,
+		selectedPosTime: -1
+	}
+
+	selectPositionBox = (time) => {
+		this.setState({ selectedPosTime: time });
+	}
+
+	changePositionboxLength = (time, duration) => {
+		const { noteInfo, times, positions, selectedPosTime } = this.state;
+		if(time < 0 || noteInfo.musicLength <= time + duration) return;
+		console.log("박스 길이 변경:", time, duration);
+
+		let i=0;
+		let newTimeEntry;
+		for(; i<times.length; i++)
+			if(times[i].time == selectedPosTime) {
+				newTimeEntry = { nid: noteInfo.nid, time, duration };
+				break;
+			}
+		if(newTimeEntry != undefined) {
+			const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i+1)];
+			console.log(newTimes);
+			this.setState({ times: newTimes });
+		}
 	}
 
 	setScrollEnable = (scrollEnable) => {
@@ -113,12 +137,15 @@ export default class FormationScreen extends React.Component {
 	}
 
 	render() {
-		const { noteInfo, dancers, times, positions, curTime, scrollEnable } = this.state;
+		const { noteInfo, dancers, times, positions, curTime,
+						scrollEnable, selectedPosTime } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			setDancerPosition,
 			setCurTime,
 			setScrollEnable,
+			selectPositionBox,
+			changePositionboxLength,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -155,7 +182,10 @@ export default class FormationScreen extends React.Component {
 				curTime={curTime}
 				setCurTime={setCurTime}
 				scrollEnable={scrollEnable}
-				setScrollEnable={setScrollEnable} />
+				setScrollEnable={setScrollEnable}
+				selectedPosTime={selectedPosTime}
+				selectPositionBox={selectPositionBox}
+				changePositionboxLength={changePositionboxLength} />
 
 			</SafeAreaView>
 			</View>

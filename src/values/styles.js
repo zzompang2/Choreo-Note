@@ -2,6 +2,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 // 화면의 가로, 세로 길이 받아오기
 const { width, height } = Dimensions.get('window');
+const positionboxHeight = 60;
 
 export const COLORS = {
   white: '#F9F9F9',
@@ -97,9 +98,19 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	positionbox: {
-		position: 'absolute',
-		height: 60,
+		height: positionboxHeight,
 		backgroundColor: COLORS.blue,
+	},
+	positionbox__btn: {
+		position: 'absolute',
+		top: positionboxHeight,
+		left: -30,
+		width: 30,
+		height: 30,
+		borderRadius: 15,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: COLORS.blackDark
 	},
 	timeMarker: {
 		position: 'absolute', 
@@ -109,7 +120,7 @@ const basicStyleSheet = StyleSheet.create({
 		borderColor: COLORS.blackDark,
 		borderRadius: 15,
 		margin: 5
-	}
+	},
 });
 
 const darkStyleSheet = StyleSheet.create({
@@ -173,6 +184,14 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	timeMarker: {
 		...basicStyleSheet.timeMarker
+	},
+	positionbox__leftbtn: {
+		...basicStyleSheet.positionbox__btn,
+		borderTopRightRadius: 0,
+	},
+	positionbox__rightbtn: {
+		...basicStyleSheet.positionbox__btn,
+		borderTopLeftRadius: 0,
 	}
 });
 

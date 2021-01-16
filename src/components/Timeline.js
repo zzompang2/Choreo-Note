@@ -5,6 +5,7 @@ import {
 import { ScrollView } from "react-native-gesture-handler";
 import getStyleSheet from "../values/styles";
 import TimeMarker from '../components/TimeMarker';
+import PositionBox from '../components/PositionBox';
 
 const { width } = Dimensions.get('window');
 const TAG = "Timeline/";
@@ -15,7 +16,8 @@ export default class Timeline extends React.Component {
 
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
-						setCurTime, setScrollEnable } = this.props;
+						setCurTime, setScrollEnable, selectedPosTime, selectPositionBox,
+						changePositionboxLength } = this.props;
 		const styles = getStyleSheet();
 
 		this.timeboxs = [];
@@ -33,12 +35,14 @@ export default class Timeline extends React.Component {
 			);
 			if(timesIdx < times.length && times[timesIdx].time == sec) {
 				this.positionboxs.push(
-					<TouchableOpacity
+					<PositionBox
 					key={timesIdx}
-					style={{
-						...styles.positionbox, 
-						left: 20+40*times[timesIdx].time, 
-						width: 40*times[timesIdx].duration}} />
+					time={times[timesIdx].time}
+					duration={times[timesIdx].duration}
+					isSelected={selectedPosTime == times[timesIdx].time}
+					selectPositionBox={selectPositionBox}
+					setScrollEnable={setScrollEnable}
+					changePositionboxLength={changePositionboxLength} />
 				);
 				timesIdx ++;
 			}
