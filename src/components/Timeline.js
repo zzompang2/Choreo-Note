@@ -6,6 +6,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import getStyleSheet from "../values/styles";
 import TimeMarker from '../components/TimeMarker';
 import PositionBox from '../components/PositionBox';
+import PositionMarker from "./PositionMarker";
 
 const { width } = Dimensions.get('window');
 const TAG = "Timeline/";
@@ -34,15 +35,16 @@ export default class Timeline extends React.Component {
 				</TouchableOpacity>
 			);
 			if(timesIdx < times.length && times[timesIdx].time == sec) {
+				if(selectedPosTime == times[timesIdx].time)
+					this.selectedPosDuration = times[timesIdx].duration;
+
 				this.positionboxs.push(
 					<PositionBox
 					key={timesIdx}
 					time={times[timesIdx].time}
 					duration={times[timesIdx].duration}
-					isSelected={selectedPosTime == times[timesIdx].time}
-					selectPositionBox={selectPositionBox}
-					setScrollEnable={setScrollEnable}
-					changePositionboxLength={changePositionboxLength} />
+					// isSelected={selectedPosTime == times[timesIdx].time}
+					selectPositionBox={selectPositionBox} />
 				);
 				timesIdx++;
 			}
@@ -60,6 +62,13 @@ export default class Timeline extends React.Component {
 					</View>
 					<View style={{flexDirection: 'row'}}>
 						{this.positionboxs}
+						{selectedPosTime >= 0 ?
+						<PositionMarker
+						time={selectedPosTime}
+						duration={this.selectedPosDuration}
+						setScrollEnable={setScrollEnable}
+						changePositionboxLength={changePositionboxLength} />
+						: null}
 					</View>
 				
 					<TimeMarker

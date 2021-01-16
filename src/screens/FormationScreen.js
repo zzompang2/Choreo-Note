@@ -51,7 +51,7 @@ export default class FormationScreen extends React.Component {
 
 		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i+1)];
 		console.log(newTimes);
-		this.setState({ times: newTimes });
+		this.setState({ times: newTimes, selectedPosTime: time });
 	}
 
 	setScrollEnable = (scrollEnable) => {
