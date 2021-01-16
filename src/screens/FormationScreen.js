@@ -76,32 +76,30 @@ export default class FormationScreen extends React.Component {
 	}
 
 	setDancerPosition = (did, newX, newY) => {
-		// const { noteInfo: { nid }, times, positions, curTime } = this.state;
-		// let newPositions;
+		const { noteInfo: { nid }, times, positions, selectedPosTime } = this.state;
 
-		// let time;
-		// for(let i = 0; i < times.length; i++) {
-		// 	time = times[i];
-		// 	if(time.time <= curTime && curTime <= time.time + time.duration)
-		// 		break;
-		// }
-		// for(let i = 0; i < positions.length; i++) {
-		// 	if(positions[i].time == time.time && positions[i].did == did) {
-		// 		newPositions = [...positions.slice(0, i), {...positions[i], x: newX, y: newY}, ...positions.slice(i+1)];
-		// 		break;
-		// 	}
-		// }
-		// this.setState({ positions: newPositions });
+		if(selectedPosTime === undefined)		// ERROR
+			return;
 
-		// db.transaction(txn => {
-		// 	txn.executeSql(
-		// 		"UPDATE positions " +
-		// 		"SET x=?, y=? " +
-		// 		"WHERE nid=? AND time=? AND did=?",
-		// 		[newX, newY, nid, time.time, did],
-		// 		() => console.log("DB SUCCESS"),
-		// 		e => console.log("DB ERROR", e));
-		// });
+		let i = 0;
+		for(; i<times.length; i++)
+			if(times[i].time == selectedPosTime)
+				break;
+
+		const newPositionsEntry = [...positions[i].slice(0, did), {...positions[i][did], x: newX, y: newY}, ...positions[i].slice(did+1)];
+		const newPositions = [...positions.slice(0, i), newPositionsEntry, ...positions.slice(i+1)];
+
+		this.setState({ positions: newPositions });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE positions " +
+				"SET x=?, y=? " +
+				"WHERE nid=? AND time=? AND did=?",
+				[newX, newY, nid, times[i].time, did],
+				() => console.log("DB SUCCESS"),
+				e => console.log("DB ERROR", e));
+		});
 	}
 
 	setCurTime = (time) => {
