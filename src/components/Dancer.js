@@ -47,7 +47,7 @@ export default class Dancer extends React.Component {
 				};
 				// 이벤트 시작 때 세팅했던 offset 을 원래대로 돌린다
 				this.pan.setOffset({ x: 0, y: 0 });
-        this.props.changeDancerPosition(this.props.did, this.curVal.x, this.curVal.y);
+        this.props.changeDancerPosition(this.props.dancer.did, this.curVal.x, this.curVal.y);
       }
     });
 	}
@@ -63,6 +63,7 @@ export default class Dancer extends React.Component {
 		// 위치를 지정할 스타일
     const panStyle = { transform: this.pan.getTranslateTransform() };
 
+		console.log(TAG, dancer);
 		return (
       <Animated.View
       pointerEvents='auto'
