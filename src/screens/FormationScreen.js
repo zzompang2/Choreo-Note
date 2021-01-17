@@ -166,8 +166,8 @@ export default class FormationScreen extends React.Component {
 		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
 		let i = 0;
 		for(; i<times.length; i++)
-			if(curTime <= times[i].time + times[i].duration)
-			break;
+		if(curTime <= times[i].time + times[i].duration)
+		break;
 
 		// duration 은 최소 1 이어야 하므로 curTime+1	까지 공간이 있어야 한다
 		if(i != times.length && times[i].time <= curTime+1)
@@ -206,7 +206,7 @@ export default class FormationScreen extends React.Component {
 
 		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i)];
 		const newPositions = [...positions.slice(0, i), newPositionEntry, ...positions.slice(i)];
-		this.setState({ times: newTimes, positions: newPositions });
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: undefined });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -217,6 +217,41 @@ export default class FormationScreen extends React.Component {
 			txn.executeSql(
 				"INSERT INTO positions VALUES (?, ?, ?, ?, ?)",
 				[nid, curTime, did, newPositionEntry[did].x, newPositionEntry[did].y]);
+		});
+		this.updateEditDate();
+	}
+
+	deleteFormation = () => {
+		const { noteInfo: { nid }, dancers, times, positions, selectedPosTime } = this.state;
+
+		// 유효성 검사
+		if(selectedPosTime == undefined)
+		return;
+
+		// 선택된 블럭을 찾는다
+		let i = 0;
+		for(; i<times.length; i++)
+		if(selectedPosTime == times[i].time)
+		break;
+
+		if(i == times.length)
+		return;
+
+		console.log(times, i);
+		const newTimes = [...times.slice(0, i), ...times.slice(i+1)];
+		const newPositions = [...positions.slice(0, i), ...positions.slice(i+1)];
+		console.log(newTimes);
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: undefined });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"DELETE FROM times WHERE nid=? AND time=?",
+				[nid, selectedPosTime]);
+
+			for(let did=0; did<dancers.length; did++)
+			txn.executeSql(
+				"DELETE FROM positions WHERE nid=? AND time=?",
+				[nid, selectedPosTime]);
 		});
 		this.updateEditDate();
 	}
@@ -303,6 +338,7 @@ export default class FormationScreen extends React.Component {
 			selectPositionBox,
 			changePositionboxLength,
 			addFormation,
+			deleteFormation,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -347,7 +383,9 @@ export default class FormationScreen extends React.Component {
 
 				{/* Tool bar */}
 				<ToolBar
-				addFormation={addFormation} />
+				addFormation={addFormation}
+				deleteFormation={deleteFormation}
+				selectedPosTime={selectedPosTime} />
 
 			</SafeAreaView>
 			</View>

@@ -133,7 +133,11 @@ const basicStyleSheet = StyleSheet.create({
 		width: '100%',
 		height: 70,
 		alignItems: 'center',
-		justifyContent: 'center'
+		justifyContent: 'center',
+		flexDirection: 'row',
+	},
+	tool: {
+		padding: 10,
 	}
 });
 
@@ -224,6 +228,14 @@ const darkStyleSheet = StyleSheet.create({
 	toolBar: {
 		...basicStyleSheet.toolBar,
 		backgroundColor: COLORS.grayDark
+	},
+	tool: {
+		...basicStyleSheet.tool,
+		color: COLORS.white
+	},
+	toolDisabled: {
+		...basicStyleSheet.tool,
+		color: COLORS.grayLight
 	}
 });
 
