@@ -16,7 +16,7 @@ export default class DancerScreen extends React.Component {
 		this.state = {
 			nid: undefined,
 			dancers: [],
-			positions: [],
+			times: [],
 			isAddBtnAppear: false
 		}
 
@@ -26,24 +26,42 @@ export default class DancerScreen extends React.Component {
 	}
 
 	changeName = (text, did) => {
-		const { dancers } = this.state;
+		const { nid, dancers } = this.state;
 
 		const dancer = {...dancers[did]};
 		dancer.name = text;
 		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
 
 		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE dancers SET name=? WHERE nid=? AND did=?",
+				[text, nid, did]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.props.route.params.updateEditDate();
 	}
 
 	changeColor = (did) => {
 		const dancerColors = getDancerColors();
-		const { dancers } = this.state;
+		const { nid, dancers } = this.state;
 
 		const dancer = {...dancers[did]};
 		dancer.color = dancer.color+1 >= dancerColors.length ? 0 : dancer.color+1;
 		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
 
 		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE dancers SET color=? WHERE nid=? AND did=?",
+				[dancer.color, nid, did]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.props.route.params.updateEditDate();
 	}
 
 	controlAddButton = () => {
@@ -88,15 +106,33 @@ export default class DancerScreen extends React.Component {
 	}
 
 	addDancer = (colorIdx) => {
-		const { nid, dancers, positions } = this.state;
+		const { nid, dancers, times } = this.state;
 		const did = dancers.length;
-		const newDancer = { key: did, nid, did, name: "HAM", color: colorIdx };
+		const name = "HAM";
+		const newDancer = { nid, did, name, color: colorIdx };
 		const newDancers = dancers.concat(newDancer);
 		this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
 		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO dancers VALUES (?, ?, ?, ?)",
+				[nid, did, name, colorIdx]);
+
+			for(let i=0; i < times.length; i++) {
+				const time = times[i];
+				txn.executeSql(
+					"INSERT INTO positions VALUES (?, ?, ?, 0, 0)",
+					[nid, time.time, did]);
+			}
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.props.route.params.updateEditDate();
 	}
 
 	deleteDancer = (did) => {
+		// 처음으로 클릭 된 경우
 		if(this.deleteEnable != did) {
 			this.deleteButtonDisable();
 
@@ -116,8 +152,9 @@ export default class DancerScreen extends React.Component {
 				}
 			).start();
 		}
+		// 두 번째로 클릭 된 경우: delete
 		else {
-			const { nid, dancers, positions } = this.state;
+			const { nid, dancers } = this.state;
 			const afterDeletedEntry = [...dancers.slice(did+1)];
 			afterDeletedEntry.map(dancer => dancer.did = dancer.did - 1);
 			const newDancers = [...dancers.slice(0, did), ...afterDeletedEntry];
@@ -126,6 +163,26 @@ export default class DancerScreen extends React.Component {
 			this.deleteBtnAnim.pop();
 
 			this.setState({ dancers: newDancers });
+
+			db.transaction(txn => {
+				txn.executeSql(
+					"DELETE FROM dancers WHERE nid=? AND did=?",
+					[nid, did]);
+	
+				txn.executeSql(
+					"DELETE FROM positions WHERE nid=? AND did=?",
+					[nid, did]);
+
+				for(;did < dancers.length; did++) {
+					txn.executeSql(
+						"UPDATE dancers SET did=? WHERE nid=? AND did=?",
+						[did-1, nid, did]);
+					txn.executeSql(
+						"UPDATE positions SET did=? WHERE nid=? AND did=?",
+						[did-1, nid, did]);
+					}
+			});
+			this.props.route.params.updateEditDate();
 		}
 	}
 
@@ -163,27 +220,21 @@ export default class DancerScreen extends React.Component {
 				(txn, result) => {
 					const dancers = [];
 					for (let i = 0; i < result.rows.length; i++)
-						dancers.push({...result.rows.item(i), key: i});
+					dancers.push({...result.rows.item(i), key: i});
+
+					for(let i=0; i<dancers.length; i++)
+					this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
+
 					txn.executeSql(
-						"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
+						"SELECT * FROM times WHERE nid = ? ORDER BY time",
 						[nid],
 						(txn, result) => {
-							const positions = [];
-							for (let i = 0; i < result.rows.length;) {
-								const positionsAtSameTime = [];
-								for(let j=0; j<dancers.length; j++) {
-									positionsAtSameTime.push({...result.rows.item(i), key: i});
-									i++;
-								}
-								positions.push(positionsAtSameTime);
-							}
-
-							for(let i=0; i<dancers.length; i++)
-							this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
-
-							this.setState({ nid, dancers, positions });
-						}
-					);
+							const times = [];
+							for (let i = 0; i < result.rows.length; i++)
+							times.push({...result.rows.item(i), key: i});
+							
+							this.setState({ nid, dancers, times });
+					});
 				}
 			);				
 		},
@@ -192,13 +243,12 @@ export default class DancerScreen extends React.Component {
 	}
 
 	componentWillUnmount(){
-		console.log(TAG, 'componentWillUnmount');
-		// this.props.route.params.changeDancerList(this.state.dancerList, this.allPosList);
+		this.props.route.params.updateStateFromDB();
 	}
 	
 	render() {
 		console.log(TAG, 'render');
-		const { nid, dancers, positions } = this.state;
+		const { nid, dancers } = this.state;
 		const {
 			changeName,
 			changeColor,

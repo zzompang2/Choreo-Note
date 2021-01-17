@@ -22,16 +22,15 @@ export default class Stage extends React.Component {
 			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
 				<Coordinate height={height} />
 				{positionsAtSameTime.map((pos, did) =>
-					<Dancer
-					key={did}
-					changeDancerPosition={changeDancerPosition}
-					dancer={dancers[did]}
-					selectedPosTime={selectedPosTime}
-					curPos={{
-						x: pos.x, 
-						y: pos.y
-					}} />
-				)}
+				<Dancer
+				key={did}
+				changeDancerPosition={changeDancerPosition}
+				dancer={dancers[did]}
+				selectedPosTime={selectedPosTime}
+				curPos={{
+					x: pos.x,
+					y: pos.y
+				}} />)}
 			</View>
     )
   }

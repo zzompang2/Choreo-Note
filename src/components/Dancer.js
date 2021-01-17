@@ -63,7 +63,6 @@ export default class Dancer extends React.Component {
 		// 위치를 지정할 스타일
     const panStyle = { transform: this.pan.getTranslateTransform() };
 
-		console.log(TAG, dancer);
 		return (
       <Animated.View
       pointerEvents='auto'

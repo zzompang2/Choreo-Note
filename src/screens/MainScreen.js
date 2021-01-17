@@ -1,9 +1,11 @@
 import React from 'react';
 import {
-	SafeAreaView, View, Text, TouchableOpacity, FlatList
+	SafeAreaView, View, Text, TouchableOpacity, FlatList, LogBox
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
+
+LogBox.ignoreLogs(['Non-serializable values were found in the navigation state']);
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 

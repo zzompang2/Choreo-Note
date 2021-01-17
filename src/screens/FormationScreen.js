@@ -9,9 +9,9 @@ import Timeline from '../components/Timeline';
 import ToolBar from '../components/ToolBar';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
+const TAG = 'FormationScreen/';
 
 export default class FormationScreen extends React.Component {
-	
 	state = {
 		noteInfo: undefined,
 		dancers: [],
@@ -337,8 +337,45 @@ export default class FormationScreen extends React.Component {
 
 	moveToDancerScreen = () => {
 		const { noteInfo: { nid } } = this.state;
-		const { getTodayDate } = this.props.route.params;
-		this.props.navigation.navigate('Dancer', { nid: nid, getTodayDate: getTodayDate });
+		this.props.navigation.navigate('Dancer', { 
+			nid: nid, 
+			updateEditDate: this.updateEditDate,
+			updateStateFromDB: this.updateStateFromDB
+		});
+	}
+
+	updateStateFromDB = () => {
+		const { noteInfo: { nid } } = this.state;
+
+		db.transaction(txn => {
+      txn.executeSql(
+				"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
+				[nid],
+				(txn, result) => {
+					const dancers = [];
+					for (let i = 0; i < result.rows.length; i++)
+						dancers.push({...result.rows.item(i), key: i});
+					txn.executeSql(
+						"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
+						[nid],
+						(txn, result) => {
+							const positions = [];
+							for (let i = 0; i < result.rows.length;) {
+								const positionsAtSameTime = [];
+								for(let j=0; j<dancers.length; j++) {
+									positionsAtSameTime.push({...result.rows.item(i), key: i});
+									i++;
+								}
+								positions.push(positionsAtSameTime);
+							}
+							this.setState({ dancers, positions });
+						}
+					);
+				}
+			);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
 	}
 
 	/**
