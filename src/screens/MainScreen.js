@@ -31,7 +31,7 @@ export default class MainScreen extends React.Component {
 					const countResult = result.rows.item(0)["COUNT(*)"];
 					if(countResult == 0) {
 						const title = 'Choreo Note에 오신걸 환영해요!';
-						const createDate = this.dateFormat(new Date());
+						const createDate = this.getTodayDate();
 						const stageRatio = 1;
 						const music = 'sample.mp3';
 						const musicLength = 60;
@@ -126,17 +126,18 @@ export default class MainScreen extends React.Component {
 	}
 
 	/* Date() 로 받은 값을 YYYY.MM.DD 포멧의 string 으로 변경 */
-	dateFormat(date) {
-		return date.getFullYear() + "." + 
-					(date.getMonth() < 9 ? '0' + (date.getMonth()+1) : date.getMonth()+1) + 
-					"." + date.getDate();
+	getTodayDate() {
+		const date = new Date();
+		return `${date.getFullYear()}.` +
+					 `${date.getMonth() < 9 ? '0' + (date.getMonth()+1) : date.getMonth()+1}.` +
+					 `${date.getDate()}. ${date.getHours()}:${date.getMinutes()}`;
 	}
 
 	addNote = () => {
 		const { notes } = this.state;
 		const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
 		const title = '새 노트';
-		const createDate = this.dateFormat(new Date());
+		const createDate = this.getTodayDate();
 		const stageRatio = 2;
 		const music = 'sample.mp3';
 		const musicLength = 60;
@@ -180,6 +181,7 @@ export default class MainScreen extends React.Component {
 
 	render() {
 		const { notes } = this.state;
+		const { getTodayDate } = this;
 		const styles = getStyleSheet();
 
 		return(
@@ -204,7 +206,7 @@ export default class MainScreen extends React.Component {
 					<View>
 						<TouchableOpacity
 						onPress={() => {
-							this.props.navigation.navigate('Formation', { nid: item.nid });
+							this.props.navigation.navigate('Formation', { nid: item.nid, getTodayDate: getTodayDate });
 						}}
 						style={styles.noteEntry}>
 							{/* <Text numberOfLines={1}>{item.nid}</Text> */}

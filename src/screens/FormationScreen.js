@@ -115,6 +115,7 @@ export default class FormationScreen extends React.Component {
 					[newTime, nid, selectedPosTime]);
 			}
 		});
+		this.updateEditDate();
 	}
 
 	/**
@@ -149,6 +150,7 @@ export default class FormationScreen extends React.Component {
 				() => console.log("DB SUCCESS"),
 				e => console.log("DB ERROR", e));
 		});
+		this.updateEditDate();
 	}
 
 	/**
@@ -216,6 +218,27 @@ export default class FormationScreen extends React.Component {
 				"INSERT INTO positions VALUES (?, ?, ?, ?, ?)",
 				[nid, curTime, did, newPositionEntry[did].x, newPositionEntry[did].y]);
 		});
+		this.updateEditDate();
+	}
+
+	/**
+	 * DB 가 수정될 때 마다 edit date 를 업데이트 한다.
+	 * state 의 정보는 업데이트 하지 않으니 조심하자.
+	 */
+	updateEditDate = () => {
+		const { noteInfo: { nid } } = this.state;
+		const { getTodayDate } = this.props.route.params;
+		const newDate = getTodayDate();
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE notes " +
+				"SET editDate=? " +
+				"WHERE nid=?",
+				[newDate, nid]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
 	}
 
 	componentDidMount() {
