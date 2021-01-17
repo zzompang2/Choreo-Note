@@ -44,7 +44,7 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	noteList: {
 		flex: 1,
-		paddingVertical: 6
+		paddingVertical: 6,
 	},
 	noteEntry: {
 		flexDirection: 'column',

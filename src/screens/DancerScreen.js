@@ -284,6 +284,7 @@ export default class DancerScreen extends React.Component {
 				keyExtractor={(item, idx) => idx.toString()}
 				ItemSeparatorComponent={this.listViewItemSeparator}
 				renderItem={({ item, index }) =>
+				<View>
 				<View style={styles.dancerEntry}>
 					<TouchableOpacity
 					onPress={() => changeColor(item.did)}
@@ -336,6 +337,9 @@ export default class DancerScreen extends React.Component {
 							]}
 						]} />
 					</TouchableOpacity>
+				</View>
+				{/* 맨 마지막 entry 에만 여백 공간을 둔다. 버튼에 가려지지 않게 하기 위해 */}
+				{index == dancers.length-1 ? <View style={{height: 120}} /> : null}
 				</View>
 				} />
 				{/* Add 버튼 */}
