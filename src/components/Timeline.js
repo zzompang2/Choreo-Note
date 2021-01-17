@@ -5,24 +5,24 @@ import {
 import { ScrollView } from "react-native-gesture-handler";
 import getStyleSheet from "../values/styles";
 import TimeMarker from '../components/TimeMarker';
-import PositionBox from '../components/PositionBox';
-import PositionMarker from "./PositionMarker";
+import FormationBox from './FormationBox';
+import FormationMarker from "./FormationMarker";
 
 const { width } = Dimensions.get('window');
 const TAG = "Timeline/";
 
 export default class Timeline extends React.Component {
 	timeboxs = [];
-	positionboxs = [];
+	formationBoxs = [];
 
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
-						setCurTime, setScrollEnable, selectedPosTime, selectPositionBox,
-						changePositionboxLength } = this.props;
+						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
+						changeFormationBoxLength } = this.props;
 		const styles = getStyleSheet();
 
 		this.timeboxs = [];
-		this.positionboxs = [];
+		this.formationBoxs = [];
 
 		let timesIdx = 0;
 		for(let sec=0; sec < musicLength; sec++) {
@@ -38,13 +38,13 @@ export default class Timeline extends React.Component {
 				if(selectedPosTime == times[timesIdx].time)
 					this.selectedPosDuration = times[timesIdx].duration;
 
-				this.positionboxs.push(
-					<PositionBox
+				this.formationBoxs.push(
+					<FormationBox
 					key={timesIdx}
 					time={times[timesIdx].time}
 					duration={times[timesIdx].duration}
 					isSelected={selectedPosTime == times[timesIdx].time}
-					selectPositionBox={selectPositionBox} />
+					selectFormationBox={selectFormationBox} />
 				);
 				timesIdx++;
 			}
@@ -61,14 +61,14 @@ export default class Timeline extends React.Component {
 						{this.timeboxs}
 					</View>
 					<View style={{flexDirection: 'row'}}>
-						{this.positionboxs}
+						{this.formationBoxs}
 						{selectedPosTime >= 0 ?
-						<PositionMarker
+						<FormationMarker
 						time={selectedPosTime}
 						duration={this.selectedPosDuration}
 						setScrollEnable={setScrollEnable}
-						changePositionboxLength={changePositionboxLength}
-						selectPositionBox={selectPositionBox} />
+						changeFormationBoxLength={changeFormationBoxLength}
+						selectFormationBox={selectFormationBox} />
 						: null}
 					</View>
 				

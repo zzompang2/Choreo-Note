@@ -2,7 +2,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 // 화면의 가로, 세로 길이 받아오기
 const { width, height } = Dimensions.get('window');
-const positionboxHeight = 60;
+const formationBoxHeight = 60;
 
 export const COLORS = {
   white: '#F9F9F9',
@@ -101,18 +101,18 @@ const basicStyleSheet = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center'
 	},
-	positionbox: {
-		height: positionboxHeight,
+	formationBox: {
+		height: formationBoxHeight,
 		// borderRadius: 10,
 	},
-	positionMarker: {
+	formationMarker: {
 		position: 'absolute',
-		height: positionboxHeight,
+		height: formationBoxHeight,
 		borderWidth: 5,
 	},
-	positionMarker__btn: {
+	formationMarker__btn: {
 		position: 'absolute',
-		top: positionboxHeight,
+		top: formationBoxHeight,
 		width: 30,
 		height: 30,
 		borderRadius: 15,
@@ -204,25 +204,25 @@ const darkStyleSheet = StyleSheet.create({
 	timeMarker: {
 		...basicStyleSheet.timeMarker
 	},
-	positionbox: {
-		...basicStyleSheet.positionbox,
+	formationBox: {
+		...basicStyleSheet.formationBox,
 		backgroundColor: COLORS.grayDark,
 	},
-	positionboxSelected: {
-		...basicStyleSheet.positionbox,
+	formationBoxSelected: {
+		...basicStyleSheet.formationBox,
 		backgroundColor: COLORS.yellowLight,
 	},
-	positionMarker: {
-		...basicStyleSheet.positionMarker,
+	formationMarker: {
+		...basicStyleSheet.formationMarker,
 		borderColor: COLORS.white,
 		backgroundColor: COLORS.yellow
 	},
-	positionMarker__leftbtn: {
-		...basicStyleSheet.positionMarker__btn,
+	formationMarker__leftbtn: {
+		...basicStyleSheet.formationMarker__btn,
 		borderTopRightRadius: 0,
 	},
-	positionMarker__rightbtn: {
-		...basicStyleSheet.positionMarker__btn,
+	formationMarker__rightbtn: {
+		...basicStyleSheet.formationMarker__btn,
 		borderTopLeftRadius: 0,
 	},
 	toolBar: {

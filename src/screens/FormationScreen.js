@@ -35,7 +35,7 @@ export default class FormationScreen extends React.Component {
 	 * Position box 를 선택한 상태로 만든다.
 	 * @param {number} time 선택된 box 의 time 값
 	 */
-	selectPositionBox = (time) => this.setState({ selectedPosTime: time })
+	selectFormationBox = (time) => this.setState({ selectedPosTime: time })
 
 	/**
 	 * ScrollView 들의 scroll 을 가능하게 또는 불가능하게 조절한다.
@@ -49,7 +49,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} time 변경된 새로운 time 값
 	 * @param {number} duration 변경된 새로운 duration 값
 	 */
-	changePositionboxLength = (newTime, newDuration) => {
+	changeFormationBoxLength = (newTime, newDuration) => {
 		const { noteInfo: { nid, musicLength }, times, positions, selectedPosTime } = this.state;
 
 		// 노래 밖을 나가는 경우
@@ -335,8 +335,8 @@ export default class FormationScreen extends React.Component {
 			changeDancerPosition,
 			setCurTime,
 			setScrollEnable,
-			selectPositionBox,
-			changePositionboxLength,
+			selectFormationBox,
+			changeFormationBoxLength,
 			addFormation,
 			deleteFormation,
 		} = this;
@@ -378,8 +378,8 @@ export default class FormationScreen extends React.Component {
 				scrollEnable={scrollEnable}
 				setScrollEnable={setScrollEnable}
 				selectedPosTime={selectedPosTime}
-				selectPositionBox={selectPositionBox}
-				changePositionboxLength={changePositionboxLength} />
+				selectFormationBox={selectFormationBox}
+				changeFormationBoxLength={changeFormationBoxLength} />
 
 				{/* Tool bar */}
 				<ToolBar

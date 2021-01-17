@@ -4,21 +4,21 @@ import {
 } from "react-native";
 import getStyleSheet from "../values/styles";
 
-const TAG = "PositionBox/";
+const TAG = "FormationBox/";
 
-export default class PositionBox extends React.Component {
+export default class FormationBox extends React.Component {
 
 	render() {
-		const { time, duration, isSelected, selectPositionBox } = this.props;
+		const { time, duration, isSelected, selectFormationBox } = this.props;
 		const styles = getStyleSheet();
-		const positionboxStyle = isSelected ? styles.positionboxSelected : styles.positionbox;
+		const formationBoxStyle = isSelected ? styles.formationBoxSelected : styles.formationBox;
 
 		return (
 			<View style={{position: 'absolute', left: 20+40*time, width: 40*duration}}>
 				<TouchableOpacity
 				// disabled={isSelected}
-				onPress={() => selectPositionBox(time)}
-				style={positionboxStyle} />
+				onPress={() => selectFormationBox(time)}
+				style={formationBoxStyle} />
 			</View>
     )
   }
