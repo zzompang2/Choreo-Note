@@ -67,15 +67,15 @@ export default class Stage extends React.Component {
 		return (
 			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
 				<Coordinate height={height} />
-				{dancers.map(dancer => 
+				{positionAtSameTime.map((pos, did) =>
 					<Dancer
-					key={dancer.did}
+					key={did}
 					changeDancerPosition={changeDancerPosition}
-					did={dancer.did}
+					did={did}
 					selectedPosTime={selectedPosTime}
 					curPos={{
-						x: positionAtSameTime[dancer.did].x, 
-						y: positionAtSameTime[dancer.did].y
+						x: pos.x, 
+						y: pos.y
 					}} />
 				)}
 			</View>

@@ -184,8 +184,12 @@ export default class FormationScreen extends React.Component {
 		const newPositionEntry = [];
 
 		// position 계산하기
+		// case 0: 기존에 블록이 하나도 없던 경우
+		if(times.length == 0)
+		for(let did=0; did<dancers.length; did++)
+		newPositionEntry.push({nid, time: curTime, did, x: 0, y: 0});
 		// case 1: 모든 블록보다 왼쪽에 있는 경우
-		if(i == 0)
+		else if(i == 0)
 		for(let did=0; did<dancers.length; did++)
 		newPositionEntry.push({...positions[0][did]});
 		// case 2: 모든 블록보다 오른쪽에 있는 경우
