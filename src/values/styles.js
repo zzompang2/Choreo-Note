@@ -129,6 +129,12 @@ const basicStyleSheet = StyleSheet.create({
 		borderRadius: 15,
 		margin: 5
 	},
+	toolBar: {
+		width: '100%',
+		height: 70,
+		alignItems: 'center',
+		justifyContent: 'center'
+	}
 });
 
 const darkStyleSheet = StyleSheet.create({
@@ -214,6 +220,10 @@ const darkStyleSheet = StyleSheet.create({
 	positionMarker__rightbtn: {
 		...basicStyleSheet.positionMarker__btn,
 		borderTopLeftRadius: 0,
+	},
+	toolBar: {
+		...basicStyleSheet.toolBar,
+		backgroundColor: COLORS.grayDark
 	}
 });
 

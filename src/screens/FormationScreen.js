@@ -6,6 +6,7 @@ import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
 import Stage from '../components/Stage';
 import Timeline from '../components/Timeline';
+import ToolBar from '../components/ToolBar';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
@@ -132,7 +133,7 @@ export default class FormationScreen extends React.Component {
 		let i = 0;
 		for(; i<times.length; i++)
 			if(times[i].time == selectedPosTime)
-				break;
+			break;
 
 		const newPositionsEntry = [...positions[i].slice(0, did), {...positions[i][did], x: newX, y: newY}, ...positions[i].slice(did+1)];
 		const newPositions = [...positions.slice(0, i), newPositionsEntry, ...positions.slice(i+1)];
@@ -150,6 +151,73 @@ export default class FormationScreen extends React.Component {
 		});
 	}
 
+	/**
+	 * curTime 시간에 새로운 formation 을 추가한다.
+	 */
+	addFormation = () => {
+		const { noteInfo: { nid, musicLength }, dancers, times, positions, curTime } = this.state;
+
+		// curTime 유효성 검사
+		if(curTime < 0 || musicLength <= curTime+1)
+		return;
+
+		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
+		let i = 0;
+		for(; i<times.length; i++)
+			if(curTime <= times[i].time + times[i].duration)
+			break;
+
+		// duration 은 최소 1 이어야 하므로 curTime+1	까지 공간이 있어야 한다
+		if(i != times.length && times[i].time <= curTime+1)
+		return;
+
+		let duration;
+		// 오른쪽에 기존 블록이 있는 경우, (사이 공간-1) 만큼 duration 을 설정한다 (최대 5)
+		if(i != times.length)
+		duration = times[i].time - curTime > 5 ? 5 : times[i].time - curTime - 1;
+		else
+		duration = musicLength - curTime > 5 ? 5 : musicLength - curTime - 1;
+
+		const newTimeEntry = { nid, time: curTime, duration };
+		const newPositionEntry = [];
+
+		// position 계산하기
+		// case 1: 모든 블록보다 왼쪽에 있는 경우
+		if(i == 0)
+		for(let did=0; did<dancers.length; did++)
+		newPositionEntry.push({...positions[0][did]});
+		// case 2: 모든 블록보다 오른쪽에 있는 경우
+		else if(i == times.length)
+		for(let did=0; did<dancers.length; did++)
+		newPositionEntry.push({...positions[i-1][did]});
+		// case 3: 두 블록 사이에 있는 경우
+		else {
+			for(let did=0; did<dancers.length; did++) {
+				const prevDuration = times[i-1].duration;
+				const prev = positions[i-1][did];
+				const post = positions[i][did];
+				const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+				const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+				newPositionEntry.push({ did, time: curTime, x, y });
+			}
+		}
+
+		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i)];
+		const newPositions = [...positions.slice(0, i), newPositionEntry, ...positions.slice(i)];
+		this.setState({ times: newTimes, positions: newPositions });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO times VALUES (?, ?, ?)",
+				[nid, curTime, duration]);
+
+			for(let did=0; did<dancers.length; did++)
+			txn.executeSql(
+				"INSERT INTO positions VALUES (?, ?, ?, ?, ?)",
+				[nid, curTime, did, newPositionEntry[did].x, newPositionEntry[did].y]);
+		});
+	}
+
 	componentDidMount() {
 		const nid = this.props.route.params.nid;
 
@@ -160,21 +228,21 @@ export default class FormationScreen extends React.Component {
         (txn, result) => {
 					const noteInfo = result.rows.item(0);
 					txn.executeSql(
-						"SELECT * FROM dancers WHERE nid = ?",
+						"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
 						[nid],
 						(txn, result) => {
 							const dancers = [];
 							for (let i = 0; i < result.rows.length; i++)
 								dancers.push({...result.rows.item(i), key: i});
 							txn.executeSql(
-								"SELECT * FROM times WHERE nid = ?",
+								"SELECT * FROM times WHERE nid = ? ORDER BY time",
 								[nid],
 								(txn, result) => {
 									const times = [];
 									for (let i = 0; i < result.rows.length; i++)
 										times.push({...result.rows.item(i), key: i});
 									txn.executeSql(
-										"SELECT * FROM positions WHERE nid = ?",
+										"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
 										[nid],
 										(txn, result) => {
 											const positions = [];
@@ -186,7 +254,7 @@ export default class FormationScreen extends React.Component {
 												}
 												positions.push(positionsAtSameTime);
 											}
-											console.log(noteInfo);
+											console.log("노트 정보:", noteInfo);
 											this.setState({ noteInfo, dancers, times, positions });
 										}
 									);
@@ -211,6 +279,7 @@ export default class FormationScreen extends React.Component {
 			setScrollEnable,
 			selectPositionBox,
 			changePositionboxLength,
+			addFormation,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -252,6 +321,10 @@ export default class FormationScreen extends React.Component {
 				selectedPosTime={selectedPosTime}
 				selectPositionBox={selectPositionBox}
 				changePositionboxLength={changePositionboxLength} />
+
+				{/* Tool bar */}
+				<ToolBar
+				addFormation={addFormation} />
 
 			</SafeAreaView>
 			</View>
