@@ -10,17 +10,19 @@ const TAG = "ToolBar/";
 export default class ToolBar extends React.Component {
 
   render() {
-		const { addFormation, deleteFormation, selectedPosTime } = this.props;
+		const { addFormation, deleteFormation, selectedPosTime, formationAddable } = this.props;
 		const styles = getStyleSheet();
 		const isSelected = selectedPosTime != undefined;
 
-		console.log(isSelected, selectedPosTime);
 		return (
 			<View style={styles.toolBar}>
-				<TouchableOpacity onPress={addFormation}>
-					<IconIonicons name="add-circle" size={40} style={styles.tool} />
+				{/* Formation 추가 */}
+				<TouchableOpacity 
+				disabled={!formationAddable}
+				onPress={addFormation}>
+					<IconIonicons name="add-circle" size={40} style={formationAddable ? styles.tool : styles.toolDisabled} />
 				</TouchableOpacity>
-
+				{/* Formation 삭제 */}
 				<TouchableOpacity
 				disabled={!isSelected}
 				onPress={deleteFormation}>

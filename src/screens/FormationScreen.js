@@ -32,7 +32,7 @@ export default class FormationScreen extends React.Component {
 	}
 	
 	/**
-	 * Position box 를 선택한 상태로 만든다.
+	 * Formation box 를 선택한 상태로 만든다.
 	 * @param {number} time 선택된 box 의 time 값
 	 */
 	selectFormationBox = (time) => this.setState({ selectedPosTime: time })
@@ -44,7 +44,7 @@ export default class FormationScreen extends React.Component {
 	setScrollEnable = (scrollEnable) => this.setState({ scrollEnable })
 
 	/**
-	 * 선택되어 있는 Position box 의 정보를 주어진 time, duration 값으로 업데이트 한다.
+	 * 선택되어 있는 Formation box 의 정보를 주어진 time, duration 값으로 업데이트 한다.
 	 * (반드시 선택되어 있는 박스가 있어야 하고, 선택된 박스만 수정할 수 있음)
 	 * @param {number} time 변경된 새로운 time 값
 	 * @param {number} duration 변경된 새로운 duration 값
@@ -61,7 +61,7 @@ export default class FormationScreen extends React.Component {
 		const isTimeChanged = selectedPosTime != newTime;
 		let i = 0;
 
-		// 선택되어 있는 Position box 의 index 찾기
+		// 선택되어 있는 Formation box 의 index 찾기
 		for(; i<times.length; i++)
 			if(times[i].time == selectedPosTime)
 				break;
@@ -119,7 +119,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	/**
-	 * 선택되어 있는 Position box 의 formation 에서 Dancer 의 위치를 수정한다.
+	 * 선택되어 있는 Formation box 의 formation 에서 Dancer 의 위치를 수정한다.
 	 * (반드시 선택되어 있는 박스가 있어야 하고, 선택된 박스의 댄서 위치만 수 있음)
 	 * @param {number} did 수정할 Dancer 의 id
 	 * @param {number} newX 새로운 X 좌표
@@ -154,10 +154,12 @@ export default class FormationScreen extends React.Component {
 	}
 
 	/**
-	 * curTime 시간에 새로운 formation 을 추가한다.
+	 * state 상태에서 새로운 formation 을 추가할 수 있는지 여부를 체크한다.
+	 * @param {object} state 기준 state
 	 */
-	addFormation = () => {
-		const { noteInfo: { nid, musicLength }, dancers, times, positions, curTime } = this.state;
+	checkFormationAddable = (state) => {
+		const { noteInfo: { musicLength }, times, curTime } = state;
+		this.formationAddable = false;
 
 		// curTime 유효성 검사
 		if(curTime < 0 || musicLength <= curTime+1)
@@ -172,6 +174,24 @@ export default class FormationScreen extends React.Component {
 		// duration 은 최소 1 이어야 하므로 curTime+1	까지 공간이 있어야 한다
 		if(i != times.length && times[i].time <= curTime+1)
 		return;
+
+		this.formationAddable = true;
+	}
+
+	/**
+	 * curTime 시간에 새로운 formation 을 추가한다.
+	 */
+	addFormation = () => {
+		const { noteInfo: { nid, musicLength }, dancers, times, positions, curTime } = this.state;
+
+		if(!this.formationAddable)
+		return;
+
+		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
+		let i = 0;
+		for(; i<times.length; i++)
+		if(curTime <= times[i].time + times[i].duration)
+		break;
 
 		let duration;
 		// 오른쪽에 기존 블록이 있는 경우, (사이 공간-1) 만큼 duration 을 설정한다 (최대 5)
@@ -225,6 +245,9 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
+	/**
+	 * 선택된 formation 을 삭제한다.
+	 */
 	deleteFormation = () => {
 		const { noteInfo: { nid }, dancers, times, positions, selectedPosTime } = this.state;
 
@@ -331,6 +354,70 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
+	shouldComponentUpdate(nextProps, nextState) {
+		// state 가 바뀔 때 마다 Dancer 위치, formationAddable 을 업데이트한다
+		if(this.state.curTime != nextState.curTime ||
+			this.state.times != nextState.times ||
+			this.state.positions != nextState.positions ||
+			this.state.selectedPosTime != nextState.selectedPosTime) {
+				this.checkFormationAddable(nextState);
+				this.getCurPositions(nextState);
+			}
+		return true;
+	}
+
+	/**
+	 * state 상태에서 각 Dancer 의 위치를 계산한다
+	 */
+	getCurPositions = (state) => {
+		const { times, positions, curTime, selectedPosTime } = state;
+		this.positionsAtSameTime = [];
+
+		if(times.length == 0)
+		return;
+
+		// case 0: 어떤 Formation box 가 선택된 상태인 경우: 선택된 대열을 보여줌
+		if(selectedPosTime !== undefined) {
+			for(let i=0; i<times.length; i++)
+			if(times[i].time == selectedPosTime) {
+				this.positionsAtSameTime.push(...positions[i]);
+				break;
+			}
+		}
+
+		// case 1: 첫 번째 블록보다 앞에 있는 경우
+		else if(curTime < times[0].time)
+		this.positionsAtSameTime.push(...positions[0]);
+
+		// case 2: 마지막 블록보다 뒤에 있는 경우
+		else if(times[times.length-1].time + times[times.length-1].duration < curTime)
+		this.positionsAtSameTime.push(...positions[times.length-1]);
+
+		else {
+			for(let i=0; i < times.length; i++) {
+				const time = times[i];
+				if(curTime <= time.time + time.duration) {
+					// case 3: times[i] 내에 포함된 경우
+					if(time.time <= curTime)
+					this.positionsAtSameTime.push(...positions[i]);
+
+					// case 4: times[i-1] ~ [i] 사이에 있는 경우
+					else {
+						for(let did=0; did<positions[i].length; did++) {
+							const prevDuration = times[i-1].duration;
+							const prev = positions[i-1][did];
+							const post = positions[i][did];
+							const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+							const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+							this.positionsAtSameTime.push({ did, x, y });
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
 						scrollEnable, selectedPosTime } = this.state;
@@ -346,7 +433,7 @@ export default class FormationScreen extends React.Component {
 		} = this;
 
 		if(noteInfo === undefined)
-			return null;
+		return null;
 
 		return(
 			<View style={styles.bg}>
@@ -362,10 +449,7 @@ export default class FormationScreen extends React.Component {
 				{/* Stage: Coordinate & Dancer */}
 				<Stage
 				stageRatio={noteInfo.stageRatio}
-				dancers={dancers}
-				times={times}
-				positions={positions}
-				curTime={curTime}
+				positionsAtSameTime={this.positionsAtSameTime}
 				changeDancerPosition={changeDancerPosition}
 				selectedPosTime={selectedPosTime} />
 
@@ -389,7 +473,8 @@ export default class FormationScreen extends React.Component {
 				<ToolBar
 				addFormation={addFormation}
 				deleteFormation={deleteFormation}
-				selectedPosTime={selectedPosTime} />
+				selectedPosTime={selectedPosTime}
+				formationAddable={this.formationAddable} />
 
 			</SafeAreaView>
 			</View>
