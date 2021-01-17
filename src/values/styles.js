@@ -8,6 +8,7 @@ export const COLORS = {
   white: '#F9F9F9',
   blackDark: '#191A1E',
 	blackDarkTransparent: '#191A1Edd',
+	blackMiddle: '#232323',
 	blackLight: '#303030',
   grayDark: '#555555',
   grayMiddle: '#707070',
@@ -43,6 +44,7 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	noteList: {
 		flex: 1,
+		paddingVertical: 6
 	},
 	noteEntry: {
 		flexDirection: 'column',
@@ -138,6 +140,67 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	tool: {
 		padding: 10,
+	},
+	itemSeparator: {
+		height: 0.5,
+		width: '100%',
+	},
+	dancerEntry: {
+		flexDirection: 'row',
+		width: '100%',
+		height: 50,
+		alignItems: 'center',
+		paddingHorizontal: 10,
+	},
+	dancerEntry__color: {
+		width: 30,
+		height: 30,
+		borderRadius: 20,
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginHorizontal: 12,
+	},
+	dancerEntry__input: {
+		height: 42,
+		flex: 1,
+		paddingHorizontal: 10,
+		color: COLORS.white,
+	},
+	dancerEntry__btn: {
+		width: 50,
+		height: 50,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	dancerEntry__btnIcon: {
+		position: 'absolute',
+		width: 10,
+		height: 10,
+		borderRadius: 5,
+		backgroundColor: COLORS.blackMiddle,
+	},
+	dancerAddBtnContainer: {
+		position: 'absolute',
+		bottom: 20,
+		right: 20,
+		width: 70,
+		height: 70,
+		borderRadius: 40,
+		alignItems: 'center',
+		justifyContent: 'flex-end',
+		flexDirection: 'row',
+	},
+	dancerControlBtn: {
+		width: 60,
+		height: 60,
+		borderRadius: 40,
+		margin: 5,
+	},
+	dancerAddBtn: {
+		width: 30,
+		height: 30,
+		marginRight: 30,
+		borderRadius: 20,
 	}
 });
 
@@ -236,6 +299,39 @@ const darkStyleSheet = StyleSheet.create({
 	toolDisabled: {
 		...basicStyleSheet.tool,
 		color: COLORS.grayLight
+	},
+	itemSeparator: {
+		...basicStyleSheet.itemSeparator,
+		backgroundColor: COLORS.blackDark,
+	},
+	dancerEntry: {
+		...basicStyleSheet.dancerEntry,
+	},
+	dancerEntry__color: {
+		...basicStyleSheet.dancerEntry__color,
+		color: COLORS.white,
+		backgroundColor: COLORS.yellow
+	},
+	dancerEntry__input: {
+		...basicStyleSheet.dancerEntry__input,
+	},
+	dancerEntry__btn: {
+		...basicStyleSheet.dancerEntry__btn,
+	},
+	dancerEntry__btnIcon: {
+		...basicStyleSheet.dancerEntry__btnIcon,
+	},
+	dancerAddBtnContainer: {
+		...basicStyleSheet.dancerAddBtnContainer,
+		backgroundColor: COLORS.blackMiddle
+	},
+	dancerControlBtn: {
+		...basicStyleSheet.dancerControlBtn,
+		backgroundColor: COLORS.blackDark
+	},
+	dancerAddBtn: {
+		...basicStyleSheet.dancerAddBtn,
+		// backgroundColor: COLORS.red
 	}
 });
 
@@ -290,8 +386,8 @@ const dbStyleSheet = StyleSheet.create({
 	}
 });
 
-export default function getStyleSheet(themeType) {
-	switch(themeType) {
+export default function getStyleSheet(theme) {
+	switch(theme) {
 		case 'dark':
 			return darkStyleSheet;
 		case 'light':
@@ -302,5 +398,30 @@ export default function getStyleSheet(themeType) {
 			return dbStyleSheet;
 		default:
 			return darkStyleSheet;
+	}
+}
+
+const DANCER_COLORS_DARK = [
+	COLORS.red,
+	COLORS.yellow,
+	COLORS.blue,
+	COLORS.green,
+];
+
+const DANCER_COLORS_LIGHT = [
+	COLORS.red,
+	COLORS.yellow,
+	COLORS.blue,
+	COLORS.green,
+];
+
+export function getDancerColors(theme) {
+	switch(theme) {
+		case 'dark':
+			return DANCER_COLORS_DARK;
+		case 'light':
+			return DANCER_COLORS_LIGHT;
+		default:
+			return DANCER_COLORS_DARK;
 	}
 }

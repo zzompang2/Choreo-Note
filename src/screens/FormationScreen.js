@@ -154,6 +154,58 @@ export default class FormationScreen extends React.Component {
 	}
 
 	/**
+	 * state 상태에서 각 Dancer 의 위치를 계산한다
+	 */
+	getCurDancerPositions = (state) => {
+		const { times, positions, curTime, selectedPosTime } = state;
+		this.positionsAtSameTime = [];
+
+		if(times.length == 0)
+		return;
+
+		// case 0: 어떤 Formation box 가 선택된 상태인 경우: 선택된 대열을 보여줌
+		if(selectedPosTime !== undefined) {
+			for(let i=0; i<times.length; i++)
+			if(times[i].time == selectedPosTime) {
+				this.positionsAtSameTime.push(...positions[i]);
+				break;
+			}
+		}
+
+		// case 1: 첫 번째 블록보다 앞에 있는 경우
+		else if(curTime < times[0].time)
+		this.positionsAtSameTime.push(...positions[0]);
+
+		// case 2: 마지막 블록보다 뒤에 있는 경우
+		else if(times[times.length-1].time + times[times.length-1].duration < curTime)
+		this.positionsAtSameTime.push(...positions[times.length-1]);
+
+		else {
+			for(let i=0; i < times.length; i++) {
+				const time = times[i];
+				if(curTime <= time.time + time.duration) {
+					// case 3: times[i] 내에 포함된 경우
+					if(time.time <= curTime)
+					this.positionsAtSameTime.push(...positions[i]);
+
+					// case 4: times[i-1] ~ [i] 사이에 있는 경우
+					else {
+						for(let did=0; did<positions[i].length; did++) {
+							const prevDuration = times[i-1].duration;
+							const prev = positions[i-1][did];
+							const post = positions[i][did];
+							const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+							const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
+							this.positionsAtSameTime.push({ did, x, y });
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	/**
 	 * state 상태에서 새로운 formation 을 추가할 수 있는지 여부를 체크한다.
 	 * @param {object} state 기준 state
 	 */
@@ -283,6 +335,12 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
+	moveToDancerScreen = () => {
+		const { noteInfo: { nid } } = this.state;
+		const { getTodayDate } = this.props.route.params;
+		this.props.navigation.navigate('Dancer', { nid: nid, getTodayDate: getTodayDate });
+	}
+
 	/**
 	 * DB 가 수정될 때 마다 edit date 를 업데이트 한다.
 	 * state 의 정보는 업데이트 하지 않으니 조심하자.
@@ -361,61 +419,9 @@ export default class FormationScreen extends React.Component {
 			this.state.positions != nextState.positions ||
 			this.state.selectedPosTime != nextState.selectedPosTime) {
 				this.checkFormationAddable(nextState);
-				this.getCurPositions(nextState);
+				this.getCurDancerPositions(nextState);
 			}
 		return true;
-	}
-
-	/**
-	 * state 상태에서 각 Dancer 의 위치를 계산한다
-	 */
-	getCurPositions = (state) => {
-		const { times, positions, curTime, selectedPosTime } = state;
-		this.positionsAtSameTime = [];
-
-		if(times.length == 0)
-		return;
-
-		// case 0: 어떤 Formation box 가 선택된 상태인 경우: 선택된 대열을 보여줌
-		if(selectedPosTime !== undefined) {
-			for(let i=0; i<times.length; i++)
-			if(times[i].time == selectedPosTime) {
-				this.positionsAtSameTime.push(...positions[i]);
-				break;
-			}
-		}
-
-		// case 1: 첫 번째 블록보다 앞에 있는 경우
-		else if(curTime < times[0].time)
-		this.positionsAtSameTime.push(...positions[0]);
-
-		// case 2: 마지막 블록보다 뒤에 있는 경우
-		else if(times[times.length-1].time + times[times.length-1].duration < curTime)
-		this.positionsAtSameTime.push(...positions[times.length-1]);
-
-		else {
-			for(let i=0; i < times.length; i++) {
-				const time = times[i];
-				if(curTime <= time.time + time.duration) {
-					// case 3: times[i] 내에 포함된 경우
-					if(time.time <= curTime)
-					this.positionsAtSameTime.push(...positions[i]);
-
-					// case 4: times[i-1] ~ [i] 사이에 있는 경우
-					else {
-						for(let did=0; did<positions[i].length; did++) {
-							const prevDuration = times[i-1].duration;
-							const prev = positions[i-1][did];
-							const post = positions[i][did];
-							const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
-							const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
-							this.positionsAtSameTime.push({ did, x, y });
-						}
-					}
-					break;
-				}
-			}
-		}
 	}
 
 	render() {
@@ -430,6 +436,7 @@ export default class FormationScreen extends React.Component {
 			changeFormationBoxLength,
 			addFormation,
 			deleteFormation,
+			moveToDancerScreen,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -474,7 +481,8 @@ export default class FormationScreen extends React.Component {
 				addFormation={addFormation}
 				deleteFormation={deleteFormation}
 				selectedPosTime={selectedPosTime}
-				formationAddable={this.formationAddable} />
+				formationAddable={this.formationAddable}
+				moveToDancerScreen={moveToDancerScreen} />
 
 			</SafeAreaView>
 			</View>

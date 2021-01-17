@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import MainScreen from './MainScreen';
 import FormationScreen from './FormationScreen';
+import DancerScreen from './DancerScreen';
 import DatabaseScreen from './DatabaseScreen';
 
 const Stack = createStackNavigator();
@@ -16,6 +17,7 @@ export default function ScreenStack() {
 		>
       <Stack.Screen name="Main" component={MainScreen} />
 			<Stack.Screen name="Formation" component={FormationScreen} />
+			<Stack.Screen name="Dancer" component={DancerScreen} />
 			<Stack.Screen name="Database" component={DatabaseScreen} />
     </Stack.Navigator>
   );

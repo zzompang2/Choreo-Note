@@ -199,7 +199,7 @@ export default class MainScreen extends React.Component {
 
 				{/* Note 리스트 */}
 				<FlatList
-				style={styles.notes}
+				style={styles.noteList}
 				data={notes}
 				keyExtractor={(item, idx) => idx.toString()}
 				renderItem={({ item, index }) =>

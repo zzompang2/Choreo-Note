@@ -10,7 +10,8 @@ const TAG = "ToolBar/";
 export default class ToolBar extends React.Component {
 
   render() {
-		const { addFormation, deleteFormation, selectedPosTime, formationAddable } = this.props;
+		const { addFormation, deleteFormation, selectedPosTime, 
+			formationAddable, moveToDancerScreen } = this.props;
 		const styles = getStyleSheet();
 		const isSelected = selectedPosTime != undefined;
 
@@ -27,6 +28,11 @@ export default class ToolBar extends React.Component {
 				disabled={!isSelected}
 				onPress={deleteFormation}>
 					<IconIonicons name="trash-sharp" size={40} style={isSelected ? styles.tool : styles.toolDisabled} />
+				</TouchableOpacity>
+				{/* Dancer 수정 */}
+				<TouchableOpacity
+				onPress={moveToDancerScreen}>
+					<IconIonicons name="people-sharp" size={40} style={styles.tool} />
 				</TouchableOpacity>
 			</View>
     )
