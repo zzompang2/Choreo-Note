@@ -255,7 +255,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	dancer: {
 		...basicStyleSheet.dancer,
-		backgroundColor: COLORS.yellow
+		backgroundColor: COLORS.white
 	},
 	timeline: {
 		...basicStyleSheet.timeline,

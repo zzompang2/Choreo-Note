@@ -2,7 +2,7 @@ import React from "react";
 import { 
 	PanResponder, Animated, Text
 } from "react-native";
-import getStyleSheet from "../values/styles";
+import getStyleSheet, { getDancerColors } from "../values/styles";
 
 const TAG = "Dancer/";
 
@@ -53,8 +53,9 @@ export default class Dancer extends React.Component {
 	}
 	
 	render() {
-		const { did, curPos } = this.props;
+		const { dancer, curPos } = this.props;
 		const styles = getStyleSheet();
+		const dancerColors = getDancerColors();
 
 		// this.curVal 을 curPos 값으로 업데이트
 		this.pan.setValue(curPos);
@@ -66,8 +67,8 @@ export default class Dancer extends React.Component {
       <Animated.View
       pointerEvents='auto'
       {...this.panResponder.panHandlers}
-			style={[panStyle, styles.dancer]}>
-      	<Text>{did+1}</Text>
+			style={[panStyle, styles.dancer, {backgroundColor: dancerColors[dancer.color]}]}>
+      	<Text>{dancer.did+1}</Text>
       </Animated.View>
     )
   }

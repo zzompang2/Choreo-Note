@@ -12,9 +12,7 @@ const TAG = "Stage/";
 export default class Stage extends React.Component {
 
   render() {
-		const { positionsAtSameTime } = this.props;
-
-		const { changeDancerPosition, selectedPosTime } = this.props;
+		const { positionsAtSameTime, changeDancerPosition, selectedPosTime, dancers } = this.props;
 		const styles = getStyleSheet();
 		const height = width / this.props.stageRatio;
 
@@ -27,7 +25,7 @@ export default class Stage extends React.Component {
 					<Dancer
 					key={did}
 					changeDancerPosition={changeDancerPosition}
-					did={did}
+					dancer={dancers[did]}
 					selectedPosTime={selectedPosTime}
 					curPos={{
 						x: pos.x, 

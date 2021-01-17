@@ -458,7 +458,8 @@ export default class FormationScreen extends React.Component {
 				stageRatio={noteInfo.stageRatio}
 				positionsAtSameTime={this.positionsAtSameTime}
 				changeDancerPosition={changeDancerPosition}
-				selectedPosTime={selectedPosTime} />
+				selectedPosTime={selectedPosTime}
+				dancers={dancers} />
 
 				{/* Music Bar */}
 
