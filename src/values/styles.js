@@ -368,16 +368,16 @@ const dbStyleSheet = StyleSheet.create({
 	},
 	dbEntry: {
 		flexDirection: 'row',
-		height: 20,
+		height: 15,
 		paddingHorizontal: 10,
 		alignItems: 'center'
 	},
 	dbTable: {
-		fontSize: 13,
+		fontSize: 10,
 		color: COLORS.yellow,
 	},
 	dbText: {
-		fontSize: 13,
+		fontSize: 11,
 		color: COLORS.white,
 	},
 	noteSubInfo: {
