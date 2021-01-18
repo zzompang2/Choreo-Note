@@ -26,6 +26,29 @@ export default class FormationScreen extends React.Component {
 	
 	playMusic = () => {
 		console.log("노래 재생!");
+		const { isPlay, curTime, noteInfo: { musicLength } } = this.state;
+		this.setState({ isPlay: !isPlay });
+
+		if(!isPlay) {
+			const startTime = new Date().getTime();
+			console.log("시작:", startTime);
+			this.interval = setInterval(() => {
+				const musicTime = curTime + Math.floor((new Date().getTime() - startTime)/1000);
+				
+				if(this.state.curTime != musicTime) {
+					console.log(musicTime, musicLength);
+					if(musicTime == musicLength) {
+						clearInterval(this.interval);
+						this.setState({ curTime: 0, isPlay: false });
+					}
+					else
+					this.setState({ curTime: musicTime });
+				}
+			},
+			100);
+		}
+		else
+		clearInterval(this.interval);
 	}
 
 	/**
@@ -417,6 +440,10 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
+	// componentDidUpdate() {
+		
+	// }
+
 	componentDidMount() {
 		const nid = this.props.route.params.nid;
 
@@ -517,7 +544,8 @@ export default class FormationScreen extends React.Component {
 				changeDancerPosition={changeDancerPosition}
 				selectedPosTime={selectedPosTime}
 				dancers={dancers}
-				displayName={noteInfo.displayName} />
+				displayName={noteInfo.displayName}
+				isPlay={isPlay} />
 
 				{/* Music Bar */}
 				<PlayerBar
