@@ -203,9 +203,7 @@ export default class FormationScreen extends React.Component {
 	 * state 상태에서 각 Dancer 의 위치를 계산한다
 	 */
 	getCurDancerPositions = (state) => {
-		console.log("하하");
 		const { times, positions, curTime, selectedPosTime } = state;
-		// this.positionsAtCurTime = [];
 
 		if(times.length == 0)
 		return;
@@ -475,8 +473,7 @@ export default class FormationScreen extends React.Component {
 						[nid],
 						(txn, result) => {
 							const dancers = [];
-							this.positionsAtCurTime = [];
-							console.log("component did mount");
+							this.positionsAtCurTime = [];	// curTime 에 Dancer 들의 위치 및 play 애니메이션을 위한..
 							for (let i = 0; i < result.rows.length; i++) {
 								dancers.push({...result.rows.item(i), key: i});
 								this.positionsAtCurTime.push(new Animated.ValueXY());
@@ -516,13 +513,19 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
+	/**
+	 * curTime 이 formation box 를 벗어나는 순간이라면 다음 formation 위치로
+	 * 이동하는 애니메이션을 실행한다.
+	 * @param {object} state 
+	 */
 	playDancerMove = (state) => {
 		const { times, positions, curTime } = state;
 		const animatedList = [];
 		for(let i=0; i<times.length-1; i++) {
-			const rightEnd = times[i].time + times[i].duration;
+			const rightEnd = times[i].time + times[i].duration;		// formation box 의 오른쪽 끝
 			if(rightEnd < curTime)
 			continue;
+			// formation box 를 벗어나려는 순간인 경우
 			if(rightEnd == curTime) {
 				const position = positions[i+1];
 				for(let did=0; did<position.length; did++) {
