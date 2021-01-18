@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, View, Text, TouchableOpacity
+  SafeAreaView, View, Text, TouchableOpacity, Animated
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
@@ -203,8 +203,9 @@ export default class FormationScreen extends React.Component {
 	 * state 상태에서 각 Dancer 의 위치를 계산한다
 	 */
 	getCurDancerPositions = (state) => {
+		console.log("하하");
 		const { times, positions, curTime, selectedPosTime } = state;
-		this.positionsAtSameTime = [];
+		// this.positionsAtCurTime = [];
 
 		if(times.length == 0)
 		return;
@@ -213,18 +214,20 @@ export default class FormationScreen extends React.Component {
 		if(selectedPosTime !== undefined) {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
-				this.positionsAtSameTime.push(...positions[i]);
+				positions[i].forEach((pos, idx) =>
+				this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
 				break;
 			}
 		}
-
 		// case 1: 첫 번째 블록보다 앞에 있는 경우
 		else if(curTime < times[0].time)
-		this.positionsAtSameTime.push(...positions[0]);
+		positions[0].forEach((pos, idx) =>
+		this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
 
 		// case 2: 마지막 블록보다 뒤에 있는 경우
 		else if(times[times.length-1].time + times[times.length-1].duration < curTime)
-		this.positionsAtSameTime.push(...positions[times.length-1]);
+		positions[times.length-1].forEach((pos, idx) =>
+		this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
 
 		else {
 			for(let i=0; i < times.length; i++) {
@@ -232,7 +235,8 @@ export default class FormationScreen extends React.Component {
 				if(curTime <= time.time + time.duration) {
 					// case 3: times[i] 내에 포함된 경우
 					if(time.time <= curTime)
-					this.positionsAtSameTime.push(...positions[i]);
+					positions[i].forEach((pos, idx) =>
+					this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
 
 					// case 4: times[i-1] ~ [i] 사이에 있는 경우
 					else {
@@ -242,7 +246,7 @@ export default class FormationScreen extends React.Component {
 							const post = positions[i][did];
 							const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
 							const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
-							this.positionsAtSameTime.push({ did, x, y });
+							this.positionsAtCurTime[did].setValue({ x, y });
 						}
 					}
 					break;
@@ -471,8 +475,12 @@ export default class FormationScreen extends React.Component {
 						[nid],
 						(txn, result) => {
 							const dancers = [];
-							for (let i = 0; i < result.rows.length; i++)
+							this.positionsAtCurTime = [];
+							console.log("component did mount");
+							for (let i = 0; i < result.rows.length; i++) {
 								dancers.push({...result.rows.item(i), key: i});
+								this.positionsAtCurTime.push(new Animated.ValueXY());
+							}
 							txn.executeSql(
 								"SELECT * FROM times WHERE nid = ? ORDER BY time",
 								[nid],
@@ -508,10 +516,38 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
+	playDancerMove = (state) => {
+		const { times, positions, curTime } = state;
+		const animatedList = [];
+		for(let i=0; i<times.length-1; i++) {
+			const rightEnd = times[i].time + times[i].duration;
+			if(rightEnd < curTime)
+			continue;
+			if(rightEnd == curTime) {
+				const position = positions[i+1];
+				for(let did=0; did<position.length; did++) {
+					animatedList.push(
+						Animated.timing(
+							this.positionsAtCurTime[did], {
+								toValue: {x: position[did].x, y: position[did].y},
+								duration: (times[i+1].time - rightEnd) * 1000,
+								useNativeDriver: false,
+							}
+						)
+					);
+				}
+				Animated.parallel(animatedList).start();
+			}
+			break;
+		}
+	}
+
 	shouldComponentUpdate(nextProps, nextState) {
 		// play 중이면 formation 추가 금지
-		if(nextState.isPlay)
-		this.formationAddable = false;
+		if(nextState.isPlay) {
+			this.formationAddable = false;
+			this.playDancerMove(nextState);
+		}
 		
 		// state 가 바뀔 때 마다 Dancer 위치, formationAddable 을 업데이트한다
 		else if(this.state.curTime != nextState.curTime ||
@@ -562,12 +598,11 @@ export default class FormationScreen extends React.Component {
 				{/* Stage: Coordinate & Dancer */}
 				<Stage
 				stageRatio={noteInfo.stageRatio}
-				positionsAtSameTime={this.positionsAtSameTime}
+				positionsAtCurTime={this.positionsAtCurTime}
 				changeDancerPosition={changeDancerPosition}
 				selectedPosTime={selectedPosTime}
 				dancers={dancers}
-				displayName={noteInfo.displayName}
-				isPlay={isPlay} />
+				displayName={noteInfo.displayName} />
 
 				{/* Music Bar */}
 				<PlayerBar

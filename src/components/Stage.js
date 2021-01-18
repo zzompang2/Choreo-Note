@@ -12,8 +12,8 @@ const TAG = "Stage/";
 export default class Stage extends React.Component {
 
   render() {
-		const { positionsAtSameTime, changeDancerPosition, selectedPosTime,
-			dancers, displayName, isPlay } = this.props;
+		const { positionsAtCurTime, changeDancerPosition, selectedPosTime,
+			dancers, displayName } = this.props;
 		const styles = getStyleSheet();
 		const height = width / this.props.stageRatio;
 
@@ -22,18 +22,14 @@ export default class Stage extends React.Component {
 		return (
 			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
 				<Coordinate height={height} />
-				{positionsAtSameTime.map((pos, did) =>
+				{positionsAtCurTime.map((animated, did) =>
 				<Dancer
 				key={did}
 				changeDancerPosition={changeDancerPosition}
 				dancer={dancers[did]}
 				selectedPosTime={selectedPosTime}
-				curPos={{
-					x: pos.x,
-					y: pos.y
-				}}
-				displayName={displayName}
-				isPlay={isPlay} />)}
+				curPosAnimated={animated}
+				displayName={displayName} />)}
 			</View>
     )
   }

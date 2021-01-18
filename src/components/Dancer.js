@@ -9,12 +9,11 @@ const TAG = "Dancer/";
 export default class Dancer extends React.Component {
 	constructor(props) {
 		super(props);
-		this.pan = new Animated.ValueXY();
-		
+
 		this.curVal = { x: 0, y: 0 };
     
     // setValue() 실행시 실행됨
-		this.pan.addListener(value => this.curVal = value);
+		this.props.curPosAnimated.addListener(value => this.curVal = value);
 		
     /** Initialize PanResponder with move handling **/
     this.panResponder = PanResponder.create({
@@ -29,13 +28,13 @@ export default class Dancer extends React.Component {
 				/* 터치이벤트 도중 변하는 값은 value 이다. 그러나 내가 원하는 건
 					 x = dx, y = dy 가 아닌 (기존값) + dx 이므로
 					 offset 에 (기존값) 을 저장해 놓고 value 를 0 으로 세팅한다. */
-        this.pan.setOffset({ x: this.curVal.x, y: this.curVal.y })
-        this.pan.setValue({ x: 0, y: 0 });
+        this.props.curPosAnimated.setOffset({ x: this.curVal.x, y: this.curVal.y })
+        this.props.curPosAnimated.setValue({ x: 0, y: 0 });
 			},
 			
       // MOVE 제스쳐가 진행 중일 때 (계속 실행)
 			onPanResponderMove: Animated.event(
-				[null, { dx: this.pan.x, dy: this.pan.y }],
+				[null, { dx: this.props.curPosAnimated.x, dy: this.props.curPosAnimated.y }],
 				{useNativeDriver: false}		// 움직임을 부드럽지 않도록 한다
 			),
 
@@ -46,22 +45,19 @@ export default class Dancer extends React.Component {
 					y: this.preVal.y + gesture.dy
 				};
 				// 이벤트 시작 때 세팅했던 offset 을 원래대로 돌린다
-				this.pan.setOffset({ x: 0, y: 0 });
+				this.props.curPosAnimated.setOffset({ x: 0, y: 0 });
         this.props.changeDancerPosition(this.props.dancer.did, this.curVal.x, this.curVal.y);
       }
     });
 	}
-	
+
 	render() {
-		const { dancer, curPos, displayName } = this.props;
+		const { dancer, curPosAnimated, displayName } = this.props;
 		const styles = getStyleSheet();
 		const dancerColors = getDancerColors();
 
-		// this.curVal 을 curPos 값으로 업데이트
-		this.pan.setValue(curPos);
-		
 		// 위치를 지정할 스타일
-    const panStyle = { transform: this.pan.getTranslateTransform() };
+    const panStyle = { transform: curPosAnimated.getTranslateTransform() };
 
 		return (
       <Animated.View
