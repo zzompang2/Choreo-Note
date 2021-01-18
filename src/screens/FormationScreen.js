@@ -546,14 +546,48 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	playDancerMoveStart = (state) => {
+		const { times, positions, curTime } = state;
+		const animatedList = [];
+		for(let i=0; i<times.length; i++) {
+			const rightEnd = times[i].time + times[i].duration;		// formation box 의 오른쪽 끝
+			if(rightEnd < curTime)
+			continue;
+			// formation box 를 벗어나려는 순간인 경우
+			if(curTime < rightEnd && curTime < times[i].time) {
+				const position = positions[i];
+				for(let did=0; did<position.length; did++) {
+					animatedList.push(
+						Animated.timing(
+							this.positionsAtCurTime[did], {
+								toValue: {x: position[did].x, y: position[did].y},
+								duration: (times[i].time - curTime) * 1000,
+								easing: Easing.linear,
+								useNativeDriver: false,
+							}
+						)
+					);
+				}
+				Animated.parallel(animatedList).start();
+			}
+			break;
+		}
+	}
+
 	shouldComponentUpdate(nextProps, nextState) {
-		// play 중이면 formation 추가 금지
 		if(nextState.isPlay) {
+			// play 중일 때 formation 추가 금지
 			this.formationAddable = false;
+			
 			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
 			if(this.state.selectedPosTime != undefined)
 			this.getCurDancerPositions(nextState);
 
+			// play 하는 순간 두 대열 사이에 있는 경우
+			if(!this.state.isPlay)
+			this.playDancerMoveStart(nextState);
+
+			// curTime 업데이트 될 때 마다 애니메이션 실행 여부 확인 및 실행
 			this.playDancerMove(nextState);
 		}
 		
