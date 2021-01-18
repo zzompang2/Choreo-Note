@@ -3,6 +3,9 @@ import {
   SafeAreaView, View, Text, TouchableOpacity, Animated, Easing
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
+import RNFS from 'react-native-fs';
+import Sound from 'react-native-sound';
+
 import getStyleSheet from '../values/styles';
 import Stage from '../components/Stage';
 import Timeline from '../components/Timeline';
@@ -50,12 +53,14 @@ export default class FormationScreen extends React.Component {
 			},
 			100);
 			this.setState({ isPlay: true, selectedPosTime: undefined });
+			this.musicPlay();
 		}
 	}
 
 	pause = () => {
 		clearInterval(this.interval);
 		this.setState({ isPlay: false });
+		this.sound.pause();
 	}
 
 	/**
@@ -455,12 +460,35 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
-	// componentDidUpdate() {
-		
-	// }
+	musicLoad = () => {
+		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
+			console.log('name:', files[0].name);
+
+			this.sound = new Sound(encodeURI(files[0].path), '', (error) => {
+				if (error)
+				console.log('MUSIC LOAD FAIL', error);
+				else
+				console.log('MUSIC LOAD SUCCESS:', Math.ceil(this.sound.getDuration()));
+			});
+		});
+	}
+
+	musicPlay = () => {
+		const { curTime } = this.state;
+
+		if(this.sound.isLoaded()) {
+			this.sound.setCurrentTime(curTime);
+			this.sound.play(() => {
+				this.sound.pause();
+				this.sound.setCureentTime(0);
+			});
+		}
+	}
 
 	componentDidMount() {
 		const nid = this.props.route.params.nid;
+
+		this.musicLoad();
 
 		db.transaction(txn => {
       txn.executeSql(
