@@ -42,7 +42,7 @@ export default class PlayerBar extends React.Component {
 	}
 
   render() {
-		const { curTime, musicLength, playMusic, isPlay } = this.props;
+		const { curTime, musicLength, pressPlayButton, isPlay } = this.props;
 		const styles = getStyleSheet();
 		
 		const trackStyle = { left: Animated.add(playerTrackLength * curTime / musicLength, this.thumbLeft) };
@@ -54,7 +54,7 @@ export default class PlayerBar extends React.Component {
 				<TouchableOpacity
 				style={styles.playerBar__timeBox}
 				disabled={false}
-				onPress={playMusic}>
+				onPress={pressPlayButton}>
 					<IconIonicons name={isPlay ? "pause" : "play"} size={40} style={styles.playerBar__btn} />
 				</TouchableOpacity>
 

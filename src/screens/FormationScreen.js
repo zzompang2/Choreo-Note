@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, View, Text, TouchableOpacity, Animated
+  SafeAreaView, View, Text, TouchableOpacity, Animated, Easing
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
@@ -24,7 +24,7 @@ export default class FormationScreen extends React.Component {
 		isPlay: false,
 	}
 	
-	playMusic = () => {
+	pressPlayButton = () => {
 		if(!this.state.isPlay)
 		this.play();
 		else
@@ -534,6 +534,7 @@ export default class FormationScreen extends React.Component {
 							this.positionsAtCurTime[did], {
 								toValue: {x: position[did].x, y: position[did].y},
 								duration: (times[i+1].time - rightEnd) * 1000,
+								easing: Easing.linear,
 								useNativeDriver: false,
 							}
 						)
@@ -549,6 +550,10 @@ export default class FormationScreen extends React.Component {
 		// play 중이면 formation 추가 금지
 		if(nextState.isPlay) {
 			this.formationAddable = false;
+			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
+			if(this.state.selectedPosTime != undefined)
+			this.getCurDancerPositions(nextState);
+
 			this.playDancerMove(nextState);
 		}
 		
@@ -582,7 +587,7 @@ export default class FormationScreen extends React.Component {
 			addFormation,
 			deleteFormation,
 			moveToDancerScreen,
-			playMusic,
+			pressPlayButton,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -612,7 +617,7 @@ export default class FormationScreen extends React.Component {
 				<PlayerBar
 				curTime={curTime}
 				musicLength={noteInfo.musicLength}
-				playMusic={playMusic}
+				pressPlayButton={pressPlayButton}
 				isPlay={isPlay}
 				setCurTime={setCurTime} />
 
