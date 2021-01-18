@@ -53,7 +53,7 @@ export default class Dancer extends React.Component {
 	}
 	
 	render() {
-		const { dancer, curPos } = this.props;
+		const { dancer, curPos, displayName } = this.props;
 		const styles = getStyleSheet();
 		const dancerColors = getDancerColors();
 
@@ -68,7 +68,7 @@ export default class Dancer extends React.Component {
       pointerEvents='auto'
       {...this.panResponder.panHandlers}
 			style={[panStyle, styles.dancer, {backgroundColor: dancerColors[dancer.color]}]}>
-      	<Text>{dancer.did+1}</Text>
+      	<Text>{displayName ? dancer.name.slice(0, 2) : dancer.did+1}</Text>
       </Animated.View>
     )
   }

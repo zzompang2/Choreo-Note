@@ -42,7 +42,7 @@ export default class MainScreen extends React.Component {
 						this.setState({ notes });
 
 						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?)",
+							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?, 0)",
 							[title, createDate, createDate, stageRatio, music, musicLength]);
 						txn.executeSql(
 							"INSERT INTO dancers VALUES (0, 0, 'ham', 0)", []);
@@ -81,6 +81,7 @@ export default class MainScreen extends React.Component {
 				'stageRatio INTEGER NOT NULL, ' +		// (가로 / 세로)
 				'music TEXT NOT NULL, ' +
 				'musicLength INTEGER NOT NULL, ' +
+				'displayName INTEGER NOT NULL, ' +	// (0: did, 1: name)
 				'PRIMARY KEY(nid))'
 			);
 
@@ -150,7 +151,7 @@ export default class MainScreen extends React.Component {
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?)",
+				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, 0)",
 				[nid, title, createDate, createDate, stageRatio, music, musicLength]);
 
 			txn.executeSql(

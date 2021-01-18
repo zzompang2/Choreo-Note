@@ -336,9 +336,10 @@ export default class FormationScreen extends React.Component {
 	}
 
 	moveToDancerScreen = () => {
-		const { noteInfo: { nid } } = this.state;
+		const { noteInfo: { nid, displayName } } = this.state;
 		this.props.navigation.navigate('Dancer', { 
-			nid: nid, 
+			nid: nid,
+			displayName: displayName,
 			updateEditDate: this.updateEditDate,
 			updateStateFromDB: this.updateStateFromDB
 		});
@@ -349,26 +350,34 @@ export default class FormationScreen extends React.Component {
 
 		db.transaction(txn => {
       txn.executeSql(
-				"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
+				"SELECT * FROM notes WHERE nid = ?",
 				[nid],
-				(txn, result) => {
-					const dancers = [];
-					for (let i = 0; i < result.rows.length; i++)
-						dancers.push({...result.rows.item(i), key: i});
+        (txn, result) => {
+					const noteInfo = result.rows.item(0);
 					txn.executeSql(
-						"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
+						"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
 						[nid],
 						(txn, result) => {
-							const positions = [];
-							for (let i = 0; i < result.rows.length;) {
-								const positionsAtSameTime = [];
-								for(let j=0; j<dancers.length; j++) {
-									positionsAtSameTime.push({...result.rows.item(i), key: i});
-									i++;
+							const dancers = [];
+							for (let i = 0; i < result.rows.length; i++)
+							dancers.push({...result.rows.item(i), key: i});
+
+							txn.executeSql(
+								"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
+								[nid],
+								(txn, result) => {
+									const positions = [];
+									for (let i = 0; i < result.rows.length;) {
+										const positionsAtSameTime = [];
+										for(let j=0; j<dancers.length; j++) {
+											positionsAtSameTime.push({...result.rows.item(i), key: i});
+											i++;
+										}
+										positions.push(positionsAtSameTime);
+									}
+									this.setState({ noteInfo, dancers, positions });
 								}
-								positions.push(positionsAtSameTime);
-							}
-							this.setState({ dancers, positions });
+							);
 						}
 					);
 				}
@@ -496,7 +505,8 @@ export default class FormationScreen extends React.Component {
 				positionsAtSameTime={this.positionsAtSameTime}
 				changeDancerPosition={changeDancerPosition}
 				selectedPosTime={selectedPosTime}
-				dancers={dancers} />
+				dancers={dancers}
+				displayName={noteInfo.displayName} />
 
 				{/* Music Bar */}
 

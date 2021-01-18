@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	SafeAreaView, View, Text, TouchableOpacity, FlatList, TextInput, Animated
+	SafeAreaView, View, Text, TouchableOpacity, FlatList, TextInput, Animated, Switch
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet, { COLORS, getDancerColors } from '../values/styles';
@@ -15,6 +15,7 @@ export default class DancerScreen extends React.Component {
 
 		this.state = {
 			nid: undefined,
+			displayName: undefined,
 			dancers: [],
 			times: [],
 			isAddBtnAppear: false
@@ -206,12 +207,26 @@ export default class DancerScreen extends React.Component {
 		}
 	}
 
+	changeDisplayType = () => {
+		const { nid, displayName } = this.state;
+		this.setState({ displayName: !displayName });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE notes SET displayName=? WHERE nid=?",
+				[Number(!displayName), nid]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.props.route.params.updateEditDate();
+	}
+
 	// <FlatList> 구분선
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
 
 	componentDidMount() {
-		const nid = this.props.route.params.nid;
+		const { nid, displayName } = this.props.route.params;
 
 		db.transaction(txn => {
       txn.executeSql(
@@ -233,7 +248,7 @@ export default class DancerScreen extends React.Component {
 							for (let i = 0; i < result.rows.length; i++)
 							times.push({...result.rows.item(i), key: i});
 							
-							this.setState({ nid, dancers, times });
+							this.setState({ nid, displayName: !!displayName, dancers, times });
 					});
 				}
 			);				
@@ -247,8 +262,7 @@ export default class DancerScreen extends React.Component {
 	}
 	
 	render() {
-		console.log(TAG, 'render');
-		const { nid, dancers } = this.state;
+		const { nid, displayName, dancers } = this.state;
 		const {
 			changeName,
 			changeColor,
@@ -256,6 +270,7 @@ export default class DancerScreen extends React.Component {
 			addDancer,
 			deleteDancer,
 			deleteButtonDisable,
+			changeDisplayType,
 		} = this;
 		const styles = getStyleSheet();
 		const dancerColors = getDancerColors();
@@ -270,7 +285,13 @@ export default class DancerScreen extends React.Component {
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
-					<Text style={styles.toolbarTitle}>Database</Text>
+					<Text style={styles.toolbarTitle}>Dancer</Text>
+					<Switch
+					trackColor={{ false: COLORS.grayLight, true: COLORS.grayLight }}
+					// thumbColor={displayName ? "#f5dd4b" : "#f4f3f4"}
+					ios_backgroundColor={COLORS.blackMiddle}
+					onValueChange={changeDisplayType}
+					value={displayName} />
 					<TouchableOpacity
 					onPress={() => this.props.navigation.goBack()}>
 						<Text style={styles.toolbarButton}>뒤로</Text>
@@ -289,7 +310,9 @@ export default class DancerScreen extends React.Component {
 					<TouchableOpacity
 					onPress={() => changeColor(item.did)}
 					style={{...styles.dancerEntry__color, backgroundColor: dancerColors[item.color]}}>
-						<Text style={styles.dancerEntry__text}>{item.did+1}</Text>
+						<Text style={styles.dancerEntry__text}>
+							{displayName ? item.name.slice(0, 2) : item.did+1}
+						</Text>
 					</TouchableOpacity>
 					<TextInput
 					maxLength={30}
