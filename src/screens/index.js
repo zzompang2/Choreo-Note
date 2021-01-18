@@ -1,6 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import MainScreen from './MainScreen';
+import EditNoteScreen from './EditNoteScreen';
 import FormationScreen from './FormationScreen';
 import DancerScreen from './DancerScreen';
 import DatabaseScreen from './DatabaseScreen';
@@ -16,6 +17,7 @@ export default function ScreenStack() {
 		screenOptions={{animationEnabled: false}}	// 이동시 좌우 슬라이드 애니메이션 없애기
 		>
       <Stack.Screen name="Main" component={MainScreen} />
+			<Stack.Screen name="EditNote" component={EditNoteScreen} />
 			<Stack.Screen name="Formation" component={FormationScreen} />
 			<Stack.Screen name="Dancer" component={DancerScreen} />
 			<Stack.Screen name="Database" component={DatabaseScreen} />

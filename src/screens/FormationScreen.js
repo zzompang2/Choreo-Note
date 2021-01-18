@@ -388,7 +388,7 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
-	moveToDancerScreen = () => {
+	goToDancerScreen = () => {
 		const { noteInfo: { nid, displayName } } = this.state;
 		this.props.navigation.navigate('Dancer', { 
 			nid: nid,
@@ -486,7 +486,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	componentDidMount() {
-		const nid = this.props.route.params.nid;
+		const { nid } = this.props.route.params;
 
 		this.musicLoad();
 
@@ -648,7 +648,7 @@ export default class FormationScreen extends React.Component {
 			changeFormationBoxLength,
 			addFormation,
 			deleteFormation,
-			moveToDancerScreen,
+			goToDancerScreen,
 			pressPlayButton,
 		} = this;
 
@@ -704,7 +704,7 @@ export default class FormationScreen extends React.Component {
 				deleteFormation={deleteFormation}
 				selectedPosTime={selectedPosTime}
 				formationAddable={this.formationAddable}
-				moveToDancerScreen={moveToDancerScreen}
+				goToDancerScreen={goToDancerScreen}
 				isPlay={isPlay} />
 
 			</SafeAreaView>

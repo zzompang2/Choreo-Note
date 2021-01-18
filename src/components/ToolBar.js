@@ -11,7 +11,7 @@ export default class ToolBar extends React.Component {
 
   render() {
 		const { addFormation, deleteFormation, selectedPosTime, 
-			formationAddable, moveToDancerScreen, isPlay } = this.props;
+			formationAddable, goToDancerScreen, isPlay } = this.props;
 		const styles = getStyleSheet();
 		const isSelected = selectedPosTime != undefined;
 
@@ -32,7 +32,7 @@ export default class ToolBar extends React.Component {
 				{/* Dancer 수정 */}
 				<TouchableOpacity
 				disabled={isPlay}
-				onPress={moveToDancerScreen}>
+				onPress={goToDancerScreen}>
 					<IconIonicons name="people-sharp" size={40} style={!isPlay ? styles.tool : styles.toolDisabled} />
 				</TouchableOpacity>
 			</View>

@@ -23,7 +23,7 @@ export const COLORS = {
 
 const basicStyleSheet = StyleSheet.create({
 	bg: {
-		flex: 1
+		flex: 1,
 	},
 	toolbar: {
 		width: '100%',
@@ -160,6 +160,9 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center',
 		marginHorizontal: 12,
 	},
+	dancerEntry__text: {
+		fontSize: 14,
+	},
 	dancerEntry__input: {
 		height: 42,
 		flex: 1,
@@ -238,6 +241,44 @@ const basicStyleSheet = StyleSheet.create({
 		height: 20,
 		margin: 10,
 		borderRadius: 15,
+	},
+	editNote__title: {
+		fontSize: 15,
+	},
+	editNote__input: {
+		flex: 1,
+		height: 40,
+		fontSize: 15,
+		borderColor: COLORS.grayDark,
+		borderWidth: 1,
+		borderRadius: 10,
+		marginTop: 9,
+		marginBottom: 15,
+		paddingHorizontal: 13,
+	},
+	editNote__flag: {
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		marginLeft: 10,
+	},
+	editNote__musicList: {
+		borderColor: COLORS.grayDark,
+		borderWidth: 1,
+		borderRadius: 10,
+	},
+	editNote__musicEntry: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		// paddingHorizontal: 10,
+		height: 50,
+	},
+	editNote__text: {
+		fontSize: 14,
+	},
+	editNote__btn: {
+		padding: 5,
 	}
 });
 
@@ -346,8 +387,11 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	dancerEntry__color: {
 		...basicStyleSheet.dancerEntry__color,
-		color: COLORS.white,
 		backgroundColor: COLORS.yellow
+	},
+	dancerEntry__text: {
+		...basicStyleSheet.dancerEntry__text,
+		color: COLORS.white,
 	},
 	dancerEntry__input: {
 		...basicStyleSheet.dancerEntry__input,
@@ -402,6 +446,28 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.playerBar__thumb,
 		backgroundColor: COLORS.white,
 	},
+	editNote__title: {
+		...basicStyleSheet.editNote__title,
+		color: COLORS.grayMiddle,
+	},
+	editNote__input: {
+		...basicStyleSheet.editNote__input,
+		color: COLORS.white,
+	},
+	editNote__flag: {
+		...basicStyleSheet.editNote__flag,
+		backgroundColor: COLORS.green
+	},
+	editNote__musicList: {
+		...basicStyleSheet.editNote__musicList,
+	},
+	editNote__musicEntry: {
+		...basicStyleSheet.editNote__musicEntry,
+	},
+	editNote__btn: {
+		...basicStyleSheet.editNote__btn,
+		color: COLORS.white,
+	}
 });
 
 const lightStyleSheet = StyleSheet.create({

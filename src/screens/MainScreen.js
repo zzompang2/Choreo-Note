@@ -19,10 +19,10 @@ export default class MainScreen extends React.Component {
 
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
-			txn.executeSql('DROP TABLE IF EXISTS notes');
-			txn.executeSql('DROP TABLE IF EXISTS dancers');
-			txn.executeSql('DROP TABLE IF EXISTS times');
-			txn.executeSql('DROP TABLE IF EXISTS positions');
+			// txn.executeSql('DROP TABLE IF EXISTS notes');
+			// txn.executeSql('DROP TABLE IF EXISTS dancers');
+			// txn.executeSql('DROP TABLE IF EXISTS times');
+			// txn.executeSql('DROP TABLE IF EXISTS positions');
 
 			txn.executeSql(
 				'SELECT COUNT(*) FROM sqlite_master WHERE name = ?',
@@ -37,13 +37,14 @@ export default class MainScreen extends React.Component {
 						const stageRatio = 1;
 						const music = 'sample.mp3';
 						const musicLength = 60;
+						const displayName = 0;
 
-						notes.push({ nid: 0, title, createDate, editDate: createDate, stageRatio });
+						notes.push({ nid: 0, title, createDate, editDate: createDate, music });
 						this.setState({ notes });
 
 						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?, 0)",
-							[title, createDate, createDate, stageRatio, music, musicLength]);
+							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?, ?)",
+							[title, createDate, createDate, stageRatio, music, musicLength, displayName]);
 						txn.executeSql(
 							"INSERT INTO dancers VALUES (0, 0, 'ham', 0)", []);
 			
@@ -144,17 +145,18 @@ export default class MainScreen extends React.Component {
 		const title = '새 노트';
 		const createDate = this.getTodayDate();
 		const stageRatio = 2;
-		const music = 'sample.mp3';
+		const music = '';
 		const musicLength = 60;
+		const displayName = 0;
 
-		notes.push({ nid, title, createDate, editDate: createDate, stageRatio });
+		notes.push({ nid, title, createDate, editDate: createDate, music });
 		this.setState({ notes });
 		
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, 0)",
-				[nid, title, createDate, createDate, stageRatio, music, musicLength]);
+				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+				[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]);
 
 			txn.executeSql(
 				"INSERT INTO dancers VALUES (?, 0, 'ham', 0)",
@@ -211,7 +213,7 @@ export default class MainScreen extends React.Component {
 					<View>
 						<TouchableOpacity
 						onPress={() => {
-							this.props.navigation.navigate('Formation', { nid: item.nid, getTodayDate: getTodayDate });
+							this.props.navigation.navigate(item.music == '' ? 'EditNote' : 'Formation', { nid: item.nid, getTodayDate: getTodayDate });
 						}}
 						style={styles.noteEntry}>
 							{/* <Text numberOfLines={1}>{item.nid}</Text> */}
