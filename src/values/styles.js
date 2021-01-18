@@ -223,11 +223,12 @@ const basicStyleSheet = StyleSheet.create({
 	playerBar__track: {
 		width: width - 100,
 		height: 40,	// thumb 의 세로길이
-		justifyContent: 'center',
+		alignItems: 'center',
+		flexDirection: 'row',
 	},
 	playerBar__trackBg: {
 		height: 5,
-		marginHorizontal: 15,
+		width: 50,
 		borderRadius: 5,
 	},
 	playerBar__thumb: {
@@ -387,9 +388,15 @@ const darkStyleSheet = StyleSheet.create({
 	playerBar__track: {
 		...basicStyleSheet.playerBar__track,
 	},
-	playerBar__trackBg: {
+	playerBar__trackBgLeft: {
 		...basicStyleSheet.playerBar__trackBg,
-		backgroundColor: COLORS.grayDark,
+		marginLeft: 15,
+		backgroundColor: COLORS.grayLight,
+	},
+	playerBar__trackBgRight: {
+		...basicStyleSheet.playerBar__trackBg,
+		marginRight: 15,
+		backgroundColor: COLORS.blackLight,
 	},
 	playerBar__thumb: {
 		...basicStyleSheet.playerBar__thumb,

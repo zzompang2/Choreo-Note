@@ -45,7 +45,9 @@ export default class PlayerBar extends React.Component {
 		const { curTime, musicLength, pressPlayButton, isPlay } = this.props;
 		const styles = getStyleSheet();
 		
-		const trackStyle = { left: Animated.add(playerTrackLength * curTime / musicLength, this.thumbLeft) };
+		const thumbStyle = { left: Animated.add(playerTrackLength * curTime / musicLength, this.thumbLeft) };
+		const trackLeftStyle = { width: Animated.add(playerTrackLength * curTime / musicLength, this.thumbLeft) };
+		const trackRightStyle = { width: Animated.add(playerTrackLength * (musicLength-curTime) / musicLength, Animated.multiply(-1, this.thumbLeft)) };
 		this.thumbLeft.setValue(0);
 
 		return (
@@ -59,10 +61,11 @@ export default class PlayerBar extends React.Component {
 				</TouchableOpacity>
 
 				<View style={styles.playerBar__track}>
-					<View style={styles.playerBar__trackBg} />
+					<Animated.View style={[styles.playerBar__trackBgLeft, trackLeftStyle]} />
+					<Animated.View style={[styles.playerBar__trackBgRight, trackRightStyle]} />
 					<Animated.View
 					{...this.thumbMoveResponder.panHandlers}
-					style={[styles.playerBar__thumb, trackStyle]} />
+					style={[styles.playerBar__thumb, thumbStyle]} />
 				</View>
 
 				<View style={styles.playerBar__timeBox}>
