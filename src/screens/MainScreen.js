@@ -133,7 +133,9 @@ export default class MainScreen extends React.Component {
 		const date = new Date();
 		return `${date.getFullYear()}.` +
 					 `${date.getMonth() < 9 ? '0' + (date.getMonth()+1) : date.getMonth()+1}.` +
-					 `${date.getDate()}. ${date.getHours()}:${date.getMinutes()}`;
+					 `${date.getDate()}. ` +
+					 `${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:` +
+					 `${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
 	}
 
 	addNote = () => {
