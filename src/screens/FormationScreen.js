@@ -556,7 +556,8 @@ export default class FormationScreen extends React.Component {
 		else if(this.state.curTime != nextState.curTime ||
 			this.state.times != nextState.times ||
 			this.state.positions != nextState.positions ||
-			this.state.selectedPosTime != nextState.selectedPosTime) {
+			this.state.selectedPosTime != nextState.selectedPosTime ||
+			this.state.isPlay != nextState.isPlay) {
 				this.checkFormationAddable(nextState);
 				this.getCurDancerPositions(nextState);
 			}
