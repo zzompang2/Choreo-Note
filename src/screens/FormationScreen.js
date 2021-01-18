@@ -7,6 +7,7 @@ import getStyleSheet from '../values/styles';
 import Stage from '../components/Stage';
 import Timeline from '../components/Timeline';
 import ToolBar from '../components/ToolBar';
+import PlayerBar from '../components/PlayerBar';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
@@ -19,16 +20,25 @@ export default class FormationScreen extends React.Component {
 		positions: [],
 		curTime: 0,
 		scrollEnable: true,
-		selectedPosTime: undefined
+		selectedPosTime: undefined,
+		isPlay: false,
 	}
 	
+	playMusic = () => {
+		console.log("노래 재생!");
+	}
+
 	/**
 	 * 현재 시간을 변경한다.
 	 * @param {number} time 새로운 time
 	 */
 	setCurTime = (time) => {
-		if(0 <= time && time < this.state.noteInfo.musicLength)
-			this.setState({ curTime: time });
+		if(time < 0)
+		time = 0;
+		else if(this.state.noteInfo.musicLength <= time)
+		time = this.state.noteInfo.musicLength - 1;
+
+		this.setState({ curTime: time });
 	}
 	
 	/**
@@ -472,7 +482,7 @@ export default class FormationScreen extends React.Component {
 
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
-						scrollEnable, selectedPosTime } = this.state;
+						scrollEnable, selectedPosTime, isPlay } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeDancerPosition,
@@ -483,6 +493,7 @@ export default class FormationScreen extends React.Component {
 			addFormation,
 			deleteFormation,
 			moveToDancerScreen,
+			playMusic,
 		} = this;
 
 		if(noteInfo === undefined)
@@ -509,6 +520,12 @@ export default class FormationScreen extends React.Component {
 				displayName={noteInfo.displayName} />
 
 				{/* Music Bar */}
+				<PlayerBar
+				curTime={curTime}
+				musicLength={noteInfo.musicLength}
+				playMusic={playMusic}
+				isPlay={isPlay}
+				setCurTime={setCurTime} />
 
 				{/* Timeline */}
 				<Timeline

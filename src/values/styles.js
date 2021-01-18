@@ -201,6 +201,42 @@ const basicStyleSheet = StyleSheet.create({
 		height: 30,
 		marginRight: 30,
 		borderRadius: 20,
+	},
+	playerBar: {
+		width: '100%',
+		height: 50,
+		alignItems: 'center',
+		flexDirection: 'row',
+	},
+	playerBar__timeBox: {
+		width: 50,
+		height: '100%',
+		alignItems: 'center',
+		justifyContent: 'center',
+		// backgroundColor: COLORS.red,
+	},
+	playerBar__time: {
+		fontSize: 14,
+	},
+	playerBar__btn: {
+	},
+	playerBar__track: {
+		width: width - 100,
+		height: 40,	// thumb 의 세로길이
+		justifyContent: 'center',
+	},
+	playerBar__trackBg: {
+		height: 5,
+		marginHorizontal: 15,
+		borderRadius: 5,
+	},
+	playerBar__thumb: {
+		position: 'absolute',
+		left: 0,		// 0 ~ width-140
+		width: 20,
+		height: 20,
+		margin: 10,
+		borderRadius: 15,
 	}
 });
 
@@ -332,7 +368,33 @@ const darkStyleSheet = StyleSheet.create({
 	dancerAddBtn: {
 		...basicStyleSheet.dancerAddBtn,
 		// backgroundColor: COLORS.red
-	}
+	},
+	playerBar: {
+		...basicStyleSheet.playerBar,
+		backgroundColor: COLORS.blackDark
+	},
+	playerBar__timeBox: {
+		...basicStyleSheet.playerBar__timeBox,
+	},
+	playerBar__time: {
+		...basicStyleSheet.playerBar__time,
+		color: COLORS.white,
+	},
+	playerBar__btn: {
+		...basicStyleSheet.playBtn,
+		color: COLORS.white,
+	},
+	playerBar__track: {
+		...basicStyleSheet.playerBar__track,
+	},
+	playerBar__trackBg: {
+		...basicStyleSheet.playerBar__trackBg,
+		backgroundColor: COLORS.grayDark,
+	},
+	playerBar__thumb: {
+		...basicStyleSheet.playerBar__thumb,
+		backgroundColor: COLORS.white,
+	},
 });
 
 const lightStyleSheet = StyleSheet.create({
