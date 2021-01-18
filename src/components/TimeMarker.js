@@ -14,9 +14,7 @@ export default class TimeMarker extends React.Component {
     this.panResponder = PanResponder.create({
 
 			// 주어진 터치이벤트에 반응할지 결정
-      onStartShouldSetPanResponder: (event, gesture) => {
-        return true;
-      },
+      onStartShouldSetPanResponder: (event, gesture) => !this.props.isPlay,
 
       // 터치이벤트 발생할 때
       onPanResponderGrant: (event, gesture) => {

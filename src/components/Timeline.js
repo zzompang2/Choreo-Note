@@ -18,7 +18,7 @@ export default class Timeline extends React.Component {
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
 						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
-						changeFormationBoxLength } = this.props;
+						changeFormationBoxLength, isPlay } = this.props;
 		const styles = getStyleSheet();
 
 		this.timeboxs = [];
@@ -75,7 +75,8 @@ export default class Timeline extends React.Component {
 					<TimeMarker
 					curTime={curTime}
 					setCurTime={setCurTime}
-					setScrollEnable={setScrollEnable} />
+					setScrollEnable={setScrollEnable}
+					isPlay={isPlay} />
 				</View>
 			</ScrollView>
     )

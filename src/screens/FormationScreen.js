@@ -25,13 +25,16 @@ export default class FormationScreen extends React.Component {
 	}
 	
 	playMusic = () => {
-		console.log("노래 재생!");
-		const { isPlay, curTime, noteInfo: { musicLength } } = this.state;
-		this.setState({ isPlay: !isPlay });
+		if(!this.state.isPlay)
+		this.play();
+		else
+		this.pause();
+	}
 
+	play = () => {
+		const { isPlay, curTime, noteInfo: { musicLength } } = this.state;
 		if(!isPlay) {
 			const startTime = new Date().getTime();
-			console.log("시작:", startTime);
 			this.interval = setInterval(() => {
 				const musicTime = curTime + Math.floor((new Date().getTime() - startTime)/1000);
 				
@@ -46,9 +49,13 @@ export default class FormationScreen extends React.Component {
 				}
 			},
 			100);
+			this.setState({ isPlay: true, selectedPosTime: undefined });
 		}
-		else
+	}
+
+	pause = () => {
 		clearInterval(this.interval);
+		this.setState({ isPlay: false });
 	}
 
 	/**
@@ -56,6 +63,9 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} time 새로운 time
 	 */
 	setCurTime = (time) => {
+		if(this.state.isPlay)
+		return;
+
 		if(time < 0)
 		time = 0;
 		else if(this.state.noteInfo.musicLength <= time)
@@ -68,7 +78,10 @@ export default class FormationScreen extends React.Component {
 	 * Formation box 를 선택한 상태로 만든다.
 	 * @param {number} time 선택된 box 의 time 값
 	 */
-	selectFormationBox = (time) => this.setState({ selectedPosTime: time })
+	selectFormationBox = (time) => {
+		if(!this.state.isPlay)
+		this.setState({ selectedPosTime: time });
+	}
 
 	/**
 	 * ScrollView 들의 scroll 을 가능하게 또는 불가능하게 조절한다.
@@ -496,8 +509,12 @@ export default class FormationScreen extends React.Component {
 	}
 
 	shouldComponentUpdate(nextProps, nextState) {
+		// play 중이면 formation 추가 금지
+		if(nextState.isPlay)
+		this.formationAddable = false;
+		
 		// state 가 바뀔 때 마다 Dancer 위치, formationAddable 을 업데이트한다
-		if(this.state.curTime != nextState.curTime ||
+		else if(this.state.curTime != nextState.curTime ||
 			this.state.times != nextState.times ||
 			this.state.positions != nextState.positions ||
 			this.state.selectedPosTime != nextState.selectedPosTime) {
@@ -505,6 +522,11 @@ export default class FormationScreen extends React.Component {
 				this.getCurDancerPositions(nextState);
 			}
 		return true;
+	}
+
+	componentWillUnmount() {
+		if(this.state.isPlay)
+		this.pause();
 	}
 
 	render() {
@@ -567,7 +589,8 @@ export default class FormationScreen extends React.Component {
 				setScrollEnable={setScrollEnable}
 				selectedPosTime={selectedPosTime}
 				selectFormationBox={selectFormationBox}
-				changeFormationBoxLength={changeFormationBoxLength} />
+				changeFormationBoxLength={changeFormationBoxLength}
+				isPlay={isPlay} />
 
 				{/* Tool bar */}
 				<ToolBar
@@ -575,7 +598,8 @@ export default class FormationScreen extends React.Component {
 				deleteFormation={deleteFormation}
 				selectedPosTime={selectedPosTime}
 				formationAddable={this.formationAddable}
-				moveToDancerScreen={moveToDancerScreen} />
+				moveToDancerScreen={moveToDancerScreen}
+				isPlay={isPlay} />
 
 			</SafeAreaView>
 			</View>

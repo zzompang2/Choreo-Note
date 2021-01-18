@@ -13,15 +13,15 @@ export default class PlayerBar extends React.Component {
 	constructor(props) {
 		super(props);
 
-		const { setCurTime } = props;
+		const { musicLength, setCurTime } = props;
 
-		this.musicTimeString = this.musicLengthFormat();
+		this.musicTimeString = this.musicLengthFormat(musicLength);
 
 		this.thumbLeft = new Animated.Value(0);
 
 		this.thumbMoveResponder = PanResponder.create({
 			// 주어진 터치이벤트에 반응할지 결정
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => !this.props.isPlay,
 
       // MOVE 제스쳐가 진행 중일 때 (계속 실행)
 			onPanResponderMove: Animated.event(
@@ -37,9 +37,8 @@ export default class PlayerBar extends React.Component {
 		});
 	}
 
-	musicLengthFormat() {
-		const { musicLength } = this.props;
-		return `${Math.floor(musicLength / 60)}:${(musicLength % 60 < 10 ? '0' : '') + musicLength % 60}`;
+	musicLengthFormat(time) {
+		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + time % 60}`;
 	}
 
   render() {
