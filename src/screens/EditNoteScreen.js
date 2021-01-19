@@ -20,14 +20,13 @@ export default class EditNoteScreen extends React.Component {
 		playingMusicIdx: -1,
 		isValidTitle: true,
 		isValidDancerNum: true,
-		isValidMusic: false,
 	}
 
 	musicLoad = () => {
 		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
 			
 			const musicList = [];
-			musicList.push({ name: '없음', path: '/' });
+			musicList.push({ name: '노래 없음 (1분 무음)', path: '/' });
 			files.forEach(file => {
 				musicList.push({ name: file.name, path: file.path });
 				console.log('name:', file.name);
@@ -63,8 +62,7 @@ export default class EditNoteScreen extends React.Component {
 	}
 
 	selectMusic = (path) => {
-
-		this.setState({ selectedMusicPath: path, isValidMusic: path == '' ? false : true });
+		this.setState({ selectedMusicPath: path });
 	}
 
 	goToFormationScreen = () => {
@@ -187,7 +185,7 @@ export default class EditNoteScreen extends React.Component {
 	render() {
 		console.log('render');
 		const { noteInfo, dancerNum, musicList, selectedMusicPath, playingMusicIdx,
-			isValidTitle, isValidDancerNum, isValidMusic } = this.state;
+			isValidTitle, isValidDancerNum } = this.state;
 		const {
 			changeTitle,
 			changeDancerNum,
@@ -249,11 +247,7 @@ export default class EditNoteScreen extends React.Component {
 					keyboardType={'number-pad'}
 					onChange={event => changeDancerNum(event)}>{dancerNum}</TextInput>
 
-					<View style={{flexDirection: 'row', alignItems: 'center'}}>
-						<Text style={styles.editNote__title}>노래</Text>
-						<View style={[styles.editNote__flag, {backgroundColor: isValidMusic ? COLORS.green : COLORS.yellow}]} />
-						<Text style={{color: COLORS.yellow}}>{isValidMusic ? '' : '선택하지 않으면 1분 무음으로 설정됩니다.'}</Text>
-					</View>
+					<Text style={styles.editNote__title}>노래</Text>
 
 					<FlatList
 					// style={styles.editNote__musicList}
