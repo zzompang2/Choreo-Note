@@ -15,25 +15,45 @@ export default class Timeline extends React.Component {
 	timeboxs = [];
 	formationBoxs = [];
 
+	constructor(props) {
+		super(props);
+
+		this.createTimeTextViews(props);
+	}
+
+	createTimeTextViews = (props) => {
+		const { musicLength, unitBoxWidth } = props;
+
+		this.timeboxs = [];
+
+		for(let sec=0; sec < musicLength; sec++) {
+			this.timeboxs.push(
+				<View key={sec} style={{width: unitBoxWidth, alignItems: 'center'}}>
+					<Text>{sec}</Text>
+				</View>
+			);
+		}
+	}
+
+	shouldComponentUpdate(nextProps) {
+		const { musicLength, unitBoxWidth } = this.props;
+
+		if(musicLength != nextProps.musicLength ||
+			unitBoxWidth != nextProps.unitBoxWidth)
+			this.createTimeTextViews(nextProps);
+		return true;
+	}
+
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
 						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
 						changeFormationBoxLength, isPlay, unitBoxWidth } = this.props;
 		const styles = getStyleSheet();
 
-		this.timeboxs = [];
 		this.formationBoxs = [];
 
 		let timesIdx = 0;
 		for(let sec=0; sec < musicLength; sec++) {
-			this.timeboxs.push(
-				<TouchableOpacity
-				key={sec}
-				style={[styles.timebox, {width: unitBoxWidth}]}
-				onPress={() => setCurTime(sec)}>
-					<Text>{sec}</Text>
-				</TouchableOpacity>
-			);
 			if(timesIdx < times.length && times[timesIdx].time == sec) {
 				if(selectedPosTime == times[timesIdx].time)
 					this.selectedPosDuration = times[timesIdx].duration;
@@ -58,9 +78,17 @@ export default class Timeline extends React.Component {
 			decelerationRate={0.7}		// 스크롤 속도 (iOS)
 			scrollEnabled={scrollEnable}>
 				<View style={styles.timeline}>
-					<View style={{flexDirection: 'row'}}>
+
+					<View style={[styles.timeboxContainer, {width: musicLength*unitBoxWidth}]}>
 						{this.timeboxs}
 					</View>
+					<TouchableOpacity 
+					style={[styles.timeboxContainer, {position: 'absolute', width: musicLength*unitBoxWidth, backgroundColor: 'none'}]}
+					onPress={(event) => {
+						const time = Math.floor(event.nativeEvent.locationX / unitBoxWidth);
+						setCurTime(time);
+						}} />
+
 					<View style={{flexDirection: 'row'}}>
 						{this.formationBoxs}
 						{selectedPosTime >= 0 ?
