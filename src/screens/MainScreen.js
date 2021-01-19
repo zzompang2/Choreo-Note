@@ -15,7 +15,7 @@ export default class MainScreen extends React.Component {
 	};
 
 	getDatabaseData() {
-		const { notes } = this.state;
+		const notes = [];
 
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
@@ -24,6 +24,7 @@ export default class MainScreen extends React.Component {
 			// txn.executeSql('DROP TABLE IF EXISTS times');
 			// txn.executeSql('DROP TABLE IF EXISTS positions');
 
+			// 노트 개수가 0개이면 디폴트 노트 생성
 			txn.executeSql(
 				'SELECT COUNT(*) FROM sqlite_master WHERE name = ?',
 				["notes"],
@@ -121,6 +122,7 @@ export default class MainScreen extends React.Component {
 					// note 정보 가져오기
 					for (let i = 0; i < result.rows.length; i++)
 						notes.push(result.rows.item(i));
+					notes.reverse();
 					this.setState({ notes });
 				}
 			);
@@ -149,8 +151,8 @@ export default class MainScreen extends React.Component {
 		const musicLength = 60;
 		const displayName = 0;
 
-		notes.push({ nid, title, createDate, editDate: createDate, music });
-		this.setState({ notes });
+		const newNotes = [{ nid, title, createDate, editDate: createDate, music }, ...notes];
+		this.setState({ notes: newNotes });
 		
 		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
@@ -172,8 +174,12 @@ export default class MainScreen extends React.Component {
 				[nid],
         (txn, result) => {
 					const noteInfo = result.rows.item(0);
-					const newNotes = [...notes.slice(0, nid), noteInfo, ...notes.slice(nid+1)];
-					this.setState({ notes: newNotes });
+					for(let i=0; i<notes.length; i++) {
+						if(notes[i].nid == nid) {
+							const newNotes = [...notes.slice(0, i), noteInfo, ...notes.slice(i+1)];
+							this.setState({ notes: newNotes });
+						}
+					}
 				}
 			);
 		},

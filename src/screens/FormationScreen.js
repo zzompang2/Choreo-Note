@@ -687,8 +687,8 @@ export default class FormationScreen extends React.Component {
 			pressPlayButton,
 		} = this;
 
-		if(noteInfo === undefined)
-		return null;
+		// if(noteInfo === undefined)
+		// return null;
 
 		return(
 			<View style={styles.bg}>
@@ -705,7 +705,7 @@ export default class FormationScreen extends React.Component {
 						ref={ref => (this.titleInput = ref)}
 						onFocus={() => this.setState({ titleOnFocus: true })}
 						onEndEditing={event => changeTitle(event)}>
-							{noteInfo.title}
+							{noteInfo == undefined ? '' : noteInfo.title}
 						</TextInput>
 						{titleOnFocus ?
 						<TouchableOpacity onPress={() => Keyboard.dismiss()}>
@@ -715,6 +715,8 @@ export default class FormationScreen extends React.Component {
 					</View>
 				</View>
 
+				{noteInfo === undefined ? null :
+				<View style={{flex: 1}}>
 				{/* Stage: Coordinate & Dancer */}
 				<Stage
 				stageRatio={noteInfo.stageRatio}
@@ -755,6 +757,8 @@ export default class FormationScreen extends React.Component {
 				formationAddable={this.formationAddable}
 				goToDancerScreen={goToDancerScreen}
 				isPlay={isPlay} />
+				</View>
+				}
 
 			</SafeAreaView>
 			</View>

@@ -197,9 +197,6 @@ export default class EditNoteScreen extends React.Component {
 		} = this;
 		const styles = getStyleSheet();
 
-		if(noteInfo == undefined)
-		return null;
-
 		return(
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
@@ -222,6 +219,7 @@ export default class EditNoteScreen extends React.Component {
 					</TouchableOpacity>
 				</View>
 
+				{noteInfo == undefined ? null :
 				<View style={{flex: 1, padding: 30}}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>노트 이름</Text>
@@ -280,6 +278,7 @@ export default class EditNoteScreen extends React.Component {
 					</View>
 					} />
 				</View>
+				}
 			</TouchableOpacity>
 			</SafeAreaView>
 			</View>
