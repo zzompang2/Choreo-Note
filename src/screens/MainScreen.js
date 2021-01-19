@@ -157,26 +157,6 @@ export default class MainScreen extends React.Component {
 			txn.executeSql(
 				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 				[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]);
-
-			txn.executeSql(
-				"INSERT INTO dancers VALUES (?, 0, 'ham', 0)",
-				[nid]);
-
-			txn.executeSql(
-				"INSERT INTO dancers VALUES (?, 1, 'Juicy', 1)",
-				[nid]);
-
-			txn.executeSql(
-				"INSERT INTO times VALUES (?, 0, 5)",
-				[nid]);
-
-			txn.executeSql(
-				"INSERT INTO positions VALUES (?, 0, 0, -50, 0)",
-				[nid]);
-
-			txn.executeSql(
-				"INSERT INTO positions VALUES (?, 0, 1, 50, 0)",
-				[nid]);
 		},
 		e => console.log("DB ERROR", e),
 		() => console.log("DB SUCCESS"));

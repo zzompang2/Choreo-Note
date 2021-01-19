@@ -16,7 +16,7 @@ export default class EditNoteScreen extends React.Component {
 		noteInfo: undefined,
 		dancerNum: 2,
 		musicList: [],
-		selectedMusicPath: '',
+		selectedMusicPath: '/',
 		playingMusicIdx: -1,
 		isValidTitle: true,
 		isValidDancerNum: true,
@@ -27,6 +27,7 @@ export default class EditNoteScreen extends React.Component {
 		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
 			
 			const musicList = [];
+			musicList.push({ name: '없음', path: '/' });
 			files.forEach(file => {
 				musicList.push({ name: file.name, path: file.path });
 				console.log('name:', file.name);
@@ -62,16 +63,81 @@ export default class EditNoteScreen extends React.Component {
 	}
 
 	selectMusic = (path) => {
-		this.setState({ selectedMusicPath: path, isValidMusic: true });
+
+		this.setState({ selectedMusicPath: path, isValidMusic: path == '' ? false : true });
 	}
 
 	goToFormationScreen = () => {
-		const { nid } = this.state;
+		const { noteInfo: { nid, title }, dancerNum, musicList, selectedMusicPath, isValidTitle, isValidDancerNum } = this.state;
 		const { getTodayDate } = this.props.route.params;
-		this.props.navigation.navigate('Formation', { 
-			nid: nid,
-			getTodayDate: getTodayDate
-		});
+
+		Keyboard.dismiss();
+
+		if(!isValidTitle)
+		Alert.alert('노트 제목', '제목을 입력해 주세요.');
+		else if(!isValidDancerNum)
+		Alert.alert('댄서 수', '댄서는 최소 1명, 최대 30명까지 가능합니다.');
+		else {
+			if(this.sound)
+			this.sound.pause();
+			// 노래 길이 계산
+			this.sound = new Sound(encodeURI(selectedMusicPath), '/', (error) => {
+				// 노래 가져오기 실패
+				if (selectedMusicPath != '/' && error) {
+					console.log('MUSIC LOAD FAIL', error);
+					Alert.alert('노래 불러오기 실패', '노래를 불러올 수 없습니다.');
+					return;
+				}
+				// 노래 가져오기 성공
+				else {
+					const musicLength = selectedMusicPath == '/' ? 60 : Math.ceil(this.sound.getDuration());
+					const editDate = getTodayDate();
+					
+					console.log('MUSIC LOAD SUCCESS:', musicLength);
+
+					db.transaction(async txn => {
+						await txn.executeSql(
+							"UPDATE notes " +
+							"SET title=?, music=?, musicLength=?, editDate=? " +
+							"WHERE nid=?",
+							[title, selectedMusicPath, musicLength, editDate, nid],
+							txn => {
+								for(let did=0; did<dancerNum; did++) {
+									const name = `댄서 ${did}`;
+									const posx = dancerNum == 1 ? 0 : did * (200 / (dancerNum-1)) - 100;
+									txn.executeSql(
+										"INSERT INTO dancers VALUES (?, ?, ?, 0)",
+										[nid, did, name]);
+		
+									txn.executeSql(
+										"INSERT INTO positions VALUES (?, 0, ?, ?, 0)",
+										[nid, did, posx]);
+						
+									txn.executeSql(
+										"INSERT INTO positions VALUES (?, 5, ?, ?, -50)",
+										[nid, did, posx]);
+								}
+					
+								txn.executeSql(
+									"INSERT INTO times VALUES (?, 0, 3)",
+									[nid]);
+		
+								txn.executeSql(
+									"INSERT INTO times VALUES (?, 5, 5)",
+									[nid]);
+							}
+						);
+
+						this.props.navigation.navigate('Formation', { 
+							nid: nid,
+							getTodayDate: getTodayDate
+						});
+					},
+					e => console.log("DB ERROR", e),
+					(e) => console.log("DB SUCCESS", e));
+				}
+			});
+		}
 	}
 
 	changeTitle = (event) => {
@@ -166,7 +232,7 @@ export default class EditNoteScreen extends React.Component {
 					maxLength={30}
 					placeholder="노트 제목을 입력해 주세요."
 					placeholderTextColor={COLORS.grayDark}
-					onEndEditing={event => changeTitle(event)}
+					onChange={event => changeTitle(event)}
 					autoCorrect={false}>
 						{noteInfo.title}
 					</TextInput>
@@ -182,12 +248,12 @@ export default class EditNoteScreen extends React.Component {
 					placeholder={'0'}
 					placeholderTextColor={COLORS.grayDark}
 					keyboardType={'number-pad'}
-					onEndEditing={event => changeDancerNum(event)}>{dancerNum}</TextInput>
+					onChange={event => changeDancerNum(event)}>{dancerNum}</TextInput>
 
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>노래</Text>
-						<View style={[styles.editNote__flag, {backgroundColor: isValidMusic ? COLORS.green : COLORS.red}]} />
-						<Text style={{color: COLORS.red}}>{isValidMusic ? '' : '선택하지 않으면 1분 무음으로 재생됩니다.'}</Text>
+						<View style={[styles.editNote__flag, {backgroundColor: isValidMusic ? COLORS.green : COLORS.yellow}]} />
+						<Text style={{color: COLORS.yellow}}>{isValidMusic ? '' : '선택하지 않으면 1분 무음으로 설정됩니다.'}</Text>
 					</View>
 
 					<FlatList
@@ -204,10 +270,12 @@ export default class EditNoteScreen extends React.Component {
 								{item.name}
 							</Text>
 						</TouchableOpacity>
+						{index == 0 ? null :
 						<TouchableOpacity
 						onPress={() => musicPlay(item.path, index)}>
 							<IconIonicons name={playingMusicIdx == index ? "pause" : "play"} size={20} style={styles.editNote__btn} />
 						</TouchableOpacity>
+						}
 					</View>
 					} />
 				</View>

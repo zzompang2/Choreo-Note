@@ -694,7 +694,7 @@ export default class FormationScreen extends React.Component {
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
-						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+						<TouchableOpacity onPress={() => this.props.navigation.navigate('Main')}>
 							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
 						</TouchableOpacity>
 						<TextInput 
