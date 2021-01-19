@@ -589,8 +589,8 @@ export default class FormationScreen extends React.Component {
 							this.positionsAtCurTime[did], {
 								toValue: {x: position[did].x, y: position[did].y},
 								duration: (times[i+1].time - rightEnd) * 1000,
-								// easing: Easing.linear,
-								useNativeDriver: false,
+								easing: Easing.linear,
+								useNativeDriver: true,	// false 로 하면 1초 간격으로 끊기는 느낌 있음
 							}
 						)
 					);
@@ -618,7 +618,7 @@ export default class FormationScreen extends React.Component {
 								toValue: {x: position[did].x, y: position[did].y},
 								duration: (times[i].time - curTime) * 1000,
 								easing: Easing.linear,
-								useNativeDriver: false,
+								useNativeDriver: true,
 							}
 						)
 					);
