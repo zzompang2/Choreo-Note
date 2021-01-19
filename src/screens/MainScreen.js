@@ -57,10 +57,10 @@ export default class MainScreen extends React.Component {
 							"INSERT INTO dancers VALUES (0, 1, 'Juicy', 1)", []);
 			
 						txn.executeSql(
-							"INSERT INTO times VALUES (0, 0, 2)", []);
+							"INSERT INTO times VALUES (0, 0, 2000)", []);
 
 						txn.executeSql(
-							"INSERT INTO times VALUES (0, 5, 3)", []);
+							"INSERT INTO times VALUES (0, 5000, 3000)", []);
 			
 						txn.executeSql(
 							"INSERT INTO positions VALUES (0, 0, 0, -50, 0)", []);
@@ -69,10 +69,10 @@ export default class MainScreen extends React.Component {
 							"INSERT INTO positions VALUES (0, 0, 1, 50, 0)", []);
 
 						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 5, 0, 0, 50)", []);
+							"INSERT INTO positions VALUES (0, 5000, 0, 0, 50)", []);
 			
 						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 5, 1, 0, -50)", []);
+							"INSERT INTO positions VALUES (0, 5000, 1, 0, -50)", []);
 					}
 				}
 			);

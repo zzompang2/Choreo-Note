@@ -104,12 +104,12 @@ const basicStyleSheet = StyleSheet.create({
 	timeline: {
 		width: '100%',
 	},
-	timebox: {
+	timeboxContainer: {
+		flexDirection: 'row',
 		height: 40,
-		width: unitBoxWidth,
-		backgroundColor: COLORS.grayMiddle,
+		// width: musicLength*unitBoxWidth,
 		alignItems: 'center',
-		justifyContent: 'center'
+		backgroundColor: COLORS.grayMiddle,
 	},
 	formationBox: {
 		height: formationBoxHeight,
@@ -226,7 +226,7 @@ const basicStyleSheet = StyleSheet.create({
 		flexDirection: 'row',
 	},
 	playerBar__timeBox: {
-		width: 50,
+		width: 35,
 		height: '100%',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -236,12 +236,14 @@ const basicStyleSheet = StyleSheet.create({
 		fontSize: 14,
 	},
 	playerBar__btn: {
+		fontSize: 20
 	},
 	playerBar__track: {
-		width: width - 100,
+		width: width - 105,
 		height: 40,	// thumb 의 세로길이
 		alignItems: 'center',
 		flexDirection: 'row',
+		// backgroundColor: COLORS.yellow,
 	},
 	playerBar__trackBg: {
 		height: 5,
@@ -253,7 +255,7 @@ const basicStyleSheet = StyleSheet.create({
 		left: 0,		// 0 ~ width-140
 		width: 20,
 		height: 20,
-		margin: 10,
+		marginVertical: 10,
 		borderRadius: 15,
 	},
 	editNote__title: {
@@ -356,8 +358,8 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.timeline,
 		backgroundColor: COLORS.grayLight,
 	},
-	timebox: {
-		...basicStyleSheet.timebox
+	timeboxContainer: {
+		...basicStyleSheet.timeboxContainer
 	},
 	timeMarkerContainer: {
 		...basicStyleSheet.timeMarkerContainer,
@@ -446,7 +448,7 @@ const darkStyleSheet = StyleSheet.create({
 		color: COLORS.white,
 	},
 	playerBar__btn: {
-		...basicStyleSheet.playBtn,
+		...basicStyleSheet.playerBar__btn,
 		color: COLORS.white,
 	},
 	playerBar__track: {
@@ -454,12 +456,12 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	playerBar__trackBgLeft: {
 		...basicStyleSheet.playerBar__trackBg,
-		marginLeft: 15,
+		marginLeft: 10,
 		backgroundColor: COLORS.grayLight,
 	},
 	playerBar__trackBgRight: {
 		...basicStyleSheet.playerBar__trackBg,
-		marginRight: 15,
+		marginRight: 10,
 		backgroundColor: COLORS.blackLight,
 	},
 	playerBar__thumb: {

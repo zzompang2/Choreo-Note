@@ -7,7 +7,7 @@ import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 const TAG = "PlayerBar/";
 const { width } = Dimensions.get('window');
-const playerTrackLength = width-140;
+const playerTrackLength = width-125;
 
 export default class PlayerBar extends React.Component {
 	constructor(props) {
@@ -31,23 +31,23 @@ export default class PlayerBar extends React.Component {
       // 터치이벤트 끝날 때
       onPanResponderRelease: (event, gesture) => {
 				// state 업데이트
-				const newTime = this.props.curTime + Math.round(this.props.musicLength * gesture.dx / playerTrackLength);
+				const newTime = this.props.curTime + 1000 * Math.round(gesture.dx * this.props.musicLength / playerTrackLength);
 				setCurTime(newTime);
       }
 		});
 	}
 
 	musicLengthFormat(time) {
-		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + time % 60}`;
+		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + Math.floor(time % 60)}`;
 	}
 
   render() {
-		const { curTime, musicLength, pressPlayButton, isPlay } = this.props;
+		const { curTime, musicLength, pressPlayButton, isPlay, unitTime } = this.props;
 		const styles = getStyleSheet();
 		
-		const thumbStyle = { left: Animated.add(playerTrackLength * curTime / musicLength, this.thumbLeft) };
-		const trackLeftStyle = { width: Animated.add(playerTrackLength * curTime / musicLength, this.thumbLeft) };
-		const trackRightStyle = { width: Animated.add(playerTrackLength * (musicLength-curTime) / musicLength, Animated.multiply(-1, this.thumbLeft)) };
+		const thumbStyle = { left: Animated.add(playerTrackLength * curTime / (musicLength*1000), this.thumbLeft) };
+		const trackLeftStyle = { width: Animated.add(playerTrackLength * curTime / (musicLength*1000), this.thumbLeft) };
+		const trackRightStyle = { width: Animated.add(playerTrackLength * (musicLength*1000-curTime) / (musicLength*1000), Animated.multiply(-1, this.thumbLeft)) };
 		this.thumbLeft.setValue(0);
 
 		return (
@@ -57,8 +57,12 @@ export default class PlayerBar extends React.Component {
 				style={styles.playerBar__timeBox}
 				disabled={false}
 				onPress={pressPlayButton}>
-					<IconIonicons name={isPlay ? "pause" : "play"} size={40} style={styles.playerBar__btn} />
+					<IconIonicons name={isPlay ? "pause" : "play"} style={styles.playerBar__btn} />
 				</TouchableOpacity>
+
+				<View style={styles.playerBar__timeBox}>
+					<Text style={styles.playerBar__time}>{this.musicLengthFormat(curTime/1000)}</Text>
+				</View>
 
 				<View style={styles.playerBar__track}>
 					<Animated.View style={[styles.playerBar__trackBgLeft, trackLeftStyle]} />

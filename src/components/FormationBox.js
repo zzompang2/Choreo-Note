@@ -9,12 +9,12 @@ const TAG = "FormationBox/";
 export default class FormationBox extends React.Component {
 
 	render() {
-		const { time, duration, isSelected, selectFormationBox, unitBoxWidth } = this.props;
+		const { time, duration, isSelected, selectFormationBox, unitBoxWidth, unitTime } = this.props;
 		const styles = getStyleSheet();
 		const formationBoxStyle = isSelected ? styles.formationBoxSelected : styles.formationBox;
 
 		return (
-			<View style={{position: 'absolute', left: (unitBoxWidth/2)+unitBoxWidth*time, width: unitBoxWidth*duration}}>
+			<View style={{position: 'absolute', left: (unitBoxWidth/2)+unitBoxWidth*(time/unitTime), width: unitBoxWidth*(duration/unitTime)}}>
 				<TouchableOpacity
 				// disabled={isSelected}
 				onPress={() => selectFormationBox(time)}

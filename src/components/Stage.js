@@ -13,7 +13,7 @@ export default class Stage extends React.Component {
 
   render() {
 		const { positionsAtCurTime, changeDancerPosition, selectedPosTime,
-			dancers, displayName } = this.props;
+			dancers, displayName, unitTime } = this.props;
 		const styles = getStyleSheet();
 		const height = width / this.props.stageRatio;
 

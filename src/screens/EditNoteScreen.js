@@ -112,16 +112,16 @@ export default class EditNoteScreen extends React.Component {
 										[nid, did, posx]);
 						
 									txn.executeSql(
-										"INSERT INTO positions VALUES (?, 5, ?, ?, -50)",
+										"INSERT INTO positions VALUES (?, 5000, ?, ?, -50)",
 										[nid, did, posx]);
 								}
 					
 								txn.executeSql(
-									"INSERT INTO times VALUES (?, 0, 3)",
+									"INSERT INTO times VALUES (?, 0, 3000)",
 									[nid]);
 		
 								txn.executeSql(
-									"INSERT INTO times VALUES (?, 5, 5)",
+									"INSERT INTO times VALUES (?, 5000, 5000)",
 									[nid]);
 							}
 						);

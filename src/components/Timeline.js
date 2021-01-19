@@ -3,7 +3,7 @@ import {
 	Dimensions, View, Text, TouchableOpacity
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import getStyleSheet from "../values/styles";
+import getStyleSheet, { COLORS } from "../values/styles";
 import TimeMarker from '../components/TimeMarker';
 import FormationBox from './FormationBox';
 import FormationMarker from "./FormationMarker";
@@ -22,24 +22,28 @@ export default class Timeline extends React.Component {
 	}
 
 	createTimeTextViews = (props) => {
-		const { musicLength, unitBoxWidth } = props;
+		const { musicLength, unitBoxWidth, unitTime } = props;
 
 		this.timeboxs = [];
+		const boxPerSec = 1000/unitTime;
 
-		for(let sec=0; sec < musicLength; sec++) {
+		for(let i=0; i < musicLength * boxPerSec; i++) {
 			this.timeboxs.push(
-				<View key={sec} style={{width: unitBoxWidth, alignItems: 'center'}}>
-					<Text>{sec}</Text>
+				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between'}}>
+					<View />
+					<Text numberOfLines={1} style={{fontSize: 10}}>{i%boxPerSec == 0 ? i / boxPerSec : ''}</Text>
+					<View style={{width: 1, height: 4, backgroundColor: COLORS.grayDark}} />
 				</View>
 			);
 		}
 	}
 
 	shouldComponentUpdate(nextProps) {
-		const { musicLength, unitBoxWidth } = this.props;
+		const { musicLength, unitBoxWidth, unitTime } = this.props;
 
 		if(musicLength != nextProps.musicLength ||
-			unitBoxWidth != nextProps.unitBoxWidth)
+			unitBoxWidth != nextProps.unitBoxWidth ||
+			unitTime != nextProps.unitTime)
 			this.createTimeTextViews(nextProps);
 		return true;
 	}
@@ -47,29 +51,48 @@ export default class Timeline extends React.Component {
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
 						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
-						changeFormationBoxLength, isPlay, unitBoxWidth } = this.props;
+						changeFormationBoxLength, isPlay, unitBoxWidth, unitTime } = this.props;
 		const styles = getStyleSheet();
+		const boxPerSec = 1000 / unitTime;
 
 		this.formationBoxs = [];
 
-		let timesIdx = 0;
-		for(let sec=0; sec < musicLength; sec++) {
-			if(timesIdx < times.length && times[timesIdx].time == sec) {
-				if(selectedPosTime == times[timesIdx].time)
-					this.selectedPosDuration = times[timesIdx].duration;
+		// let timesIdx = 0;
+		// for(let sec=0; sec < musicLength; sec++) {
+		// 	if(timesIdx < times.length && times[timesIdx].time == sec) {
+		// 		if(selectedPosTime == times[timesIdx].time)
+		// 			this.selectedPosDuration = times[timesIdx].duration;
 
-				this.formationBoxs.push(
-					<FormationBox
-					key={timesIdx}
-					time={times[timesIdx].time}
-					duration={times[timesIdx].duration}
-					isSelected={selectedPosTime == times[timesIdx].time}
-					selectFormationBox={selectFormationBox}
-					unitBoxWidth={unitBoxWidth} />
-				);
-				timesIdx++;
-			}
-		}
+		// 		this.formationBoxs.push(
+		// 			<FormationBox
+		// 			key={timesIdx}
+		// 			time={times[timesIdx].time}
+		// 			duration={times[timesIdx].duration}
+		// 			isSelected={selectedPosTime == times[timesIdx].time}
+		// 			selectFormationBox={selectFormationBox}
+		// 			unitBoxWidth={unitBoxWidth}
+		// 			unitTime={unitTime} />
+		// 		);
+		// 		timesIdx++;
+		// 	}
+		// }
+
+		times.forEach((time, idx) => {
+			// formationMarker 의 길이를 위해...
+			if(selectedPosTime == times[idx].time)
+					this.selectedPosDuration = times[idx].duration;
+
+			this.formationBoxs.push(
+				<FormationBox
+				key={idx}
+				time={times[idx].time}
+				duration={times[idx].duration}
+				isSelected={selectedPosTime == times[idx].time}
+				selectFormationBox={selectFormationBox}
+				unitBoxWidth={unitBoxWidth}
+				unitTime={unitTime} />
+			);
+		})
 
 		return (
 			<ScrollView
@@ -79,18 +102,20 @@ export default class Timeline extends React.Component {
 			scrollEnabled={scrollEnable}>
 				<View style={styles.timeline}>
 
-					<View style={[styles.timeboxContainer, {width: musicLength*unitBoxWidth}]}>
+					<View style={[styles.timeboxContainer, {width: musicLength*boxPerSec*unitBoxWidth}]}>
 						{this.timeboxs}
 					</View>
 					<TouchableOpacity 
-					style={[styles.timeboxContainer, {position: 'absolute', width: musicLength*unitBoxWidth, backgroundColor: 'none'}]}
+					style={[styles.timeboxContainer, {position: 'absolute', width: musicLength*boxPerSec*unitBoxWidth, backgroundColor: 'none'}]}
 					onPress={(event) => {
-						const time = Math.floor(event.nativeEvent.locationX / unitBoxWidth);
+						const time = Math.floor(event.nativeEvent.locationX / unitBoxWidth) * unitTime;
 						setCurTime(time);
 						}} />
 
 					<View style={{flexDirection: 'row'}}>
+
 						{this.formationBoxs}
+
 						{selectedPosTime >= 0 ?
 						<FormationMarker
 						time={selectedPosTime}
@@ -98,8 +123,10 @@ export default class Timeline extends React.Component {
 						setScrollEnable={setScrollEnable}
 						changeFormationBoxLength={changeFormationBoxLength}
 						selectFormationBox={selectFormationBox}
-						unitBoxWidth={unitBoxWidth} />
+						unitBoxWidth={unitBoxWidth}
+						unitTime={unitTime} />
 						: null}
+
 					</View>
 				
 					<TimeMarker
@@ -107,7 +134,8 @@ export default class Timeline extends React.Component {
 					setCurTime={setCurTime}
 					setScrollEnable={setScrollEnable}
 					isPlay={isPlay}
-					unitBoxWidth={unitBoxWidth} />
+					unitBoxWidth={unitBoxWidth}
+					unitTime={unitTime} />
 				</View>
 			</ScrollView>
     )

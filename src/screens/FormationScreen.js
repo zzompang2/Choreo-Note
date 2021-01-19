@@ -15,18 +15,18 @@ import PlayerBar from '../components/PlayerBar';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
-const unitTime = 200;			// millisecond
-const unitBoxWidth = 20;
+const unitTime = 500;			// 최소 시간단위 (millisecond)
+const unitBoxWidth = 15;	// 한 단위시간 박스의 가로 길이
 
 export default class FormationScreen extends React.Component {
 	state = {
-		noteInfo: undefined,
+		noteInfo: undefined,				// musicLength 단위 sec
 		dancers: [],
-		times: [],
+		times: [],									// 단위 msec
 		positions: [],
-		curTime: 0,
+		curTime: 0,									// 단위 msec
 		scrollEnable: true,
-		selectedPosTime: undefined,
+		selectedPosTime: undefined,	// 단위 msec
 		isPlay: false,
 		titleOnFocus: false,
 	}
@@ -43,11 +43,11 @@ export default class FormationScreen extends React.Component {
 		if(!isPlay) {
 			const startTime = new Date().getTime();
 			this.interval = setInterval(() => {
-				const musicTime = curTime + Math.floor((new Date().getTime() - startTime)/1000);
+				const musicTime = curTime + Math.floor((new Date().getTime() - startTime)/unitTime)*unitTime;
 				
 				if(this.state.curTime != musicTime) {
-					console.log(musicTime, musicLength);
-					if(musicTime == musicLength) {
+					console.log(TAG, "play/", `${musicTime}/${musicLength*1000}`);
+					if(musicTime >= musicLength * 1000) {
 						clearInterval(this.interval);
 						this.setState({ curTime: 0, isPlay: false });
 					}
@@ -69,27 +69,27 @@ export default class FormationScreen extends React.Component {
 
 	/**
 	 * 현재 시간을 변경한다.
-	 * @param {number} time 새로운 time
+	 * @param {number} msec 단위 millisecond
 	 */
-	setCurTime = (time) => {
+	setCurTime = (msec) => {
 		if(this.state.isPlay)
 		return;
 
-		if(time < 0)
-		time = 0;
-		else if(this.state.noteInfo.musicLength <= time)
-		time = this.state.noteInfo.musicLength - 1;
+		if(msec < 0)
+		msec = 0;
+		else if(this.state.noteInfo.musicLength*1000 <= msec)
+		msec = this.state.noteInfo.musicLength*1000 - unitTime;
 
-		this.setState({ curTime: time });
+		this.setState({ curTime: msec });
 	}
 	
 	/**
 	 * Formation box 를 선택한 상태로 만든다.
-	 * @param {number} time 선택된 box 의 time 값
+	 * @param {number} msec 선택된 box 의 time 값
 	 */
-	selectFormationBox = (time) => {
+	selectFormationBox = (msec) => {
 		if(!this.state.isPlay)
-		this.setState({ selectedPosTime: time });
+		this.setState({ selectedPosTime: msec });
 	}
 
 	/**
@@ -131,14 +131,15 @@ export default class FormationScreen extends React.Component {
 	/**
 	 * 선택되어 있는 Formation box 의 정보를 주어진 time, duration 값으로 업데이트 한다.
 	 * (반드시 선택되어 있는 박스가 있어야 하고, 선택된 박스만 수정할 수 있음)
-	 * @param {number} time 변경된 새로운 time 값
-	 * @param {number} duration 변경된 새로운 duration 값
+	 * @param {number} newTime 변경된 새로운 time 값
+	 * @param {number} newDuration 변경된 새로운 duration 값
 	 */
 	changeFormationBoxLength = (newTime, newDuration) => {
+		console.log(TAG, "changeFormationBoxLength/", newTime, newDuration);
 		const { noteInfo: { nid, musicLength }, times, positions, selectedPosTime } = this.state;
 
 		// 노래 밖을 나가는 경우
-		if(newTime < 0 || musicLength <= newTime + newDuration)
+		if(newTime < 0 || musicLength * 1000 <= newTime + newDuration)
 			return;
 
 		let newTimes;
@@ -301,7 +302,7 @@ export default class FormationScreen extends React.Component {
 		this.formationAddable = false;
 
 		// curTime 유효성 검사
-		if(curTime < 0 || musicLength <= curTime+1)
+		if(curTime < 0 || musicLength * 1000 <= curTime + unitTime)
 		return;
 
 		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
@@ -310,8 +311,8 @@ export default class FormationScreen extends React.Component {
 		if(curTime <= times[i].time + times[i].duration)
 		break;
 
-		// duration 은 최소 1 이어야 하므로 curTime+1	까지 공간이 있어야 한다
-		if(i != times.length && times[i].time <= curTime+1)
+		// duration 은 최소 1 unitTime 이어야 하므로 curTime+unitTime	까지 공간이 있어야 한다
+		if(i != times.length && times[i].time <= curTime + unitTime)
 		return;
 
 		this.formationAddable = true;
@@ -335,9 +336,9 @@ export default class FormationScreen extends React.Component {
 		let duration;
 		// 오른쪽에 기존 블록이 있는 경우, (사이 공간-1) 만큼 duration 을 설정한다 (최대 5)
 		if(i != times.length)
-		duration = times[i].time - curTime > 5 ? 5 : times[i].time - curTime - 1;
+		duration = times[i].time - curTime > 5*unitTime ? 5*unitTime : times[i].time - curTime - unitTime;
 		else
-		duration = musicLength - curTime > 5 ? 5 : musicLength - curTime - 1;
+		duration = musicLength*1000 - curTime > 5*unitTime ? 5*unitTime : musicLength*1000 - curTime - unitTime;
 
 		const newTimeEntry = { nid, time: curTime, duration };
 		const newPositionEntry = [];
@@ -507,10 +508,10 @@ export default class FormationScreen extends React.Component {
 		const { curTime } = this.state;
 
 		if(this.sound.isLoaded()) {
-			this.sound.setCurrentTime(curTime);
+			this.sound.setCurrentTime(curTime/1000);
 			this.sound.play(() => {
 				this.sound.pause();
-				this.sound.setCureentTime(0);
+				this.sound.setCurrentTime(0);
 			});
 		}
 	}
@@ -590,7 +591,7 @@ export default class FormationScreen extends React.Component {
 						Animated.timing(
 							this.positionsAtCurTime[did], {
 								toValue: {x: position[did].x, y: position[did].y},
-								duration: (times[i+1].time - rightEnd) * 1000,
+								duration: times[i+1].time - rightEnd,
 								easing: Easing.linear,
 								useNativeDriver: true,	// false 로 하면 1초 간격으로 끊기는 느낌 있음
 							}
@@ -618,7 +619,7 @@ export default class FormationScreen extends React.Component {
 						Animated.timing(
 							this.positionsAtCurTime[did], {
 								toValue: {x: position[did].x, y: position[did].y},
-								duration: (times[i].time - curTime) * 1000,
+								duration: times[i].time - curTime,
 								easing: Easing.linear,
 								useNativeDriver: true,
 							}
@@ -719,7 +720,8 @@ export default class FormationScreen extends React.Component {
 				changeDancerPosition={changeDancerPosition}
 				selectedPosTime={selectedPosTime}
 				dancers={dancers}
-				displayName={noteInfo.displayName} />
+				displayName={noteInfo.displayName}
+				unitTime={unitTime} />
 
 				{/* Music Bar */}
 				<PlayerBar
@@ -727,7 +729,8 @@ export default class FormationScreen extends React.Component {
 				musicLength={noteInfo.musicLength}
 				pressPlayButton={pressPlayButton}
 				isPlay={isPlay}
-				setCurTime={setCurTime} />
+				setCurTime={setCurTime}
+				unitTime={unitTime} />
 
 				{/* Timeline */}
 				<Timeline
@@ -743,7 +746,8 @@ export default class FormationScreen extends React.Component {
 				selectFormationBox={selectFormationBox}
 				changeFormationBoxLength={changeFormationBoxLength}
 				isPlay={isPlay}
-				unitBoxWidth={unitBoxWidth} />
+				unitBoxWidth={unitBoxWidth}
+				unitTime={unitTime} />
 
 				{/* Tool bar */}
 				<ToolBar

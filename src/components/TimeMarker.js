@@ -24,7 +24,7 @@ export default class TimeMarker extends React.Component {
 			
       // MOVE 제스쳐가 진행 중일 때 (계속 실행)
 			onPanResponderMove: (event, gesture) => {
-				const newTime = this.preTime + Math.round(gesture.dx / this.props.unitBoxWidth);
+				const newTime = this.preTime + Math.round(gesture.dx / this.props.unitBoxWidth) * this.props.unitTime;
 				if(this.props.curTime != newTime)
 					this.props.setCurTime(newTime);
 			},
@@ -37,14 +37,14 @@ export default class TimeMarker extends React.Component {
 	}
 	
 	render() {
-		const { curTime, unitBoxWidth } = this.props;
+		const { curTime, unitBoxWidth, unitTime } = this.props;
 		const styles = getStyleSheet();
 
 		return (
       <Animated.View
       pointerEvents='auto'
       {...this.panResponder.panHandlers}
-			style={[styles.timeMarkerContainer, {width: unitBoxWidth, left: curTime * unitBoxWidth}]}>
+			style={[styles.timeMarkerContainer, {width: unitBoxWidth, left: curTime / unitTime * unitBoxWidth}]}>
 				<View style={styles.timeMarker} />
 			</Animated.View>
     )
