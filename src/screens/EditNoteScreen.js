@@ -14,10 +14,13 @@ const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 export default class EditNoteScreen extends React.Component {
 	state = {
 		noteInfo: undefined,
-		dancerNum: 0,
+		dancerNum: 2,
 		musicList: [],
 		selectedMusicPath: '',
 		playingMusicIdx: -1,
+		isValidTitle: true,
+		isValidDancerNum: true,
+		isValidMusic: false,
 	}
 
 	musicLoad = () => {
@@ -59,7 +62,7 @@ export default class EditNoteScreen extends React.Component {
 	}
 
 	selectMusic = (path) => {
-		this.setState({ selectedMusicPath: path });
+		this.setState({ selectedMusicPath: path, isValidMusic: true });
 	}
 
 	goToFormationScreen = () => {
@@ -72,8 +75,24 @@ export default class EditNoteScreen extends React.Component {
 	}
 
 	changeTitle = (text) => {
-		const noteInfo = {...this.state.noteInfo, title: text};
-		this.setState({ noteInfo });
+		text = text.trim();
+
+		if(text == '') 
+		this.setState({ isValidTitle: false });
+
+		else {
+			const noteInfo = {...this.state.noteInfo, title: text};
+			this.setState({ noteInfo, isValidTitle: true });
+		}
+	}
+
+	changeDancerNum = (event) => {
+		const dancerNum = Number(event.nativeEvent.text);
+		if(isNaN(dancerNum) || dancerNum <= 0 || dancerNum > 30)
+		this.setState({ isValidDancerNum: false });
+
+		else
+		this.setState({ dancerNum, isValidDancerNum: true });
 	}
 
 	componentDidMount() {
@@ -100,9 +119,11 @@ export default class EditNoteScreen extends React.Component {
 
 	render() {
 		console.log('render');
-		const { noteInfo, dancerNum, musicList, selectedMusicPath, playingMusicIdx } = this.state;
+		const { noteInfo, dancerNum, musicList, selectedMusicPath, playingMusicIdx,
+			isValidTitle, isValidDancerNum, isValidMusic } = this.state;
 		const {
 			changeTitle,
+			changeDancerNum,
 			musicPlay,
 			selectMusic,
 		} = this;
@@ -131,7 +152,8 @@ export default class EditNoteScreen extends React.Component {
 				<View style={{flex: 1, padding: 30}}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>노트 이름</Text>
-						<View style={styles.editNote__flag} />
+						<View style={[styles.editNote__flag, {backgroundColor: isValidTitle ? COLORS.green : COLORS.red}]} />
+						<Text style={{color: COLORS.red}}>{isValidTitle ? '' : '제목은 공백일 수 없습니다'}</Text>
 					</View>
 					<TextInput
 					style={styles.editNote__input}
@@ -145,32 +167,21 @@ export default class EditNoteScreen extends React.Component {
 
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>댄서 명 수 (최대 30명)</Text>
-						<View style={styles.editNote__flag} />
+						<View style={[styles.editNote__flag, {backgroundColor: isValidDancerNum ? COLORS.green : COLORS.red}]} />
+						<Text style={{color: COLORS.red}}>{isValidDancerNum ? '' : '1~30 숫자이어야 합니다'}</Text>
 					</View>
 					<TextInput
 					style={styles.editNote__input}
 					maxLength={4}
 					placeholder={'0'}
 					placeholderTextColor={COLORS.grayDark}
-					ref={ref => (this.dancerNumInput = ref)}
 					keyboardType={'number-pad'}
-					onEndEditing={event => {
-						const dancerNum = Number(event.nativeEvent.text);
-						if(isNaN(dancerNum))
-						Alert.alert('댄서 인원 수', '숫자를 입력해 주세요.', [
-							{text: "네", onPress: () => this.dancerNumInput.focus()}
-						])
-						else if(dancerNum < 0 || dancerNum > 30)
-						Alert.alert('댄서 인원 수', '최대 30명만 입력할 수 있어요.', [
-							{text: "네", onPress: () => this.dancerNumInput.focus()}
-						])
-						else
-						this.setState({ dancerNum });
-					}} />
+					onEndEditing={event => changeDancerNum(event)}>{dancerNum}</TextInput>
 
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>노래</Text>
-						<View style={styles.editNote__flag} />
+						<View style={[styles.editNote__flag, {backgroundColor: isValidMusic ? COLORS.green : COLORS.red}]} />
+						<Text style={{color: COLORS.red}}>{isValidMusic ? '' : '선택하지 안 하면 1분 무음으로 재생됩니다'}</Text>
 					</View>
 
 					<FlatList

@@ -246,8 +246,7 @@ const basicStyleSheet = StyleSheet.create({
 		fontSize: 15,
 	},
 	editNote__input: {
-		flex: 1,
-		height: 40,
+		height: 50,
 		fontSize: 15,
 		borderColor: COLORS.grayDark,
 		borderWidth: 1,
@@ -260,7 +259,7 @@ const basicStyleSheet = StyleSheet.create({
 		width: 8,
 		height: 8,
 		borderRadius: 4,
-		marginLeft: 10,
+		marginHorizontal: 10,
 	},
 	editNote__musicList: {
 		borderColor: COLORS.grayDark,
