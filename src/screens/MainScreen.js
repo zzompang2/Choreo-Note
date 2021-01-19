@@ -200,7 +200,7 @@ export default class MainScreen extends React.Component {
 				<View style={styles.toolbar}>
 					<Text numberOfLines={1} style={styles.toolbarTitle}>Choreo Note</Text>
 					<TouchableOpacity onPress={this.addNote}>
-						<Text style={styles.toolbarButton}>추가</Text>
+						<Text style={styles.toolbarText}>추가</Text>
 					</TouchableOpacity>
 				</View>
 

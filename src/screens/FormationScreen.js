@@ -1,10 +1,11 @@
 import React from 'react';
 import {
-  SafeAreaView, View, Text, TouchableOpacity, Animated, Easing
+  SafeAreaView, View, Text, TouchableOpacity, Animated, Easing, TextInput, Alert, Keyboard
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import RNFS from 'react-native-fs';
 import Sound from 'react-native-sound';
+import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 import getStyleSheet from '../values/styles';
 import Stage from '../components/Stage';
@@ -25,6 +26,7 @@ export default class FormationScreen extends React.Component {
 		scrollEnable: true,
 		selectedPosTime: undefined,
 		isPlay: false,
+		titleOnFocus: false,
 	}
 	
 	pressPlayButton = () => {
@@ -93,6 +95,36 @@ export default class FormationScreen extends React.Component {
 	 * @param {boolean} scrollEnable true 인 경우 scroll 가능
 	 */
 	setScrollEnable = (scrollEnable) => this.setState({ scrollEnable })
+
+	/**
+	 * note 의 title 을 변경한다.
+	 * @param {*} event 
+	 */
+	changeTitle = (event) => {
+		const { noteInfo: { nid } } = this.state;
+		const title = event.nativeEvent.text.trim();
+
+		console.log("title:", title);
+		if(title == '')
+		Alert.alert('노트 제목', '제목은 공백일 수 없어요.', [
+			{text: '네', onPress: () => this.titleInput.focus()}
+		]);
+
+		else {
+			const noteInfo = {...this.state.noteInfo, title};
+			this.setState({ noteInfo, titleOnFocus: false });
+
+			db.transaction(txn => {
+				txn.executeSql(
+					"UPDATE notes " +
+					"SET title=? " +
+					"WHERE nid=?",
+					[title, nid]);
+			},
+			e => console.log("DB ERROR", e),
+			() => console.log("DB SUCCESS"));
+		}
+	}
 
 	/**
 	 * 선택되어 있는 Formation box 의 정보를 주어진 time, duration 값으로 업데이트 한다.
@@ -638,9 +670,10 @@ export default class FormationScreen extends React.Component {
 
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
-						scrollEnable, selectedPosTime, isPlay } = this.state;
+						scrollEnable, selectedPosTime, isPlay, titleOnFocus } = this.state;
 		const styles = getStyleSheet();
 		const { 
+			changeTitle,
 			changeDancerPosition,
 			setCurTime,
 			setScrollEnable,
@@ -660,10 +693,24 @@ export default class FormationScreen extends React.Component {
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
-					<Text numberOfLines={1} style={styles.toolbarTitle}>{noteInfo.title}</Text>
-					<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-						<Text style={styles.toolbarButton}>뒤로</Text>
-					</TouchableOpacity>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+						</TouchableOpacity>
+						<TextInput 
+						numberOfLines={1} 
+						style={[styles.toolbarTitle, {flex: 1}]}
+						ref={ref => (this.titleInput = ref)}
+						onFocus={() => this.setState({ titleOnFocus: true })}
+						onEndEditing={event => changeTitle(event)}>
+							{noteInfo.title}
+						</TextInput>
+						{titleOnFocus ?
+						<TouchableOpacity onPress={() => Keyboard.dismiss()}>
+							<Text style={styles.toolbarText}>확인</Text>
+						</TouchableOpacity>
+						: null}
+					</View>
 				</View>
 
 				{/* Stage: Coordinate & Dancer */}

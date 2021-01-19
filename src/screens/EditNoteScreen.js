@@ -74,14 +74,14 @@ export default class EditNoteScreen extends React.Component {
 		});
 	}
 
-	changeTitle = (text) => {
-		text = text.trim();
+	changeTitle = (event) => {
+		const title = event.nativeEvent.text.trim();
 
-		if(text == '') 
+		if(title == '') 
 		this.setState({ isValidTitle: false });
 
 		else {
-			const noteInfo = {...this.state.noteInfo, title: text};
+			const noteInfo = {...this.state.noteInfo, title};
 			this.setState({ noteInfo, isValidTitle: true });
 		}
 	}
@@ -126,6 +126,7 @@ export default class EditNoteScreen extends React.Component {
 			changeDancerNum,
 			musicPlay,
 			selectMusic,
+			goToFormationScreen,
 		} = this;
 		const styles = getStyleSheet();
 
@@ -142,10 +143,15 @@ export default class EditNoteScreen extends React.Component {
 
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
-					<Text style={styles.toolbarTitle}>Edit Note</Text>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+						</TouchableOpacity>
+						<Text style={styles.toolbarTitle}>Edit Note</Text>
+					</View>
 					<TouchableOpacity
-					onPress={() => this.props.navigation.goBack()}>
-						<Text style={styles.toolbarButton}>뒤로</Text>
+					onPress={() => goToFormationScreen()}>
+						<Text style={styles.toolbarText}>확인</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -153,14 +159,14 @@ export default class EditNoteScreen extends React.Component {
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>노트 이름</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidTitle ? COLORS.green : COLORS.red}]} />
-						<Text style={{color: COLORS.red}}>{isValidTitle ? '' : '제목은 공백일 수 없습니다'}</Text>
+						<Text style={{color: COLORS.red}}>{isValidTitle ? '' : '제목은 공백일 수 없어요.'}</Text>
 					</View>
 					<TextInput
 					style={styles.editNote__input}
 					maxLength={30}
 					placeholder="노트 제목을 입력해 주세요."
 					placeholderTextColor={COLORS.grayDark}
-					onEndEditing={e => changeTitle(e.nativeEvent.text)}
+					onEndEditing={event => changeTitle(event)}
 					autoCorrect={false}>
 						{noteInfo.title}
 					</TextInput>
@@ -168,7 +174,7 @@ export default class EditNoteScreen extends React.Component {
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>댄서 명 수 (최대 30명)</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidDancerNum ? COLORS.green : COLORS.red}]} />
-						<Text style={{color: COLORS.red}}>{isValidDancerNum ? '' : '1~30 숫자이어야 합니다'}</Text>
+						<Text style={{color: COLORS.red}}>{isValidDancerNum ? '' : '1~30 숫자이어야 합니다.'}</Text>
 					</View>
 					<TextInput
 					style={styles.editNote__input}
@@ -181,7 +187,7 @@ export default class EditNoteScreen extends React.Component {
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>노래</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidMusic ? COLORS.green : COLORS.red}]} />
-						<Text style={{color: COLORS.red}}>{isValidMusic ? '' : '선택하지 안 하면 1분 무음으로 재생됩니다'}</Text>
+						<Text style={{color: COLORS.red}}>{isValidMusic ? '' : '선택하지 않으면 1분 무음으로 재생됩니다.'}</Text>
 					</View>
 
 					<FlatList

@@ -285,17 +285,19 @@ export default class DancerScreen extends React.Component {
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
-					<Text style={styles.toolbarTitle}>Dancer</Text>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+						</TouchableOpacity>
+						<Text style={styles.toolbarTitle}>Dancer</Text>
+					</View>
+					
 					<Switch
 					trackColor={{ false: COLORS.grayLight, true: COLORS.grayLight }}
 					// thumbColor={displayName ? "#f5dd4b" : "#f4f3f4"}
 					ios_backgroundColor={COLORS.blackMiddle}
 					onValueChange={changeDisplayType}
 					value={displayName} />
-					<TouchableOpacity
-					onPress={() => this.props.navigation.goBack()}>
-						<Text style={styles.toolbarButton}>뒤로</Text>
-					</TouchableOpacity>
 				</View>
 
 				{/* Dancer 리스트 */}

@@ -35,12 +35,19 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	toolbarTitle: {
 		fontSize: 24,
-		fontWeight: "bold"
+		fontWeight: "bold",
 	},
 	toolbarButton: {
+		fontSize: 20,
+		paddingVertical: 15,
+		paddingRight: 10,
+		// backgroundColor: COLORS.red
+	},
+	toolbarText: {
 		fontSize: 15,
 		paddingVertical: 15,
-		paddingHorizontal: 10
+		paddingHorizontal: 10,
+		// backgroundColor: 'red'
 	},
 	noteList: {
 		flex: 1,
@@ -296,6 +303,10 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	toolbarButton: {
 		...basicStyleSheet.toolbarButton,
+		color: COLORS.white,
+	},
+	toolbarText: {
+		...basicStyleSheet.toolbarText,
 		color: COLORS.white,
 	},
 	noteList: {

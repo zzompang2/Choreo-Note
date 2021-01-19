@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import getStyleSheet from '../values/styles';
+import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
@@ -65,11 +66,12 @@ export default class DatabaseScreen extends React.Component {
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
-					<Text style={styles.toolbarTitle}>Database</Text>
-					<TouchableOpacity
-					onPress={() => this.props.navigation.goBack()}>
-						<Text style={styles.toolbarButton}>뒤로</Text>
-					</TouchableOpacity>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+						</TouchableOpacity>
+						<Text style={styles.toolbarTitle}>Database</Text>
+					</View>
 				</View>
 
 				{/* notes 리스트 */}
