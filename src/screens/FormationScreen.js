@@ -15,8 +15,8 @@ import PlayerBar from '../components/PlayerBar';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
-const unitTime = 500;			// 최소 시간단위 (millisecond)
-const unitBoxWidth = 15;	// 한 단위시간 박스의 가로 길이
+const unitTime = 250;			// 최소 시간단위 (millisecond)
+const unitBoxWidth = 10;	// 한 단위시간 박스의 가로 길이
 
 export default class FormationScreen extends React.Component {
 	state = {

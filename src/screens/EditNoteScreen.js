@@ -10,6 +10,7 @@ import getStyleSheet, { COLORS } from '../values/styles';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
+const TAG = 'EditNoteScreen/';
 
 export default class EditNoteScreen extends React.Component {
 	state = {
@@ -171,7 +172,7 @@ export default class EditNoteScreen extends React.Component {
 				[nid],
         (txn, result) => {
 					const noteInfo = result.rows.item(0);
-					console.log(noteInfo);
+					console.log(TAG, noteInfo);
 					this.setState({ noteInfo });
 				}
 			);

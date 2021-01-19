@@ -1,9 +1,10 @@
 import React from "react";
 import { 
-	PanResponder, View, TouchableOpacity
+	Dimensions, View, TouchableOpacity
 } from "react-native";
 import getStyleSheet from "../values/styles";
 
+const { width } = Dimensions.get('window');
 const TAG = "FormationBox/";
 
 export default class FormationBox extends React.Component {
@@ -14,7 +15,7 @@ export default class FormationBox extends React.Component {
 		const formationBoxStyle = isSelected ? styles.formationBoxSelected : styles.formationBox;
 
 		return (
-			<View style={{position: 'absolute', left: (unitBoxWidth/2)+unitBoxWidth*(time/unitTime), width: unitBoxWidth*(duration/unitTime)}}>
+			<View style={{position: 'absolute', left: width/2 + unitBoxWidth*(time/unitTime), width: unitBoxWidth*(duration/unitTime)}}>
 				<TouchableOpacity
 				// disabled={isSelected}
 				onPress={() => selectFormationBox(time)}

@@ -3,7 +3,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 // 화면의 가로, 세로 길이 받아오기
 const { width, height } = Dimensions.get('window');
 const formationBoxHeight = 60;
-const unitBoxWidth = 40;
+const unitBoxWidth = 10;
 
 export const COLORS = {
   white: '#F9F9F9',
@@ -104,6 +104,9 @@ const basicStyleSheet = StyleSheet.create({
 	timeline: {
 		width: '100%',
 	},
+	timeline__scrollPadding: {
+		width: width/2,
+	},
 	timeboxContainer: {
 		flexDirection: 'row',
 		height: 40,
@@ -131,18 +134,21 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	timeMarkerContainer: {
 		position: 'absolute',
-		height: 40,
-		width: unitBoxWidth,
+		width: '100%',
+		height: '100%',
 		alignItems: 'center',
-		justifyContent: 'flex-end'
+		justifyContent: 'center',
 	},
 	timeMarker: {
-		position: 'absolute', 
-		width: 10,
-		height: 20,
+		width: unitBoxWidth,
+		height: 10,
+		borderRadius: 5,
 		backgroundColor: COLORS.green,
-		borderBottomLeftRadius: 5,
-		borderBottomRightRadius: 5,
+	},
+	timeMarkerLine: {
+		width: 1,
+		height: '100%',
+		backgroundColor: COLORS.green,
 	},
 	toolBar: {
 		width: '100%',
@@ -357,6 +363,10 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.timeline,
 		backgroundColor: COLORS.grayLight,
 	},
+	timeline__scrollPadding: {
+		...basicStyleSheet.timeline__scrollPadding,
+		backgroundColor: COLORS.blackLight,
+	},
 	timeboxContainer: {
 		...basicStyleSheet.timeboxContainer
 	},
@@ -364,7 +374,10 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.timeMarkerContainer,
 	},
 	timeMarker: {
-		...basicStyleSheet.timeMarker
+		...basicStyleSheet.timeMarker,
+	},
+	timeMarkerLine: {
+		...basicStyleSheet.timeMarkerLine,
 	},
 	formationBox: {
 		...basicStyleSheet.formationBox,

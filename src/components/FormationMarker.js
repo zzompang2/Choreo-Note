@@ -1,9 +1,10 @@
 import React from "react";
 import { 
-	PanResponder, Animated, View
+	Dimensions, PanResponder, Animated
 } from "react-native";
 import getStyleSheet from "../values/styles";
 
+const { width } = Dimensions.get('window');
 const TAG = "FormationMarker/";
 
 export default class FormationMarker extends React.Component {
@@ -113,7 +114,7 @@ export default class FormationMarker extends React.Component {
 		this.movedRight.setValue(0);
 		this.movedLeft.setValue(0);
 
-		this.containerLeftStyle = { left: Animated.add((unitBoxWidth/2)+unitBoxWidth*(time/unitTime), this.movedBody) };
+		this.containerLeftStyle = { left: Animated.add(width/2 + unitBoxWidth*(time/unitTime), this.movedBody) };
 		// (marker 의 width) = (기존값) + (이동한 오른쪽 거리) + (이동한 왼쪽 거리)
 		this.markerWidthStyle = { width: Animated.add(unitBoxWidth*(duration/unitTime), Animated.add(this.movedRight, Animated.multiply(-1, this.movedLeft))) };
 		// (marker 의 left) = 0 - (이동한 왼쪽 거리)
