@@ -666,6 +666,8 @@ export default class FormationScreen extends React.Component {
 	componentWillUnmount() {
 		if(this.state.isPlay)
 		this.pause();
+
+		this.props.route.params.updateStateFromDB(this.state.noteInfo.nid);
 	}
 
 	render() {

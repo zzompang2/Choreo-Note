@@ -162,13 +162,32 @@ export default class MainScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
+	updateStateFromDB = (nid) => {
+		console.log("업데이트!");
+		const { notes } = this.state;
+
+		db.transaction(txn => {
+      txn.executeSql(
+				"SELECT * FROM notes WHERE nid = ?",
+				[nid],
+        (txn, result) => {
+					const noteInfo = result.rows.item(0);
+					const newNotes = [...notes.slice(0, nid), noteInfo, ...notes.slice(nid+1)];
+					this.setState({ notes: newNotes });
+				}
+			);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+	}
+
 	componentDidMount() {
 		this.getDatabaseData();
 	}
 
 	render() {
 		const { notes } = this.state;
-		const { getTodayDate } = this;
+		const { getTodayDate, updateStateFromDB } = this;
 		const styles = getStyleSheet();
 
 		return(
@@ -193,7 +212,10 @@ export default class MainScreen extends React.Component {
 					<View>
 						<TouchableOpacity
 						onPress={() => {
-							this.props.navigation.navigate(item.music == '' ? 'EditNote' : 'Formation', { nid: item.nid, getTodayDate: getTodayDate });
+							this.props.navigation.navigate(item.music == '' ? 'EditNote' : 'Formation', {
+								nid: item.nid,
+								getTodayDate: getTodayDate,
+								updateStateFromDB: updateStateFromDB });
 						}}
 						style={styles.noteEntry}>
 							{/* <Text numberOfLines={1}>{item.nid}</Text> */}
@@ -204,12 +226,12 @@ export default class MainScreen extends React.Component {
 				} />
 
 				{/* Footer (for debug) */}
-				<View style={styles.toolbar}>
+				{/* <View style={styles.toolbar}>
 					<TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
 						<Text style={styles.toolbarButton}>DB</Text>
 					</TouchableOpacity>
-				</View>
+				</View> */}
 			</SafeAreaView>
 			</View>
 		)

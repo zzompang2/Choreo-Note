@@ -69,7 +69,7 @@ export default class EditNoteScreen extends React.Component {
 
 	goToFormationScreen = () => {
 		const { noteInfo: { nid, title }, dancerNum, musicList, selectedMusicPath, isValidTitle, isValidDancerNum } = this.state;
-		const { getTodayDate } = this.props.route.params;
+		const { getTodayDate, updateStateFromDB } = this.props.route.params;
 
 		Keyboard.dismiss();
 
@@ -130,7 +130,8 @@ export default class EditNoteScreen extends React.Component {
 
 						this.props.navigation.navigate('Formation', { 
 							nid: nid,
-							getTodayDate: getTodayDate
+							getTodayDate: getTodayDate,
+							updateStateFromDB: updateStateFromDB,
 						});
 					},
 					e => console.log("DB ERROR", e),
