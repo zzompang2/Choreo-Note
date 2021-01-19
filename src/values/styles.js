@@ -3,6 +3,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 // 화면의 가로, 세로 길이 받아오기
 const { width, height } = Dimensions.get('window');
 const formationBoxHeight = 60;
+const unitBoxWidth = 40;
 
 export const COLORS = {
   white: '#F9F9F9',
@@ -104,8 +105,8 @@ const basicStyleSheet = StyleSheet.create({
 		width: '100%',
 	},
 	timebox: {
-		width: 40,
 		height: 40,
+		width: unitBoxWidth,
 		backgroundColor: COLORS.grayMiddle,
 		alignItems: 'center',
 		justifyContent: 'center'
@@ -129,14 +130,20 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center',
 		backgroundColor: COLORS.blackDark
 	},
+	timeMarkerContainer: {
+		position: 'absolute',
+		height: 40,
+		width: unitBoxWidth,
+		alignItems: 'center',
+		justifyContent: 'flex-end'
+	},
 	timeMarker: {
 		position: 'absolute', 
-		width: 30, 
-		height: 30, 
-		borderWidth: 1, 
-		borderColor: COLORS.blackDark,
-		borderRadius: 15,
-		margin: 5
+		width: 10,
+		height: 20,
+		backgroundColor: COLORS.green,
+		borderBottomLeftRadius: 5,
+		borderBottomRightRadius: 5,
 	},
 	toolBar: {
 		width: '100%',
@@ -351,6 +358,9 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	timebox: {
 		...basicStyleSheet.timebox
+	},
+	timeMarkerContainer: {
+		...basicStyleSheet.timeMarkerContainer,
 	},
 	timeMarker: {
 		...basicStyleSheet.timeMarker

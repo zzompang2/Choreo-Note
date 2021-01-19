@@ -18,7 +18,7 @@ export default class Timeline extends React.Component {
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
 						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
-						changeFormationBoxLength, isPlay } = this.props;
+						changeFormationBoxLength, isPlay, unitBoxWidth } = this.props;
 		const styles = getStyleSheet();
 
 		this.timeboxs = [];
@@ -29,7 +29,7 @@ export default class Timeline extends React.Component {
 			this.timeboxs.push(
 				<TouchableOpacity
 				key={sec}
-				style={styles.timebox}
+				style={[styles.timebox, {width: unitBoxWidth}]}
 				onPress={() => setCurTime(sec)}>
 					<Text>{sec}</Text>
 				</TouchableOpacity>
@@ -44,7 +44,8 @@ export default class Timeline extends React.Component {
 					time={times[timesIdx].time}
 					duration={times[timesIdx].duration}
 					isSelected={selectedPosTime == times[timesIdx].time}
-					selectFormationBox={selectFormationBox} />
+					selectFormationBox={selectFormationBox}
+					unitBoxWidth={unitBoxWidth} />
 				);
 				timesIdx++;
 			}
@@ -68,7 +69,8 @@ export default class Timeline extends React.Component {
 						duration={this.selectedPosDuration}
 						setScrollEnable={setScrollEnable}
 						changeFormationBoxLength={changeFormationBoxLength}
-						selectFormationBox={selectFormationBox} />
+						selectFormationBox={selectFormationBox}
+						unitBoxWidth={unitBoxWidth} />
 						: null}
 					</View>
 				
@@ -76,7 +78,8 @@ export default class Timeline extends React.Component {
 					curTime={curTime}
 					setCurTime={setCurTime}
 					setScrollEnable={setScrollEnable}
-					isPlay={isPlay} />
+					isPlay={isPlay}
+					unitBoxWidth={unitBoxWidth} />
 				</View>
 			</ScrollView>
     )

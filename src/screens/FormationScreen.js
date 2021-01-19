@@ -15,6 +15,8 @@ import PlayerBar from '../components/PlayerBar';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
+const unitTime = 200;			// millisecond
+const unitBoxWidth = 20;
 
 export default class FormationScreen extends React.Component {
 	state = {
@@ -740,7 +742,8 @@ export default class FormationScreen extends React.Component {
 				selectedPosTime={selectedPosTime}
 				selectFormationBox={selectFormationBox}
 				changeFormationBoxLength={changeFormationBoxLength}
-				isPlay={isPlay} />
+				isPlay={isPlay}
+				unitBoxWidth={unitBoxWidth} />
 
 				{/* Tool bar */}
 				<ToolBar

@@ -19,11 +19,11 @@ export default class MainScreen extends React.Component {
 
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
-			txn.executeSql('DROP TABLE IF EXISTS metadata');
-			txn.executeSql('DROP TABLE IF EXISTS notes');
-			txn.executeSql('DROP TABLE IF EXISTS dancers');
-			txn.executeSql('DROP TABLE IF EXISTS times');
-			txn.executeSql('DROP TABLE IF EXISTS positions');
+			// txn.executeSql('DROP TABLE IF EXISTS metadata');
+			// txn.executeSql('DROP TABLE IF EXISTS notes');
+			// txn.executeSql('DROP TABLE IF EXISTS dancers');
+			// txn.executeSql('DROP TABLE IF EXISTS times');
+			// txn.executeSql('DROP TABLE IF EXISTS positions');
 
 			// 노트 개수가 0개이면 디폴트 노트 생성
 			txn.executeSql(

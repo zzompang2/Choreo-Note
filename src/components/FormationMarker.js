@@ -39,7 +39,7 @@ export default class FormationMarker extends React.Component {
 					selectFormationBox();
 
 				// state 업데이트
-				const newTime = this.props.time + Math.round(gesture.dx / 40);
+				const newTime = this.props.time + Math.round(gesture.dx / this.props.unitBoxWidth);
 				if(newTime != this.props.time)
 					changeFormationBoxLength(newTime, this.props.duration);
       }
@@ -69,7 +69,7 @@ export default class FormationMarker extends React.Component {
 
 				const preTime = this.props.time;												// 초기값
 				const endTime = this.props.time + this.props.duration;	// box 의 오른쪽 끝부분
-				const newTime = this.props.time + Math.round(gesture.dx / 40);
+				const newTime = this.props.time + Math.round(gesture.dx / this.props.unitBoxWidth);
 				if(preTime != newTime && newTime < endTime)
 					changeFormationBoxLength(newTime, endTime - newTime);
       }
@@ -97,7 +97,7 @@ export default class FormationMarker extends React.Component {
 				// scroll 다시 작동
 				setScrollEnable(true);
 				const preDuration = this.props.duration;		// 초기값
-				const newDuration = preDuration + Math.round(gesture.dx / 40);
+				const newDuration = preDuration + Math.round(gesture.dx / this.props.unitBoxWidth);
 				if(preDuration != newDuration && 0 < newDuration)
 					changeFormationBoxLength(this.props.time, newDuration);
       }
@@ -105,22 +105,22 @@ export default class FormationMarker extends React.Component {
 	}
 	
 	render() {
-		const { time, duration } = this.props;
+		const { time, duration, unitBoxWidth } = this.props;
 		const styles = getStyleSheet();
 
 		this.movedBody.setValue(0);
 		this.movedRight.setValue(0);
 		this.movedLeft.setValue(0);
 
-		this.containerLeftStyle = { left: Animated.add(20+40*time, this.movedBody) };
+		this.containerLeftStyle = { left: Animated.add((unitBoxWidth/2)+unitBoxWidth*time, this.movedBody) };
 		// (marker 의 width) = (기존값) + (이동한 오른쪽 거리) + (이동한 왼쪽 거리)
-		this.markerWidthStyle = { width: Animated.add(40*duration, Animated.add(this.movedRight, Animated.multiply(-1, this.movedLeft))) };
+		this.markerWidthStyle = { width: Animated.add(unitBoxWidth*duration, Animated.add(this.movedRight, Animated.multiply(-1, this.movedLeft))) };
 		// (marker 의 left) = 0 - (이동한 왼쪽 거리)
 		this.markerLeftStyle = { left: this.movedLeft };
 		// (left button 의 left) = 0 - (이동한 왼쪽 거리)
 		this.markerLeftBtnPosStyle = { left: Animated.add(-30, this.movedLeft) };
 		// (right button 의 left) = (기존값) + (이동한 오른쪽 거리)
-		this.markerRightBtnPosStyle = { left: Animated.add(40*duration, this.movedRight) };
+		this.markerRightBtnPosStyle = { left: Animated.add(unitBoxWidth*duration, this.movedRight) };
 		return (
 			<Animated.View style={this.containerLeftStyle}>
 
