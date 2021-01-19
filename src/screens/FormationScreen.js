@@ -492,16 +492,12 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
-	musicLoad = () => {
-		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
-			console.log('name:', files[0].name);
-
-			this.sound = new Sound(encodeURI(files[0].path), '', (error) => {
-				if (error)
-				console.log('MUSIC LOAD FAIL', error);
-				else
-				console.log('MUSIC LOAD SUCCESS:', Math.ceil(this.sound.getDuration()));
-			});
+	musicLoad = (path) => {
+		this.sound = new Sound(encodeURI(path), '', (error) => {
+			if (error)
+			console.log('MUSIC LOAD FAIL', error);
+			else
+			console.log('MUSIC LOAD SUCCESS:', Math.ceil(this.sound.getDuration()));
 		});
 	}
 
@@ -519,8 +515,6 @@ export default class FormationScreen extends React.Component {
 
 	componentDidMount() {
 		const { nid } = this.props.route.params;
-
-		this.musicLoad();
 
 		db.transaction(txn => {
       txn.executeSql(
@@ -560,6 +554,7 @@ export default class FormationScreen extends React.Component {
 											}
 											console.log("노트 정보:", noteInfo);
 											this.setState({ noteInfo, dancers, times, positions });
+											this.musicLoad(noteInfo.music);
 										}
 									);
 								}
@@ -594,7 +589,7 @@ export default class FormationScreen extends React.Component {
 							this.positionsAtCurTime[did], {
 								toValue: {x: position[did].x, y: position[did].y},
 								duration: (times[i+1].time - rightEnd) * 1000,
-								easing: Easing.linear,
+								// easing: Easing.linear,
 								useNativeDriver: false,
 							}
 						)
@@ -687,9 +682,6 @@ export default class FormationScreen extends React.Component {
 			pressPlayButton,
 		} = this;
 
-		// if(noteInfo === undefined)
-		// return null;
-
 		return(
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
@@ -699,10 +691,11 @@ export default class FormationScreen extends React.Component {
 						<TouchableOpacity onPress={() => this.props.navigation.navigate('Main')}>
 							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
 						</TouchableOpacity>
-						<TextInput 
+						<TextInput
 						numberOfLines={1} 
 						style={[styles.toolbarTitle, {flex: 1}]}
 						ref={ref => (this.titleInput = ref)}
+						placeholder={noteInfo == undefined ? '' : noteInfo.title}
 						onFocus={() => this.setState({ titleOnFocus: true })}
 						onEndEditing={event => changeTitle(event)}>
 							{noteInfo == undefined ? '' : noteInfo.title}

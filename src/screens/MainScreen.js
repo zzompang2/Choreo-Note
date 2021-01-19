@@ -19,10 +19,11 @@ export default class MainScreen extends React.Component {
 
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
-			// txn.executeSql('DROP TABLE IF EXISTS notes');
-			// txn.executeSql('DROP TABLE IF EXISTS dancers');
-			// txn.executeSql('DROP TABLE IF EXISTS times');
-			// txn.executeSql('DROP TABLE IF EXISTS positions');
+			txn.executeSql('DROP TABLE IF EXISTS metadata');
+			txn.executeSql('DROP TABLE IF EXISTS notes');
+			txn.executeSql('DROP TABLE IF EXISTS dancers');
+			txn.executeSql('DROP TABLE IF EXISTS times');
+			txn.executeSql('DROP TABLE IF EXISTS positions');
 
 			// 노트 개수가 0개이면 디폴트 노트 생성
 			txn.executeSql(
@@ -33,10 +34,13 @@ export default class MainScreen extends React.Component {
 					// default note 를 생성
 					const countResult = result.rows.item(0)["COUNT(*)"];
 					if(countResult == 0) {
+						txn.executeSql(
+							"INSERT INTO metadata VALUES (0, 0)", []);
+
 						const title = 'Choreo Note에 오신걸 환영해요!';
 						const createDate = this.getTodayDate();
 						const stageRatio = 1;
-						const music = 'sample.mp3';
+						const music = '/';
 						const musicLength = 60;
 						const displayName = 0;
 
@@ -74,6 +78,13 @@ export default class MainScreen extends React.Component {
 			);
 
 			/*=== TABLE 생성 ===*/
+			txn.executeSql(
+				'CREATE TABLE IF NOT EXISTS metadata(' +
+				'id INTEGER NOT NULL, ' +
+				'nidMax INTEGER NOT NULL, ' +
+				'PRIMARY KEY(id))'
+			);
+
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS notes(' +
 				'nid INTEGER NOT NULL, ' +
@@ -143,7 +154,7 @@ export default class MainScreen extends React.Component {
 
 	addNote = () => {
 		const { notes } = this.state;
-		const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
+		// const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
 		const title = '새 노트';
 		const createDate = this.getTodayDate();
 		const stageRatio = 2;
@@ -151,17 +162,27 @@ export default class MainScreen extends React.Component {
 		const musicLength = 60;
 		const displayName = 0;
 
-		const newNotes = [{ nid, title, createDate, editDate: createDate, music }, ...notes];
-		this.setState({ notes: newNotes });
-		
-		// DB 함수는 동기성 함수이므로 미리 state 를 업데이트 한 후 실행해 주자
 		db.transaction(txn => {
 			txn.executeSql(
-				"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-				[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
+				"SELECT * FROM metadata", [],
+				(txn, result) => {
+					const nid = result.rows.item(0).nidMax + 1;
+					const newNotes = [{ nid, title, createDate, editDate: createDate, music }, ...notes];
+					this.setState({ notes: newNotes });
+
+					txn.executeSql(
+						"UPDATE metadata SET nidMax=? WHERE id=0",
+						[nid]
+					);
+					txn.executeSql(
+						"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+						[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]
+					);
+				},
+				e => console.log("DB ERROR", e),
+				() => console.log("DB SUCCESS"));
+			}
+		);
 	}
 
 	updateStateFromDB = (nid) => {
@@ -232,12 +253,12 @@ export default class MainScreen extends React.Component {
 				} />
 
 				{/* Footer (for debug) */}
-				{/* <View style={styles.toolbar}>
+				<View style={styles.toolbar}>
 					<TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
 						<Text style={styles.toolbarButton}>DB</Text>
 					</TouchableOpacity>
-				</View> */}
+				</View>
 			</SafeAreaView>
 			</View>
 		)

@@ -235,7 +235,7 @@ export default class EditNoteScreen extends React.Component {
 					</TextInput>
 
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
-						<Text style={styles.editNote__title}>댄서 명 수 (최대 30명)</Text>
+						<Text style={styles.editNote__title}>댄서 수 (최대 30명)</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidDancerNum ? COLORS.green : COLORS.red}]} />
 						<Text style={{color: COLORS.red}}>{isValidDancerNum ? '' : '1~30 숫자이어야 합니다.'}</Text>
 					</View>
