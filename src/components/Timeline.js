@@ -24,18 +24,28 @@ export default class Timeline extends React.Component {
 	createTimeTextViews = (props) => {
 		const { musicLength, unitBoxWidth, unitTime } = props;
 
-		this.timeboxs = [];
+		this.timebox_text = [];
+		this.timebox_mark = [];
 		const boxPerSec = 1000/unitTime;
 
 		for(let i=0; i < musicLength * boxPerSec; i++) {
-			this.timeboxs.push(
-				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between'}}>
-					<View />
-					<Text numberOfLines={1} style={{fontSize: 10}}>{i%boxPerSec == 0 ? i / boxPerSec : ''}</Text>
-					<View style={{width: 1, height: 4, backgroundColor: COLORS.grayDark}} />
+			if(i % boxPerSec == 0)
+			this.timebox_text.push(
+				<View key={i} style={{height: '100%', width: unitBoxWidth * boxPerSec, left: unitBoxWidth/2-(unitBoxWidth * boxPerSec)/2, alignItems: 'center', flexDirection: 'column',  justifyContent: 'center'}}>
+					<Text style={{fontSize: 10}}>{this.musicLengthFormat(i/boxPerSec)}</Text>
 				</View>
 			);
+			
+			this.timebox_mark.push(
+				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end'}}>
+					<View style={{width: 1, height: i % boxPerSec == 0 ? 7 : 3, backgroundColor: COLORS.grayDark}} />
+				</View>
+			)
 		}
+	}
+
+	musicLengthFormat(time) {
+		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + Math.floor(time % 60)}`;
 	}
 
 	shouldComponentUpdate(nextProps) {
@@ -102,11 +112,14 @@ export default class Timeline extends React.Component {
 			scrollEnabled={scrollEnable}>
 				<View style={styles.timeline}>
 
-					<View style={[styles.timeboxContainer, {width: musicLength*boxPerSec*unitBoxWidth}]}>
-						{this.timeboxs}
+					<View style={[styles.timeboxContainer, {width: musicLength*boxPerSec*unitBoxWidth, backgroundColor: COLORS.grayMiddle}]}>
+						{this.timebox_text}
+					</View>
+					<View style={[styles.timeboxContainer, {position: 'absolute', width: musicLength*boxPerSec*unitBoxWidth}]}>
+						{this.timebox_mark}
 					</View>
 					<TouchableOpacity 
-					style={[styles.timeboxContainer, {position: 'absolute', width: musicLength*boxPerSec*unitBoxWidth, backgroundColor: 'none'}]}
+					style={[styles.timeboxContainer, {position: 'absolute', width: musicLength*boxPerSec*unitBoxWidth}]}
 					onPress={(event) => {
 						const time = Math.floor(event.nativeEvent.locationX / unitBoxWidth) * unitTime;
 						setCurTime(time);

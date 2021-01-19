@@ -109,7 +109,6 @@ const basicStyleSheet = StyleSheet.create({
 		height: 40,
 		// width: musicLength*unitBoxWidth,
 		alignItems: 'center',
-		backgroundColor: COLORS.grayMiddle,
 	},
 	formationBox: {
 		height: formationBoxHeight,
