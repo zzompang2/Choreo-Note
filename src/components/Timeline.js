@@ -49,18 +49,6 @@ export default class Timeline extends React.Component {
 		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + Math.floor(time % 60)}`;
 	}
 
-	scrollTimeline = (event) => {
-		const { setCurTime, unitBoxWidth, unitTime } = this.props;
-
-		const scrollX = event.nativeEvent.contentOffset.x;
-		this.timelineScroll.scrollTo({x: scrollX, animated: false});
-		
-		const centerTime = scrollX / unitBoxWidth * unitTime;
-		
-		console.log(centerTime);
-		setCurTime(centerTime);
-	}
-
 	shouldComponentUpdate(nextProps) {
 		const { musicLength, unitBoxWidth, unitTime } = this.props;
 
@@ -74,8 +62,8 @@ export default class Timeline extends React.Component {
   render() {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
 						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
-						changeFormationBoxLength, isPlay, unitBoxWidth, unitTime } = this.props;
-		const { scrollTimeline } = this;
+						changeFormationBoxLength, isPlay, unitBoxWidth, unitTime,
+						setTimelineScroll, setBottomScroll, scrollBottomScroll } = this.props;
 		const styles = getStyleSheet();
 		const boxPerSec = 1000 / unitTime;
 
@@ -108,7 +96,7 @@ export default class Timeline extends React.Component {
 			decelerationRate={0}		// 스크롤 속도 (iOS)
 			scrollEnabled={false}
 			scrollEventThrottle={16}
-			ref={ref => this.timelineScroll = ref}>
+			ref={ref => setTimelineScroll(ref)}>
 				<View style={styles.timeline}>
 
 					<View style={[styles.timeboxContainer, {width: scrollWidth, backgroundColor: COLORS.grayMiddle}]}>
@@ -142,9 +130,10 @@ export default class Timeline extends React.Component {
 			horizontal={true}
 			bounces={false} 					// 오버스크롤 막기 (iOS)
 			decelerationRate={0.7}		// 스크롤 속도 (iOS)
+			scrollEnabled={!isPlay}
 			scrollEventThrottle={16}
-			ref={ref => this.bottomScroll = ref}
-			onScroll={event => scrollTimeline(event)}>
+			ref={ref => setBottomScroll(ref)}
+			onScroll={event => scrollBottomScroll(event)}>
 				<View style={{width: scrollWidth}} />
 			</ScrollView>
 

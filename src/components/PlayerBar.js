@@ -13,7 +13,7 @@ export default class PlayerBar extends React.Component {
 	constructor(props) {
 		super(props);
 
-		const { musicLength, setCurTime } = props;
+		const { musicLength, setCurTime, bottomScrollMoveTo } = props;
 
 		this.musicTimeString = this.musicLengthFormat(musicLength);
 
@@ -32,7 +32,8 @@ export default class PlayerBar extends React.Component {
       onPanResponderRelease: (event, gesture) => {
 				// state 업데이트
 				const newTime = this.props.curTime + 1000 * Math.round(gesture.dx * this.props.musicLength / playerTrackLength);
-				setCurTime(newTime);
+				// scroll 이동 & curTime 도 설정됨
+				bottomScrollMoveTo(newTime / this.props.unitTime * this.props.unitBoxWidth);
       }
 		});
 	}

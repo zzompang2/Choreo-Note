@@ -49,10 +49,13 @@ export default class FormationScreen extends React.Component {
 					console.log(TAG, "play/", `${musicTime}/${musicLength*1000}`);
 					if(musicTime >= musicLength * 1000) {
 						clearInterval(this.interval);
+						this.bottomScroll.scrollTo({x: 0, animated: true});
 						this.setState({ curTime: 0, isPlay: false });
 					}
-					else
-					this.setState({ curTime: musicTime });
+					else {
+						this.timelineScroll.scrollTo({x: musicTime / unitTime * unitBoxWidth, animated: true});
+						this.setState({ curTime: musicTime });
+					}
 				}
 			},
 			100);
@@ -63,6 +66,7 @@ export default class FormationScreen extends React.Component {
 
 	pause = () => {
 		clearInterval(this.interval);
+		this.bottomScroll.scrollTo({x: this.state.curTime / unitTime * unitBoxWidth, animated: false});
 		this.setState({ isPlay: false });
 		this.sound.pause();
 	}
@@ -632,6 +636,26 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	setTimelineScroll = (ref) => {
+		this.timelineScroll = ref;
+	}
+
+	setBottomScroll = (ref) => {
+		this.bottomScroll = ref;
+	}
+
+	scrollBottomScroll = (event) => {
+		const scrollX = event.nativeEvent.contentOffset.x;
+		const centerTime = Math.floor(scrollX / unitBoxWidth) * unitTime;
+		
+		this.timelineScroll.scrollTo({x: scrollX, animated: false});
+		this.setState({ curTime: centerTime });
+	}
+
+	bottomScrollMoveTo = (scrollX) => {
+		this.bottomScroll.scrollTo({x: scrollX, animated: false});
+	}
+
 	shouldComponentUpdate(nextProps, nextState) {
 		if(nextState.isPlay) {
 			// play 중일 때 formation 추가 금지
@@ -683,6 +707,10 @@ export default class FormationScreen extends React.Component {
 			deleteFormation,
 			goToDancerScreen,
 			pressPlayButton,
+			setTimelineScroll,
+			setBottomScroll,
+			scrollBottomScroll,
+			bottomScrollMoveTo,
 		} = this;
 
 		return(
@@ -730,7 +758,9 @@ export default class FormationScreen extends React.Component {
 				pressPlayButton={pressPlayButton}
 				isPlay={isPlay}
 				setCurTime={setCurTime}
-				unitTime={unitTime} />
+				unitBoxWidth={unitBoxWidth}
+				unitTime={unitTime}
+				bottomScrollMoveTo={bottomScrollMoveTo} />
 
 				{/* Timeline */}
 				<Timeline
@@ -747,7 +777,10 @@ export default class FormationScreen extends React.Component {
 				changeFormationBoxLength={changeFormationBoxLength}
 				isPlay={isPlay}
 				unitBoxWidth={unitBoxWidth}
-				unitTime={unitTime} />
+				unitTime={unitTime}
+				setTimelineScroll={setTimelineScroll}
+				setBottomScroll={setBottomScroll}
+				scrollBottomScroll={scrollBottomScroll} />
 
 				{/* Tool bar */}
 				<ToolBar
