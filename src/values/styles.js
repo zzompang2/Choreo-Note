@@ -54,11 +54,11 @@ const basicStyleSheet = StyleSheet.create({
 		paddingVertical: 6,
 	},
 	noteEntry: {
-		flexDirection: 'column',
+		flexDirection: 'row',
 		height: 60,
-		alignItems: 'flex-start',
 		paddingHorizontal: 10,
-		justifyContent: 'center'
+		alignItems: 'center',
+		justifyContent: 'space-between'
 	},
 	noteTitle: {
 		fontSize: 18

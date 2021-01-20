@@ -1,8 +1,10 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import {
 	SafeAreaView, View, Text, TouchableOpacity, FlatList, LogBox
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
+import NoteItem from '../components/NoteItem';
 import getStyleSheet from '../values/styles';
 
 LogBox.ignoreLogs(['Non-serializable values were found in the navigation state']);
@@ -212,9 +214,40 @@ export default class MainScreen extends React.Component {
 		this.getDatabaseData();
 	}
 
+	onPressHandler = (music, nid) => {
+		this.props.navigation.navigate(music == '' ? 'EditNote' : 'Formation', {
+			nid: nid,
+			getTodayDate: this.getTodayDate,
+			updateMainStateFromDB: this.updateMainStateFromDB });
+	}
+
+	deleteNote = (nid) => {
+		const { notes } = this.state;
+		Alert.alert("노트 삭제", "정말 노트를 삭제하실 건가요?",
+		[{text: "아니오", style: 'cancel'}, {
+			text: "네",
+			onPress: () => {
+				for(let i=0; i<notes.length; i++)
+				if(notes[i].nid == nid) {
+					const newNotes = [...notes.slice(0, i), ...notes.slice(i+1)];
+					this.setState({ notes: newNotes });
+
+					db.transaction(txn => {
+						txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
+						txn.executeSql("DELETE FROM dancers WHERE nid=?", [nid]);
+						txn.executeSql("DELETE FROM times WHERE nid=?", [nid]);
+						txn.executeSql("DELETE FROM positions WHERE nid=?", [nid]);
+					},
+					e => console.log("DB ERROR", e),
+					() => console.log("DB SUCCESS"));
+				}
+			},
+		}]);
+	}
+
 	render() {
 		const { notes } = this.state;
-		const { getTodayDate, updateMainStateFromDB } = this;
+		const { getTodayDate, updateMainStateFromDB, onPressHandler, deleteNote } = this;
 		const styles = getStyleSheet();
 
 		return(
@@ -236,20 +269,10 @@ export default class MainScreen extends React.Component {
 				data={notes}
 				keyExtractor={(item, idx) => idx.toString()}
 				renderItem={({ item, index }) =>
-					<View>
-						<TouchableOpacity
-						onPress={() => {
-							this.props.navigation.navigate(item.music == '' ? 'EditNote' : 'Formation', {
-								nid: item.nid,
-								getTodayDate: getTodayDate,
-								updateMainStateFromDB: updateMainStateFromDB });
-						}}
-						style={styles.noteEntry}>
-							{/* <Text numberOfLines={1}>{item.nid}</Text> */}
-							<Text numberOfLines={1} style={styles.noteTitle}>{item.title}</Text>
-							<Text numberOfLines={1} style={styles.noteSubInfo}>수정일 {item.editDate}</Text>
-						</TouchableOpacity>
-					</View>
+				<NoteItem 
+				item={item}
+				onPressHandler={onPressHandler}
+				deleteNote={deleteNote} />
 				} />
 
 				{/* Footer (for debug) */}
