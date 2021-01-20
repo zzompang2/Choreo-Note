@@ -12,10 +12,10 @@ const TAG = "Stage/";
 export default class Stage extends React.Component {
 
   render() {
-		const { positionsAtCurTime, changeDancerPosition, selectedPosTime,
+		const { stageRatio, positionsAtCurTime, changeDancerPosition, selectedPosTime,
 			dancers, displayName, unitTime } = this.props;
 		const styles = getStyleSheet();
-		const height = width / this.props.stageRatio;
+		const height = width / stageRatio;
 
 		const selectedStageStyle = selectedPosTime === undefined ? {} : styles.stageSelected;
 

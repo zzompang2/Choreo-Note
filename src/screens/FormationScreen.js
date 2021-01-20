@@ -232,6 +232,16 @@ export default class FormationScreen extends React.Component {
 
 		const standXY = transDeviceToStandard(stageRatio, {x: newX, y: newY});
 
+		if(standXY.x < -480)
+		standXY.x = -480;
+		else if(standXY.x > 480)
+		standXY.x = 480;
+
+		if(standXY.y < -500/stageRatio+20)
+		standXY.y = -500/stageRatio+20;
+		else if(standXY.y > 500/stageRatio-20)
+		standXY.y = 500/stageRatio-20;
+
 		const newPositionsEntry = [
 			...positions[i].slice(0, did),
 			{...positions[i][did], ...standXY},
@@ -255,13 +265,13 @@ export default class FormationScreen extends React.Component {
 
 	transDeviceToStandard(stageRatio, { x, y }) {
 		const standX = x * 1000 / width;
-		const standY = y * stageRatio;
+		const standY = y * 1000 / width;
 		return { x: standX, y: standY };
 	}
 
 	transStandardToDevice(stageRatio, { x, y }) {
 		const deviceX = x / 1000 * width;
-		const deviceY = y / stageRatio;
+		const deviceY = y / 1000 * width;
 		return { x: deviceX, y: deviceY };
 	}
 	/**
