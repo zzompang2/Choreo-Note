@@ -32,6 +32,7 @@ export default class FormationScreen extends React.Component {
 		isPlay: false,
 		titleOnFocus: false,
 		dancerScreenPop: false,
+		coordinateGap: 20,
 	}
 	
 	pressPlayButton = () => {
@@ -791,7 +792,8 @@ export default class FormationScreen extends React.Component {
 
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
-						scrollEnable, selectedPosTime, isPlay, titleOnFocus, dancerScreenPop } = this.state;
+						scrollEnable, selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
+						coordinateGap } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
@@ -853,7 +855,7 @@ export default class FormationScreen extends React.Component {
 				selectedPosTime={selectedPosTime}
 				dancers={dancers}
 				displayName={noteInfo.displayName}
-				unitTime={unitTime} />
+				coordinateGap={coordinateGap} />
 
 				{/* Music Bar */}
 				<PlayerBar

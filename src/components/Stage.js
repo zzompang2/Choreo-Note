@@ -13,7 +13,7 @@ export default class Stage extends React.Component {
 
   render() {
 		const { stageRatio, positionsAtCurTime, changeDancerPosition, selectedPosTime,
-			dancers, displayName, unitTime } = this.props;
+			dancers, displayName, coordinateGap } = this.props;
 		const styles = getStyleSheet();
 		const height = width / stageRatio;
 
@@ -21,7 +21,7 @@ export default class Stage extends React.Component {
 
 		return (
 			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
-				<Coordinate height={height} />
+				<Coordinate stageSize={{ width, height }} coordinateGap={coordinateGap} />
 				{positionsAtCurTime.map((animated, did) =>
 				<Dancer
 				key={did}

@@ -4,20 +4,17 @@ import {
 } from "react-native";
 import getStyleSheet from "../values/styles";
 
-// 화면의 가로, 세로 길이 받아오기
-const { width } = Dimensions.get('window');
 const TAG = "Coordinate/";
 
 export default class Coordinate extends React.Component {
 
 	drawAxises = (styles) => {
-		const { height } = this.props;
-		const coordGap = 25;
+		const { stageSize: { width, height }, coordinateGap } = this.props;
 		let count = 0;
 		this.axises = [];
 
 		// 중심부터 오른쪽 세로축
-		for(let gap = 0; gap < width/2; gap += coordGap) {
+		for(let x = 0; x < width/2; x += coordinateGap) {
 			const thickness = count % 5 == 0 ? 3 : 1;
 			count++;
 			this.axises.push(
@@ -25,7 +22,7 @@ export default class Coordinate extends React.Component {
 				key={this.axises.length}
 				style={{
 					...styles.stageAxisVertical,
-					transform: [{translateX: gap}],
+					transform: [{translateX: x}],
 					width: thickness
 				}} />
 			);
@@ -33,7 +30,7 @@ export default class Coordinate extends React.Component {
 
 		// 중심부터 왼쪽 세로축
 		count = 1;
-		for(let gap = -coordGap; gap > -width/2; gap -= coordGap) {
+		for(let x = -coordinateGap; x > -width/2; x -= coordinateGap) {
 			const thickness = count % 5 == 0 ? 3 : 1;
 			count++;
 			this.axises.push(
@@ -41,7 +38,7 @@ export default class Coordinate extends React.Component {
 				key={this.axises.length}
 				style={{
 					...styles.stageAxisVertical,
-					transform: [{translateX: gap}],
+					transform: [{translateX: x}],
 					width: thickness
 				}} />
 			);
@@ -49,7 +46,7 @@ export default class Coordinate extends React.Component {
 
 		// 중심부터 위쪽 가로축
 		count = 0;
-		for(let gap = 0; gap < height/2; gap += coordGap) {
+		for(let y = 0; y < height/2; y += coordinateGap) {
 			const thickness = count % 5 == 0 ? 3 : 1;
 			count++;
 			this.axises.push(
@@ -57,7 +54,7 @@ export default class Coordinate extends React.Component {
 				key={this.axises.length+1}
 				style={{
 					...styles.stageAxisHorizontal,
-					transform: [{translateY: gap}],
+					transform: [{translateY: y}],
 					height: thickness
 				}} />
 			);
@@ -65,7 +62,7 @@ export default class Coordinate extends React.Component {
 
 		// 중심부터 아래쪽 가로축
 		count = 1;
-		for(let gap = -coordGap; gap > -height/2; gap -= coordGap) {
+		for(let y = -coordinateGap; y > -height/2; y -= coordinateGap) {
 			const thickness = count % 5 == 0 ? 3 : 1;
 			count++;
 			this.axises.push(
@@ -73,21 +70,27 @@ export default class Coordinate extends React.Component {
 				key={this.axises.length+1}
 				style={{
 					...styles.stageAxisHorizontal,
-					transform: [{translateY: gap}],
+					transform: [{translateY: y}],
 					height: thickness
 				}} />
 			);
 		}
 	}
 
+	shouldComponentUpdate(nextProps) {
+		if(this.props.stageSize != nextProps.stageSize ||
+			this.coordinateGap != nextProps.coordinateGap)
+		return true;
+
+		return false;
+	}
+
   render() {
-		const styles = getStyleSheet();
-		const { height } = this.props;
-		
+		const styles = getStyleSheet();		
 		this.drawAxises(styles);
 
     return (
-      <View style={{...styles.stageAxis, height: height}}>
+      <View style={{...styles.stageAxis, height: '100%'}}>
 				{this.axises}
 			</View>
     )
