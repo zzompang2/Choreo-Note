@@ -18,7 +18,6 @@ const { width } = Dimensions.get('window');
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
 const unitTime = 250;			// 최소 시간단위 (millisecond)
-const unitBoxWidth = 10;	// 한 단위시간 박스의 가로 길이
 
 export default class FormationScreen extends React.Component {
 	state = {
@@ -34,6 +33,7 @@ export default class FormationScreen extends React.Component {
 		dancerScreenPop: false,
 		coordinateGap: 40,
 		alignWithCoordinate: false,
+		unitBoxWidth: 10,						// 한 단위시간 박스의 가로 길이
 	}
 	
 	pressPlayButton = () => {
@@ -44,7 +44,7 @@ export default class FormationScreen extends React.Component {
 	}
 
 	play = () => {
-		const { isPlay, curTime, noteInfo: { musicLength } } = this.state;
+		const { isPlay, curTime, noteInfo: { musicLength }, unitBoxWidth } = this.state;
 		if(!isPlay) {
 			const startTime = new Date().getTime();
 			this.interval = setInterval(() => {
@@ -71,7 +71,7 @@ export default class FormationScreen extends React.Component {
 
 	pause = () => {
 		clearInterval(this.interval);
-		this.bottomScroll.scrollTo({x: this.state.curTime / unitTime * unitBoxWidth, animated: false});
+		this.bottomScrollMoveTo(this.state.curTime / unitTime * this.state.unitBoxWidth);
 		this.setState({ isPlay: false });
 		this.sound.pause();
 	}
@@ -491,6 +491,20 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	changeUnitBoxWidth = (isUp) => {
+		const { curTime, unitBoxWidth } = this.state;
+		if(isUp) {
+			if(unitBoxWidth < 20)
+			this.setState({ unitBoxWidth: unitBoxWidth+5 },
+				() => this.bottomScrollMoveTo(curTime / unitTime * (unitBoxWidth+5)));		// 너비 조절 후 현재 시간 위치로 이동
+		}
+		else {
+			if(unitBoxWidth > 5)
+			this.setState({ unitBoxWidth: unitBoxWidth-5 },
+				() => this.bottomScrollMoveTo(curTime / unitTime * (unitBoxWidth-5)));
+		}
+	}
+
 	/**
 	 * DB 가 수정될 때 마다 edit date 를 업데이트 한다.
 	 * state 의 정보는 업데이트 하지 않으니 조심하자.
@@ -603,7 +617,7 @@ export default class FormationScreen extends React.Component {
 
 	scrollBottomScroll = (event) => {
 		const scrollX = event.nativeEvent.contentOffset.x;
-		const centerTime = Math.floor(scrollX / unitBoxWidth) * unitTime;
+		const centerTime = Math.floor(scrollX / this.state.unitBoxWidth) * unitTime;
 		
 		this.timelineScroll.scrollTo({x: scrollX, animated: false});
 		this.setState({ curTime: centerTime });
@@ -845,7 +859,7 @@ export default class FormationScreen extends React.Component {
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
 						scrollEnable, selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
-						coordinateGap, alignWithCoordinate } = this.state;
+						coordinateGap, alignWithCoordinate, unitBoxWidth } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
@@ -869,6 +883,7 @@ export default class FormationScreen extends React.Component {
 			changeColor,
 			setAlignWithCoordinate,
 			changeCoordinateGap,
+			changeUnitBoxWidth,
 		} = this;
 
 		return(
@@ -952,7 +967,8 @@ export default class FormationScreen extends React.Component {
 				isPlay={isPlay}
 				alignWithCoordinate={alignWithCoordinate}
 				setAlignWithCoordinate={setAlignWithCoordinate}
-				changeCoordinateGap={changeCoordinateGap} />
+				changeCoordinateGap={changeCoordinateGap}
+				changeUnitBoxWidth={changeUnitBoxWidth} />
 				</View>
 				}
 

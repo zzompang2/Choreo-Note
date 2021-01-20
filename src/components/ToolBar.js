@@ -16,7 +16,8 @@ export default class ToolBar extends React.Component {
   render() {
 		const { addFormation, deleteFormation, selectedPosTime, 
 			formationAddable, setDancerScreen, isPlay,
-			alignWithCoordinate, setAlignWithCoordinate, changeCoordinateGap } = this.props;
+			alignWithCoordinate, setAlignWithCoordinate, changeCoordinateGap,
+			changeUnitBoxWidth } = this.props;
 		const styles = getStyleSheet();
 		const isSelected = selectedPosTime != undefined;
 
@@ -52,6 +53,13 @@ export default class ToolBar extends React.Component {
 				</TouchableOpacity>
 				<TouchableOpacity onPress={() => changeCoordinateGap(true)}>
 					<CustomIcon name='coordinate-wide' size={40} />
+				</TouchableOpacity>
+				{/* timebox 너비 바꾸기 */}
+				<TouchableOpacity onPress={() => changeUnitBoxWidth(false)}>
+					<CustomIcon name='box-width-down' size={40} />
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => changeUnitBoxWidth(true)}>
+					<CustomIcon name='box-width-up' size={40} />
 				</TouchableOpacity>
 			</View>
     )

@@ -28,12 +28,21 @@ export default class Timeline extends React.Component {
 		this.timebox_mark.push(<View key={-1} style={{height: '100%', width: width/2}} />);
 
 		for(let i=0; i < musicLength * boxPerSec-1; i++) {
-			if(i % boxPerSec == 0)
-			this.timebox_text.push(
-				<View key={i} style={{height: '100%', width: unitBoxWidth * boxPerSec, left: -(unitBoxWidth * boxPerSec)/2, alignItems: 'center', flexDirection: 'column',  justifyContent: 'center'}}>
-					<Text style={{fontSize: 10}}>{this.musicLengthFormat(i/boxPerSec)}</Text>
-				</View>
-			);
+			if(i % boxPerSec == 0) {
+				if(unitBoxWidth >= 10)
+				this.timebox_text.push(
+					<View key={i} style={{height: '100%', width: unitBoxWidth * boxPerSec, left: -(unitBoxWidth * boxPerSec)/2, alignItems: 'center', flexDirection: 'column',  justifyContent: 'center'}}>
+						<Text style={{fontSize: 10}}>{this.musicLengthFormat(i/boxPerSec)}</Text>
+					</View>
+				);
+				// 너비가 너무 작으면 2초 마다 표시하기로 한다
+				else if((i / boxPerSec) % 2 == 0)
+				this.timebox_text.push(
+					<View key={i} style={{height: '100%', width: unitBoxWidth * boxPerSec * 2, left: -(unitBoxWidth * boxPerSec), alignItems: 'center', flexDirection: 'column',  justifyContent: 'center'}}>
+						<Text style={{fontSize: 10}}>{this.musicLengthFormat(i/boxPerSec)}</Text>
+					</View>
+				);
+			}
 			
 			this.timebox_mark.push(
 				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end'}}>
