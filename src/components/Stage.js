@@ -13,7 +13,7 @@ export default class Stage extends React.Component {
 
   render() {
 		const { stageRatio, positionsAtCurTime, changeDancerPosition, selectedPosTime,
-			dancers, displayName, coordinateGap } = this.props;
+			dancers, displayName, coordinateGapInDevice } = this.props;
 		const styles = getStyleSheet();
 		const height = width / stageRatio;
 
@@ -21,7 +21,7 @@ export default class Stage extends React.Component {
 
 		return (
 			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
-				<Coordinate stageSize={{ width, height }} coordinateGap={coordinateGap} />
+				<Coordinate stageSize={{ width, height }} coordinateGapInDevice={coordinateGapInDevice} />
 				{positionsAtCurTime.map((animated, did) =>
 				<Dancer
 				key={did}

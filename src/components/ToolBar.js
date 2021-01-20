@@ -1,8 +1,8 @@
 import React from "react";
 import { 
-	View, Text, TouchableOpacity
+	View, TouchableOpacity, Switch
 } from "react-native";
-import getStyleSheet from "../values/styles";
+import getStyleSheet, { COLORS } from "../values/styles";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 const TAG = "ToolBar/";
@@ -11,7 +11,8 @@ export default class ToolBar extends React.Component {
 
   render() {
 		const { addFormation, deleteFormation, selectedPosTime, 
-			formationAddable, setDancerScreen, isPlay } = this.props;
+			formationAddable, setDancerScreen, isPlay,
+			alignWithCoordinate, setAlignWithCoordinate } = this.props;
 		const styles = getStyleSheet();
 		const isSelected = selectedPosTime != undefined;
 
@@ -35,6 +36,12 @@ export default class ToolBar extends React.Component {
 				onPress={setDancerScreen}>
 					<IconIonicons name="people-sharp" size={40} style={!isPlay ? styles.tool : styles.toolDisabled} />
 				</TouchableOpacity>
+				{/* 좌표축에 맞추기 */}
+				<Switch
+				trackColor={{ false: COLORS.grayLight, true: COLORS.grayLight }}
+				ios_backgroundColor={COLORS.blackMiddle}
+				onValueChange={setAlignWithCoordinate}
+				value={alignWithCoordinate} />
 			</View>
     )
   }

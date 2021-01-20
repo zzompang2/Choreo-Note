@@ -32,7 +32,8 @@ export default class FormationScreen extends React.Component {
 		isPlay: false,
 		titleOnFocus: false,
 		dancerScreenPop: false,
-		coordinateGap: 20,
+		coordinateGap: 50,
+		alignWithCoordinate: false,
 	}
 	
 	pressPlayButton = () => {
@@ -220,7 +221,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} newY 새로운 Y 좌표
 	 */
 	changeDancerPosition = (did, newX, newY) => {
-		const { noteInfo: { nid, stageRatio }, times, positions, selectedPosTime } = this.state;
+		const { noteInfo: { nid, stageRatio }, times, positions, selectedPosTime, coordinateGap, alignWithCoordinate } = this.state;
 		const { transDeviceToStandard } = this;
 
 		if(selectedPosTime === undefined)		// ERROR
@@ -231,7 +232,12 @@ export default class FormationScreen extends React.Component {
 			if(times[i].time == selectedPosTime)
 			break;
 
-		const standXY = transDeviceToStandard(stageRatio, {x: newX, y: newY});
+		const standXY = transDeviceToStandard({x: newX, y: newY});
+
+		if(alignWithCoordinate) {
+			standXY.x = Math.round(standXY.x / coordinateGap) * coordinateGap;
+			standXY.y = Math.round(standXY.y / coordinateGap) * coordinateGap;
+		}
 
 		if(standXY.x < -480)
 		standXY.x = -480;
@@ -264,23 +270,29 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
-	transDeviceToStandard(stageRatio, { x, y }) {
+	transDeviceToStandard({ x, y }) {
 		const standX = x * 1000 / width;
 		const standY = y * 1000 / width;
 		return { x: standX, y: standY };
 	}
 
-	transStandardToDevice(stageRatio, { x, y }) {
+	transStandardToDeviceXY({ x, y }) {
 		const deviceX = x / 1000 * width;
 		const deviceY = y / 1000 * width;
 		return { x: deviceX, y: deviceY };
+	}
+
+	transStandardToDevice(x) {
+		const deviceX = x / 1000 * width;
+		console.log('deviceX:', deviceX);
+		return deviceX;
 	}
 	/**
 	 * state 상태에서 각 Dancer 의 위치를 계산한다
 	 */
 	getCurDancerPositions = (state) => {
-		const { noteInfo: { stageRatio }, times, positions, curTime, selectedPosTime } = state;
-		const { transStandardToDevice } = this;
+		const { times, positions, curTime, selectedPosTime } = state;
+		const { transStandardToDeviceXY } = this;
 
 		if(times.length == 0)
 		return;
@@ -290,19 +302,19 @@ export default class FormationScreen extends React.Component {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
 				positions[i].forEach((pos, idx) =>
-				this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
+				this.positionsAtCurTime[idx].setValue(transStandardToDeviceXY({ x: pos.x, y: pos.y })));
 				break;
 			}
 		}
 		// case 1: 첫 번째 블록보다 앞에 있는 경우
 		else if(curTime < times[0].time)
 		positions[0].forEach((pos, idx) =>
-		this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
+		this.positionsAtCurTime[idx].setValue(transStandardToDeviceXY({ x: pos.x, y: pos.y })));
 
 		// case 2: 마지막 블록보다 뒤에 있는 경우
 		else if(times[times.length-1].time + times[times.length-1].duration < curTime)
 		positions[times.length-1].forEach((pos, idx) =>
-		this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
+		this.positionsAtCurTime[idx].setValue(transStandardToDeviceXY({ x: pos.x, y: pos.y })));
 
 		else {
 			for(let i=0; i < times.length; i++) {
@@ -311,7 +323,7 @@ export default class FormationScreen extends React.Component {
 					// case 3: times[i] 내에 포함된 경우
 					if(time.time <= curTime)
 					positions[i].forEach((pos, idx) =>
-					this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
+					this.positionsAtCurTime[idx].setValue(transStandardToDeviceXY({ x: pos.x, y: pos.y })));
 
 					// case 4: times[i-1] ~ [i] 사이에 있는 경우
 					else {
@@ -321,7 +333,7 @@ export default class FormationScreen extends React.Component {
 							const post = positions[i][did];
 							const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
 							const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
-							this.positionsAtCurTime[did].setValue(transStandardToDevice(stageRatio, { x, y }));
+							this.positionsAtCurTime[did].setValue(transStandardToDeviceXY({ x, y }));
 						}
 					}
 					break;
@@ -462,6 +474,10 @@ export default class FormationScreen extends React.Component {
 
 	setDancerScreen = (isOpen) => this.setState({ dancerScreenPop: isOpen })
 
+	setAlignWithCoordinate = () => {
+		const { alignWithCoordinate } = this.state;
+		this.setState({ alignWithCoordinate: !alignWithCoordinate });
+	}
 	/**
 	 * DB 가 수정될 때 마다 edit date 를 업데이트 한다.
 	 * state 의 정보는 업데이트 하지 않으니 조심하자.
@@ -522,7 +538,7 @@ export default class FormationScreen extends React.Component {
 					animatedList.push(
 						Animated.timing(
 							this.positionsAtCurTime[did], {
-								toValue: this.transStandardToDevice(stageRatio, {x: position[did].x, y: position[did].y}),
+								toValue: this.transStandardToDeviceXY({x: position[did].x, y: position[did].y}),
 								duration: times[i+1].time - rightEnd,
 								easing: Easing.linear,
 								useNativeDriver: true,	// false 로 하면 1초 간격으로 끊기는 느낌 있음
@@ -550,7 +566,7 @@ export default class FormationScreen extends React.Component {
 					animatedList.push(
 						Animated.timing(
 							this.positionsAtCurTime[did], {
-								toValue: this.transStandardToDevice(stageRatio, {x: position[did].x, y: position[did].y}),
+								toValue: this.transStandardToDeviceXY({x: position[did].x, y: position[did].y}),
 								duration: times[i].time - curTime,
 								easing: Easing.linear,
 								useNativeDriver: true,
@@ -793,7 +809,7 @@ export default class FormationScreen extends React.Component {
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
 						scrollEnable, selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
-						coordinateGap } = this.state;
+						coordinateGap, alignWithCoordinate } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
@@ -815,6 +831,7 @@ export default class FormationScreen extends React.Component {
 			changeDisplayType,
 			changeName,
 			changeColor,
+			setAlignWithCoordinate,
 		} = this;
 
 		return(
@@ -855,7 +872,7 @@ export default class FormationScreen extends React.Component {
 				selectedPosTime={selectedPosTime}
 				dancers={dancers}
 				displayName={noteInfo.displayName}
-				coordinateGap={coordinateGap} />
+				coordinateGapInDevice={this.transStandardToDevice(coordinateGap)} />
 
 				{/* Music Bar */}
 				<PlayerBar
@@ -895,7 +912,9 @@ export default class FormationScreen extends React.Component {
 				selectedPosTime={selectedPosTime}
 				formationAddable={this.formationAddable}
 				setDancerScreen={setDancerScreen}
-				isPlay={isPlay} />
+				isPlay={isPlay}
+				alignWithCoordinate={alignWithCoordinate}
+				setAlignWithCoordinate={setAlignWithCoordinate} />
 				</View>
 				}
 
