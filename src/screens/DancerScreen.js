@@ -109,7 +109,7 @@ export default class DancerScreen extends React.Component {
 	addDancer = (colorIdx) => {
 		const { nid, dancers, times } = this.state;
 		const did = dancers.length;
-		const name = "HAM";
+		const name = `댄서 ${did+1}`;
 		const newDancer = { nid, did, name, color: colorIdx };
 		const newDancers = dancers.concat(newDancer);
 		this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
@@ -182,6 +182,10 @@ export default class DancerScreen extends React.Component {
 						"UPDATE positions SET did=? WHERE nid=? AND did=?",
 						[did-1, nid, did]);
 					}
+			},
+			e => console.log("DB ERROR", e),
+			() => {
+				console.log("DB SUCCESS!!");
 			});
 			this.props.route.params.updateEditDate();
 		}

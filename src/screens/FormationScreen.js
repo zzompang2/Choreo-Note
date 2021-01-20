@@ -520,61 +520,6 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
-	componentDidMount() {
-		const { nid } = this.props.route.params;
-
-		db.transaction(txn => {
-      txn.executeSql(
-				"SELECT * FROM notes WHERE nid = ?",
-				[nid],
-        (txn, result) => {
-					const noteInfo = result.rows.item(0);
-					txn.executeSql(
-						"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
-						[nid],
-						(txn, result) => {
-							const dancers = [];
-							this.positionsAtCurTime = [];	// curTime 에 Dancer 들의 위치 및 play 애니메이션을 위한..
-							for (let i = 0; i < result.rows.length; i++) {
-								dancers.push({...result.rows.item(i), key: i});
-								this.positionsAtCurTime.push(new Animated.ValueXY());
-							}
-							txn.executeSql(
-								"SELECT * FROM times WHERE nid = ? ORDER BY time",
-								[nid],
-								(txn, result) => {
-									const times = [];
-									for (let i = 0; i < result.rows.length; i++)
-										times.push({...result.rows.item(i), key: i});
-									txn.executeSql(
-										"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
-										[nid],
-										(txn, result) => {
-											const positions = [];
-											for (let i = 0; i < result.rows.length;) {
-												const positionsAtSameTime = [];
-												for(let j=0; j<dancers.length; j++) {
-													positionsAtSameTime.push({...result.rows.item(i), key: i});
-													i++;
-												}
-												positions.push(positionsAtSameTime);
-											}
-											console.log("노트 정보:", noteInfo);
-											this.setState({ noteInfo, dancers, times, positions });
-											this.musicLoad(noteInfo.music);
-										}
-									);
-								}
-							);
-						}
-					);
-				}
-			);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-	}
-
 	/**
 	 * curTime 이 formation box 를 벗어나는 순간이라면 다음 formation 위치로
 	 * 이동하는 애니메이션을 실행한다.
@@ -656,6 +601,61 @@ export default class FormationScreen extends React.Component {
 		this.bottomScroll.scrollTo({x: scrollX, animated: false});
 	}
 
+	componentDidMount() {
+		const { nid } = this.props.route.params;
+
+		db.transaction(txn => {
+      txn.executeSql(
+				"SELECT * FROM notes WHERE nid = ?",
+				[nid],
+        (txn, result) => {
+					const noteInfo = result.rows.item(0);
+					txn.executeSql(
+						"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
+						[nid],
+						(txn, result) => {
+							const dancers = [];
+							this.positionsAtCurTime = [];	// curTime 에 Dancer 들의 위치 및 play 애니메이션을 위한..
+							for (let i = 0; i < result.rows.length; i++) {
+								dancers.push({...result.rows.item(i), key: i});
+								this.positionsAtCurTime.push(new Animated.ValueXY());
+							}
+							txn.executeSql(
+								"SELECT * FROM times WHERE nid = ? ORDER BY time",
+								[nid],
+								(txn, result) => {
+									const times = [];
+									for (let i = 0; i < result.rows.length; i++)
+										times.push({...result.rows.item(i), key: i});
+									txn.executeSql(
+										"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
+										[nid],
+										(txn, result) => {
+											const positions = [];
+											for (let i = 0; i < result.rows.length;) {
+												const positionsAtSameTime = [];
+												for(let j=0; j<dancers.length; j++) {
+													positionsAtSameTime.push({...result.rows.item(i), key: i});
+													i++;
+												}
+												positions.push(positionsAtSameTime);
+											}
+											console.log("노트 정보:", noteInfo);
+											this.setState({ noteInfo, dancers, times, positions });
+											this.musicLoad(noteInfo.music);
+										}
+									);
+								}
+							);
+						}
+					);
+				}
+			);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+	}
+
 	shouldComponentUpdate(nextProps, nextState) {
 		if(nextState.isPlay) {
 			// play 중일 때 formation 추가 금지
@@ -689,7 +689,7 @@ export default class FormationScreen extends React.Component {
 		if(this.state.isPlay)
 		this.pause();
 
-		this.props.route.params.updateStateFromDB(this.state.noteInfo.nid);
+		this.props.route.params.updateMainStateFromDB(this.state.noteInfo.nid);
 	}
 
 	render() {

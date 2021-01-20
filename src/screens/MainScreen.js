@@ -7,6 +7,7 @@ import getStyleSheet from '../values/styles';
 
 LogBox.ignoreLogs(['Non-serializable values were found in the navigation state']);
 
+const TAG = 'MainScreen/';
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
 export default class MainScreen extends React.Component {
@@ -185,8 +186,7 @@ export default class MainScreen extends React.Component {
 		);
 	}
 
-	updateStateFromDB = (nid) => {
-		console.log("업데이트!");
+	updateMainStateFromDB = (nid) => {
 		const { notes } = this.state;
 
 		db.transaction(txn => {
@@ -214,7 +214,7 @@ export default class MainScreen extends React.Component {
 
 	render() {
 		const { notes } = this.state;
-		const { getTodayDate, updateStateFromDB } = this;
+		const { getTodayDate, updateMainStateFromDB } = this;
 		const styles = getStyleSheet();
 
 		return(
@@ -242,7 +242,7 @@ export default class MainScreen extends React.Component {
 							this.props.navigation.navigate(item.music == '' ? 'EditNote' : 'Formation', {
 								nid: item.nid,
 								getTodayDate: getTodayDate,
-								updateStateFromDB: updateStateFromDB });
+								updateMainStateFromDB: updateMainStateFromDB });
 						}}
 						style={styles.noteEntry}>
 							{/* <Text numberOfLines={1}>{item.nid}</Text> */}

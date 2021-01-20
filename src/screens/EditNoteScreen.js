@@ -68,7 +68,7 @@ export default class EditNoteScreen extends React.Component {
 
 	goToFormationScreen = () => {
 		const { noteInfo: { nid, title }, dancerNum, musicList, selectedMusicPath, isValidTitle, isValidDancerNum } = this.state;
-		const { getTodayDate, updateStateFromDB } = this.props.route.params;
+		const { getTodayDate, updateMainStateFromDB } = this.props.route.params;
 
 		Keyboard.dismiss();
 
@@ -102,7 +102,7 @@ export default class EditNoteScreen extends React.Component {
 							[title, selectedMusicPath, musicLength, editDate, nid],
 							txn => {
 								for(let did=0; did<dancerNum; did++) {
-									const name = `댄서 ${did}`;
+									const name = `댄서 ${did+1}`;
 									const posx = dancerNum == 1 ? 0 : did * (200 / (dancerNum-1)) - 100;
 									txn.executeSql(
 										"INSERT INTO dancers VALUES (?, ?, ?, 0)",
@@ -130,7 +130,7 @@ export default class EditNoteScreen extends React.Component {
 						this.props.navigation.navigate('Formation', { 
 							nid: nid,
 							getTodayDate: getTodayDate,
-							updateStateFromDB: updateStateFromDB,
+							updateMainStateFromDB: updateMainStateFromDB,
 						});
 					},
 					e => console.log("DB ERROR", e),
