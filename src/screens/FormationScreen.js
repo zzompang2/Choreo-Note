@@ -3,15 +3,15 @@ import {
   SafeAreaView, View, Text, TouchableOpacity, Animated, Easing, TextInput, Alert, Keyboard
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
-import RNFS from 'react-native-fs';
 import Sound from 'react-native-sound';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
-import getStyleSheet from '../values/styles';
+import getStyleSheet, { getDancerColors } from '../values/styles';
 import Stage from '../components/Stage';
 import Timeline from '../components/Timeline';
 import ToolBar from '../components/ToolBar';
 import PlayerBar from '../components/PlayerBar';
+import DancerScreen from '../components/DancerScreen';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
@@ -29,6 +29,7 @@ export default class FormationScreen extends React.Component {
 		selectedPosTime: undefined,	// 단위 msec
 		isPlay: false,
 		titleOnFocus: false,
+		dancerScreenPop: false,
 	}
 	
 	pressPlayButton = () => {
@@ -427,57 +428,7 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
-	goToDancerScreen = () => {
-		const { noteInfo: { nid, displayName } } = this.state;
-		this.props.navigation.navigate('Dancer', { 
-			nid: nid,
-			displayName: displayName,
-			updateEditDate: this.updateEditDate,
-			updateStateFromDB: this.updateStateFromDB
-		});
-	}
-
-	updateStateFromDB = () => {
-		const { noteInfo: { nid } } = this.state;
-
-		db.transaction(txn => {
-      txn.executeSql(
-				"SELECT * FROM notes WHERE nid = ?",
-				[nid],
-        (txn, result) => {
-					const noteInfo = result.rows.item(0);
-					txn.executeSql(
-						"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
-						[nid],
-						(txn, result) => {
-							const dancers = [];
-							for (let i = 0; i < result.rows.length; i++)
-							dancers.push({...result.rows.item(i), key: i});
-
-							txn.executeSql(
-								"SELECT * FROM positions WHERE nid = ? ORDER BY time, did",
-								[nid],
-								(txn, result) => {
-									const positions = [];
-									for (let i = 0; i < result.rows.length;) {
-										const positionsAtSameTime = [];
-										for(let j=0; j<dancers.length; j++) {
-											positionsAtSameTime.push({...result.rows.item(i), key: i});
-											i++;
-										}
-										positions.push(positionsAtSameTime);
-									}
-									this.setState({ noteInfo, dancers, positions });
-								}
-							);
-						}
-					);
-				}
-			);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-	}
+	setDancerScreen = (isOpen) => this.setState({ dancerScreenPop: isOpen })
 
 	/**
 	 * DB 가 수정될 때 마다 edit date 를 업데이트 한다.
@@ -601,6 +552,121 @@ export default class FormationScreen extends React.Component {
 		this.bottomScroll.scrollTo({x: scrollX, animated: false});
 	}
 
+	addDancer = (colorIdx) => {
+		const { noteInfo: { nid }, dancers, times } = this.state;
+		const did = dancers.length;
+		const name = `댄서 ${did+1}`;
+		const newDancer = { nid, did, name, color: colorIdx };
+		const newDancers = dancers.concat(newDancer);
+
+		this.positionsAtCurTime.push(new Animated.ValueXY());
+		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"INSERT INTO dancers VALUES (?, ?, ?, ?)",
+				[nid, did, name, colorIdx]);
+
+			for(let i=0; i < times.length; i++) {
+				const time = times[i];
+				txn.executeSql(
+					"INSERT INTO positions VALUES (?, ?, ?, 0, 0)",
+					[nid, time.time, did]);
+			}
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.updateEditDate();
+	}
+
+	deleteDancer = (did) => {
+		const { noteInfo: { nid }, dancers } = this.state;
+		const afterDeletedEntry = [...dancers.slice(did+1)];
+		afterDeletedEntry.map(dancer => dancer.did = dancer.did - 1);
+		const newDancers = [...dancers.slice(0, did), ...afterDeletedEntry];
+
+		this.positionsAtCurTime.splice(did, 1);
+		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"DELETE FROM dancers WHERE nid=? AND did=?",
+				[nid, did]);
+
+			txn.executeSql(
+				"DELETE FROM positions WHERE nid=? AND did=?",
+				[nid, did]);
+
+			for(;did < dancers.length; did++) {
+				txn.executeSql(
+					"UPDATE dancers SET did=? WHERE nid=? AND did=?",
+					[did-1, nid, did]);
+				txn.executeSql(
+					"UPDATE positions SET did=? WHERE nid=? AND did=?",
+					[did-1, nid, did]);
+				}
+		},
+		e => console.log("DB ERROR", e),
+		() => {
+			console.log("DB SUCCESS!!");
+		});
+		this.updateEditDate();
+	}
+
+	changeDisplayType = () => {
+		const { noteInfo } = this.state;
+		const newNoteInfo = { ...noteInfo, displayName: !noteInfo.displayName };
+		this.setState({ noteInfo: newNoteInfo });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE notes SET displayName=? WHERE nid=?",
+				[Number(!noteInfo.displayName), noteInfo.nid]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.updateEditDate();
+	}
+
+	changeName = (text, did) => {
+		const { noteInfo: { nid }, dancers } = this.state;
+
+		const dancer = {...dancers[did]};
+		dancer.name = text;
+		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
+
+		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE dancers SET name=? WHERE nid=? AND did=?",
+				[text, nid, did]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.updateEditDate();
+	}
+
+	changeColor = (did) => {
+		const dancerColors = getDancerColors();
+		const { noteInfo: { nid }, dancers } = this.state;
+
+		const dancer = {...dancers[did]};
+		dancer.color = dancer.color+1 >= dancerColors.length ? 0 : dancer.color+1;
+		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
+
+		this.setState({ dancers: newDancers });
+
+		db.transaction(txn => {
+			txn.executeSql(
+				"UPDATE dancers SET color=? WHERE nid=? AND did=?",
+				[dancer.color, nid, did]);
+		},
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
+		this.updateEditDate();
+	}
+
 	componentDidMount() {
 		const { nid } = this.props.route.params;
 
@@ -694,7 +760,7 @@ export default class FormationScreen extends React.Component {
 
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
-						scrollEnable, selectedPosTime, isPlay, titleOnFocus } = this.state;
+						scrollEnable, selectedPosTime, isPlay, titleOnFocus, dancerScreenPop } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
@@ -705,17 +771,24 @@ export default class FormationScreen extends React.Component {
 			changeFormationBoxLength,
 			addFormation,
 			deleteFormation,
-			goToDancerScreen,
+			setDancerScreen,
 			pressPlayButton,
 			setTimelineScroll,
 			setBottomScroll,
 			scrollBottomScroll,
 			bottomScrollMoveTo,
+			addDancer,
+			deleteDancer,
+			changeDisplayType,
+			changeName,
+			changeColor,
 		} = this;
 
 		return(
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
+			{/* Dancer Screen 을 SafeAreaView 에 넣기 위한 View */}
+			<View style={{flex: 1}}>
 				{/* Tool Bar */}
 				<View style={styles.toolbar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -788,11 +861,23 @@ export default class FormationScreen extends React.Component {
 				deleteFormation={deleteFormation}
 				selectedPosTime={selectedPosTime}
 				formationAddable={this.formationAddable}
-				goToDancerScreen={goToDancerScreen}
+				setDancerScreen={setDancerScreen}
 				isPlay={isPlay} />
 				</View>
 				}
 
+				{dancerScreenPop ?
+				<DancerScreen
+				nid={noteInfo.nid}
+				displayName={noteInfo.displayName}
+				dancers={dancers}
+				setDancerScreen={setDancerScreen}
+				addDancer={addDancer}
+				deleteDancer={deleteDancer}
+				changeDisplayType={changeDisplayType}
+				changeName={changeName}
+				changeColor={changeColor} /> : null}
+			</View>
 			</SafeAreaView>
 			</View>
 		)

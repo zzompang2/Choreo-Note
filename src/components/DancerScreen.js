@@ -1,68 +1,26 @@
 import React from 'react';
 import {
-	SafeAreaView, View, Text, TouchableOpacity, FlatList, TextInput, Animated, Switch
+	View, Text, TouchableOpacity, FlatList, TextInput, Animated, Switch
 } from 'react-native';
-import SQLite from "react-native-sqlite-storage";
 import getStyleSheet, { COLORS, getDancerColors } from '../values/styles';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
-const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = "DancerScreen/";
 
 export default class DancerScreen extends React.Component {
-		constructor(props) {
+	constructor(props) {
 		super(props);
 
 		this.state = {
-			nid: undefined,
-			displayName: undefined,
-			dancers: [],
-			times: [],
 			isAddBtnAppear: false
 		}
 
 		this.btnWidth = new Animated.Value(70);
 		this.btnScale = new Animated.Value(0);
 		this.deleteBtnAnim = [];
-	}
 
-	changeName = (text, did) => {
-		const { nid, dancers } = this.state;
-
-		const dancer = {...dancers[did]};
-		dancer.name = text;
-		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
-
-		this.setState({ dancers: newDancers });
-
-		db.transaction(txn => {
-			txn.executeSql(
-				"UPDATE dancers SET name=? WHERE nid=? AND did=?",
-				[text, nid, did]);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-		this.props.route.params.updateEditDate();
-	}
-
-	changeColor = (did) => {
-		const dancerColors = getDancerColors();
-		const { nid, dancers } = this.state;
-
-		const dancer = {...dancers[did]};
-		dancer.color = dancer.color+1 >= dancerColors.length ? 0 : dancer.color+1;
-		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
-
-		this.setState({ dancers: newDancers });
-
-		db.transaction(txn => {
-			txn.executeSql(
-				"UPDATE dancers SET color=? WHERE nid=? AND did=?",
-				[dancer.color, nid, did]);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-		this.props.route.params.updateEditDate();
+		for(let i=0; i<this.props.dancers.length; i++)
+		this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
 	}
 
 	controlAddButton = () => {
@@ -107,29 +65,8 @@ export default class DancerScreen extends React.Component {
 	}
 
 	addDancer = (colorIdx) => {
-		const { nid, dancers, times } = this.state;
-		const did = dancers.length;
-		const name = `댄서 ${did+1}`;
-		const newDancer = { nid, did, name, color: colorIdx };
-		const newDancers = dancers.concat(newDancer);
+		this.props.addDancer(colorIdx);
 		this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
-		this.setState({ dancers: newDancers });
-
-		db.transaction(txn => {
-			txn.executeSql(
-				"INSERT INTO dancers VALUES (?, ?, ?, ?)",
-				[nid, did, name, colorIdx]);
-
-			for(let i=0; i < times.length; i++) {
-				const time = times[i];
-				txn.executeSql(
-					"INSERT INTO positions VALUES (?, ?, ?, 0, 0)",
-					[nid, time.time, did]);
-			}
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-		this.props.route.params.updateEditDate();
 	}
 
 	deleteDancer = (did) => {
@@ -155,39 +92,11 @@ export default class DancerScreen extends React.Component {
 		}
 		// 두 번째로 클릭 된 경우: delete
 		else {
-			const { nid, dancers } = this.state;
-			const afterDeletedEntry = [...dancers.slice(did+1)];
-			afterDeletedEntry.map(dancer => dancer.did = dancer.did - 1);
-			const newDancers = [...dancers.slice(0, did), ...afterDeletedEntry];
-
+			// 버튼 애니메이션 초기화 & Animated 요소 하나 삭제
 			this.deleteButtonDisable();
 			this.deleteBtnAnim.pop();
 
-			this.setState({ dancers: newDancers });
-
-			db.transaction(txn => {
-				txn.executeSql(
-					"DELETE FROM dancers WHERE nid=? AND did=?",
-					[nid, did]);
-	
-				txn.executeSql(
-					"DELETE FROM positions WHERE nid=? AND did=?",
-					[nid, did]);
-
-				for(;did < dancers.length; did++) {
-					txn.executeSql(
-						"UPDATE dancers SET did=? WHERE nid=? AND did=?",
-						[did-1, nid, did]);
-					txn.executeSql(
-						"UPDATE positions SET did=? WHERE nid=? AND did=?",
-						[did-1, nid, did]);
-					}
-			},
-			e => console.log("DB ERROR", e),
-			() => {
-				console.log("DB SUCCESS!!");
-			});
-			this.props.route.params.updateEditDate();
+			this.props.deleteDancer(did);
 		}
 	}
 
@@ -211,70 +120,17 @@ export default class DancerScreen extends React.Component {
 		}
 	}
 
-	changeDisplayType = () => {
-		const { nid, displayName } = this.state;
-		this.setState({ displayName: !displayName });
-
-		db.transaction(txn => {
-			txn.executeSql(
-				"UPDATE notes SET displayName=? WHERE nid=?",
-				[Number(!displayName), nid]);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-		this.props.route.params.updateEditDate();
-	}
-
 	// <FlatList> 구분선
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
-
-	componentDidMount() {
-		const { nid, displayName } = this.props.route.params;
-
-		db.transaction(txn => {
-      txn.executeSql(
-				"SELECT * FROM dancers WHERE nid = ? ORDER BY did",
-				[nid],
-				(txn, result) => {
-					const dancers = [];
-					for (let i = 0; i < result.rows.length; i++)
-					dancers.push({...result.rows.item(i), key: i});
-
-					for(let i=0; i<dancers.length; i++)
-					this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
-
-					txn.executeSql(
-						"SELECT * FROM times WHERE nid = ? ORDER BY time",
-						[nid],
-						(txn, result) => {
-							const times = [];
-							for (let i = 0; i < result.rows.length; i++)
-							times.push({...result.rows.item(i), key: i});
-							
-							this.setState({ nid, displayName: !!displayName, dancers, times });
-					});
-				}
-			);				
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-	}
-
-	componentWillUnmount(){
-		this.props.route.params.updateStateFromDB();
-	}
 	
 	render() {
-		const { nid, displayName, dancers } = this.state;
+		const { nid, displayName, dancers, changeDisplayType, changeName, changeColor } = this.props;
 		const {
-			changeName,
-			changeColor,
 			controlAddButton,
 			addDancer,
 			deleteDancer,
 			deleteButtonDisable,
-			changeDisplayType,
 		} = this;
 		const styles = getStyleSheet();
 		const dancerColors = getDancerColors();
@@ -285,12 +141,12 @@ export default class DancerScreen extends React.Component {
 		deleteButtonDisable();
 
 		return(
-			<View style={styles.bg}>
-			<SafeAreaView style={styles.bg}>
+			<View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'flex-end'}}>
+			<View style={{width: '100%', height: '90%'}}>
 				{/* Tool Bar */}
-				<View style={styles.toolbar}>
+				<View style={[styles.toolbar, {borderTopLeftRadius: 30, borderTopRightRadius: 30}]}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
-						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+						<TouchableOpacity onPress={() => this.props.setDancerScreen(false)}>
 							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
 						</TouchableOpacity>
 						<Text style={styles.toolbarTitle}>Dancer</Text>
@@ -301,7 +157,7 @@ export default class DancerScreen extends React.Component {
 					// thumbColor={displayName ? "#f5dd4b" : "#f4f3f4"}
 					ios_backgroundColor={COLORS.blackMiddle}
 					onValueChange={changeDisplayType}
-					value={displayName} />
+					value={!!displayName} />
 				</View>
 
 				{/* Dancer 리스트 */}
@@ -384,7 +240,7 @@ export default class DancerScreen extends React.Component {
 						onPress={controlAddButton} />
 					</Animated.View>
 				</View>
-			</SafeAreaView>
+			</View>
 			</View>
 		)
 	}

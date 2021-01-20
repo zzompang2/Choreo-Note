@@ -8,7 +8,6 @@ const unitBoxWidth = 10;
 export const COLORS = {
   white: '#F9F9F9',
   blackDark: '#191A1E',
-	blackDarkTransparent: '#191A1Edd',
 	blackMiddle: '#232323',
 	blackLight: '#303030',
   grayDark: '#555555',
@@ -305,11 +304,11 @@ const basicStyleSheet = StyleSheet.create({
 const darkStyleSheet = StyleSheet.create({
 	bg: {
 		...basicStyleSheet.bg,
-		backgroundColor: COLORS.blackLight,
+		backgroundColor: COLORS.blackDark,
 	},
 	toolbar: {
 		...basicStyleSheet.toolbar,
-		backgroundColor: COLORS.blackDarkTransparent,
+		backgroundColor: COLORS.blackDark,
 	},
 	toolbarTitle: {
 		...basicStyleSheet.toolbarTitle,
@@ -325,6 +324,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	noteList: {
 		...basicStyleSheet.noteList,
+		backgroundColor: COLORS.blackLight
 	},
 	noteEntry: {
 		...basicStyleSheet.noteEntry,
@@ -518,11 +518,11 @@ const lightStyleSheet = StyleSheet.create({
 const dbStyleSheet = StyleSheet.create({
 	bg: {
 		...basicStyleSheet.bg,
-		backgroundColor: COLORS.blackLight,
+		backgroundColor: COLORS.blackDark,
 	},
 	toolbar: {
 		...basicStyleSheet.toolbar,
-		backgroundColor: COLORS.blackDarkTransparent,
+		backgroundColor: COLORS.blackDark,
 	},
 	toolbarTitle: {
 		...basicStyleSheet.toolbarTitle,
