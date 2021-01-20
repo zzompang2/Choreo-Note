@@ -284,7 +284,6 @@ export default class FormationScreen extends React.Component {
 
 	transStandardToDevice(x) {
 		const deviceX = x / 1000 * width;
-		console.log('deviceX:', deviceX);
 		return deviceX;
 	}
 	/**
@@ -539,7 +538,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {object} state 
 	 */
 	playDancerMove = (state) => {
-		const { noteInfo: { stageRatio }, times, positions, curTime } = state;
+		const { times, positions, curTime } = state;
 		const animatedList = [];
 		for(let i=0; i<times.length-1; i++) {
 			const rightEnd = times[i].time + times[i].duration;		// formation box 의 오른쪽 끝
@@ -615,14 +614,26 @@ export default class FormationScreen extends React.Component {
 	}
 
 	addDancer = (colorIdx) => {
-		const { noteInfo: { nid }, dancers, times } = this.state;
+		const { noteInfo: { nid }, dancers, times, positions } = this.state;
 		const did = dancers.length;
 		const name = `댄서 ${did+1}`;
-		const newDancer = { nid, did, name, color: colorIdx };
+
+		// dancers 업데이트
+		const newKey = dancers.length == 0 ? 0 : dancers[dancers.length-1].key + 1;
+		const newDancer = { nid, did, name, color: colorIdx, key: newKey };
 		const newDancers = dancers.concat(newDancer);
 
+		// 새로운 dancer 의 위치 지정을 위한 Animated 객체 추가
 		this.positionsAtCurTime.push(new Animated.ValueXY());
-		this.setState({ dancers: newDancers });
+
+		// positions 업데이트
+		const newPositions = [];
+		for(let i=0; i<positions.length; i++) {
+			const newPosition = positions[i].concat({ nid, did, time: times[i].time, x: 0, y: 0 });
+			newPositions.push(newPosition);
+		}
+
+		this.setState({ dancers: newDancers, positions: newPositions });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -642,13 +653,23 @@ export default class FormationScreen extends React.Component {
 	}
 
 	deleteDancer = (did) => {
-		const { noteInfo: { nid }, dancers } = this.state;
+		const { noteInfo: { nid }, dancers, positions } = this.state;
 		const afterDeletedEntry = [...dancers.slice(did+1)];
-		afterDeletedEntry.map(dancer => dancer.did = dancer.did - 1);
+		afterDeletedEntry.forEach(dancer => dancer.did -= 1);
 		const newDancers = [...dancers.slice(0, did), ...afterDeletedEntry];
 
+		// positions 업데이트
+		const newPositions = [];
+		for(let i=0; i<positions.length; i++) {
+			const afterDeleted = [...positions[i].slice(did+1)];
+			afterDeleted.forEach(pos => pos.did -= 1);
+			const newPosition = [...positions[i].slice(0, did), ...afterDeleted];
+			newPositions.push(newPosition);
+		}
+		// 사용했던 Animated 객체 삭제
 		this.positionsAtCurTime.splice(did, 1);
-		this.setState({ dancers: newDancers });
+
+		this.setState({ dancers: newDancers, positions: newPositions });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -746,6 +767,7 @@ export default class FormationScreen extends React.Component {
 							this.positionsAtCurTime = [];	// curTime 에 Dancer 들의 위치 및 play 애니메이션을 위한..
 							for (let i = 0; i < result.rows.length; i++) {
 								dancers.push({...result.rows.item(i), key: i});
+								// dancer 들의 현재 위치 및 dnd, animation 을 위한 Animated 객체
 								this.positionsAtCurTime.push(new Animated.ValueXY());
 							}
 							txn.executeSql(

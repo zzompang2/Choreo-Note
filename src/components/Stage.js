@@ -24,7 +24,7 @@ export default class Stage extends React.Component {
 				<Coordinate stageSize={{ width, height }} coordinateGapInDevice={coordinateGapInDevice} />
 				{positionsAtCurTime.map((animated, did) =>
 				<Dancer
-				key={did}
+				key={dancers[did].key}
 				changeDancerPosition={changeDancerPosition}
 				dancer={dancers[did]}
 				selectedPosTime={selectedPosTime}
