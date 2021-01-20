@@ -103,7 +103,7 @@ export default class EditNoteScreen extends React.Component {
 							txn => {
 								for(let did=0; did<dancerNum; did++) {
 									const name = `댄서 ${did+1}`;
-									const posx = dancerNum == 1 ? 0 : did * (200 / (dancerNum-1)) - 100;
+									const posx = dancerNum == 1 ? 0 : did * (600 / (dancerNum-1)) - 300;
 									txn.executeSql(
 										"INSERT INTO dancers VALUES (?, ?, ?, 0)",
 										[nid, did, name]);
@@ -113,7 +113,7 @@ export default class EditNoteScreen extends React.Component {
 										[nid, did, posx]);
 						
 									txn.executeSql(
-										"INSERT INTO positions VALUES (?, 5000, ?, ?, -50)",
+										"INSERT INTO positions VALUES (?, 5000, ?, ?, -100)",
 										[nid, did, posx]);
 								}
 					

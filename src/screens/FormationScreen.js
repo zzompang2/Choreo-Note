@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView, View, Text, TouchableOpacity, Animated, Easing, TextInput, Alert, Keyboard
+  Dimensions, SafeAreaView, View, Text, TouchableOpacity, Animated, Easing, TextInput, Alert, Keyboard
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import Sound from 'react-native-sound';
@@ -12,6 +12,8 @@ import Timeline from '../components/Timeline';
 import ToolBar from '../components/ToolBar';
 import PlayerBar from '../components/PlayerBar';
 import DancerScreen from '../components/DancerScreen';
+
+const { width } = Dimensions.get('window');
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'FormationScreen/';
@@ -217,7 +219,8 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} newY 새로운 Y 좌표
 	 */
 	changeDancerPosition = (did, newX, newY) => {
-		const { noteInfo: { nid }, times, positions, selectedPosTime } = this.state;
+		const { noteInfo: { nid, stageRatio }, times, positions, selectedPosTime } = this.state;
+		const { transDeviceToStandard } = this;
 
 		if(selectedPosTime === undefined)		// ERROR
 			return;
@@ -227,7 +230,13 @@ export default class FormationScreen extends React.Component {
 			if(times[i].time == selectedPosTime)
 			break;
 
-		const newPositionsEntry = [...positions[i].slice(0, did), {...positions[i][did], x: newX, y: newY}, ...positions[i].slice(did+1)];
+		const standXY = transDeviceToStandard(stageRatio, {x: newX, y: newY});
+
+		const newPositionsEntry = [
+			...positions[i].slice(0, did),
+			{...positions[i][did], ...standXY},
+			...positions[i].slice(did+1)
+		];
 		const newPositions = [...positions.slice(0, i), newPositionsEntry, ...positions.slice(i+1)];
 
 		this.setState({ positions: newPositions });
@@ -237,18 +246,30 @@ export default class FormationScreen extends React.Component {
 				"UPDATE positions " +
 				"SET x=?, y=? " +
 				"WHERE nid=? AND time=? AND did=?",
-				[newX, newY, nid, times[i].time, did],
+				[standXY.x, standXY.y, nid, times[i].time, did],
 				() => console.log("DB SUCCESS"),
 				e => console.log("DB ERROR", e));
 		});
 		this.updateEditDate();
 	}
 
+	transDeviceToStandard(stageRatio, { x, y }) {
+		const standX = x * 1000 / width;
+		const standY = y * stageRatio;
+		return { x: standX, y: standY };
+	}
+
+	transStandardToDevice(stageRatio, { x, y }) {
+		const deviceX = x / 1000 * width;
+		const deviceY = y / stageRatio;
+		return { x: deviceX, y: deviceY };
+	}
 	/**
 	 * state 상태에서 각 Dancer 의 위치를 계산한다
 	 */
 	getCurDancerPositions = (state) => {
-		const { times, positions, curTime, selectedPosTime } = state;
+		const { noteInfo: { stageRatio }, times, positions, curTime, selectedPosTime } = state;
+		const { transStandardToDevice } = this;
 
 		if(times.length == 0)
 		return;
@@ -258,19 +279,19 @@ export default class FormationScreen extends React.Component {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
 				positions[i].forEach((pos, idx) =>
-				this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
+				this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
 				break;
 			}
 		}
 		// case 1: 첫 번째 블록보다 앞에 있는 경우
 		else if(curTime < times[0].time)
 		positions[0].forEach((pos, idx) =>
-		this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
+		this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
 
 		// case 2: 마지막 블록보다 뒤에 있는 경우
 		else if(times[times.length-1].time + times[times.length-1].duration < curTime)
 		positions[times.length-1].forEach((pos, idx) =>
-		this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
+		this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
 
 		else {
 			for(let i=0; i < times.length; i++) {
@@ -279,7 +300,7 @@ export default class FormationScreen extends React.Component {
 					// case 3: times[i] 내에 포함된 경우
 					if(time.time <= curTime)
 					positions[i].forEach((pos, idx) =>
-					this.positionsAtCurTime[idx].setValue({ x: pos.x, y: pos.y }));
+					this.positionsAtCurTime[idx].setValue(transStandardToDevice(stageRatio, { x: pos.x, y: pos.y })));
 
 					// case 4: times[i-1] ~ [i] 사이에 있는 경우
 					else {
@@ -289,7 +310,7 @@ export default class FormationScreen extends React.Component {
 							const post = positions[i][did];
 							const x = prev.x + (post.x - prev.x) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
 							const y = prev.y + (post.y - prev.y) / (post.time - prev.time - prevDuration) * (curTime - prev.time - prevDuration);
-							this.positionsAtCurTime[did].setValue({ x, y });
+							this.positionsAtCurTime[did].setValue(transStandardToDevice(stageRatio, { x, y }));
 						}
 					}
 					break;
@@ -477,7 +498,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {object} state 
 	 */
 	playDancerMove = (state) => {
-		const { times, positions, curTime } = state;
+		const { noteInfo: { stageRatio }, times, positions, curTime } = state;
 		const animatedList = [];
 		for(let i=0; i<times.length-1; i++) {
 			const rightEnd = times[i].time + times[i].duration;		// formation box 의 오른쪽 끝
@@ -490,7 +511,7 @@ export default class FormationScreen extends React.Component {
 					animatedList.push(
 						Animated.timing(
 							this.positionsAtCurTime[did], {
-								toValue: {x: position[did].x, y: position[did].y},
+								toValue: this.transStandardToDevice(stageRatio, {x: position[did].x, y: position[did].y}),
 								duration: times[i+1].time - rightEnd,
 								easing: Easing.linear,
 								useNativeDriver: true,	// false 로 하면 1초 간격으로 끊기는 느낌 있음
@@ -518,7 +539,7 @@ export default class FormationScreen extends React.Component {
 					animatedList.push(
 						Animated.timing(
 							this.positionsAtCurTime[did], {
-								toValue: {x: position[did].x, y: position[did].y},
+								toValue: this.transStandardToDevice(stageRatio, {x: position[did].x, y: position[did].y}),
 								duration: times[i].time - curTime,
 								easing: Easing.linear,
 								useNativeDriver: true,

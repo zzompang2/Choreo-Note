@@ -40,7 +40,7 @@ export default class MainScreen extends React.Component {
 
 						const title = 'Choreo Note에 오신걸 환영해요!';
 						const createDate = this.getTodayDate();
-						const stageRatio = 1;
+						const stageRatio = 2;
 						const music = '/';
 						const musicLength = 60;
 						const displayName = 0;
@@ -64,16 +64,16 @@ export default class MainScreen extends React.Component {
 							"INSERT INTO times VALUES (0, 5000, 3000)", []);
 			
 						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 0, 0, -50, 0)", []);
+							"INSERT INTO positions VALUES (0, 0, 0, -500, 0)", []);
 			
 						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 0, 1, 50, 0)", []);
+							"INSERT INTO positions VALUES (0, 0, 1, 500, 0)", []);
 
 						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 5000, 0, 0, 50)", []);
+							"INSERT INTO positions VALUES (0, 5000, 0, 0, 100)", []);
 			
 						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 5000, 1, 0, -50)", []);
+							"INSERT INTO positions VALUES (0, 5000, 1, 0, -100)", []);
 					}
 				}
 			);
