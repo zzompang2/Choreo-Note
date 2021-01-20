@@ -94,8 +94,8 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	dancer: {
 		position: 'absolute',
-		width: 30,
-		height: 30,
+		width: 25,
+		height: 25,
 		borderRadius: 15,
 		alignItems: 'center',
 		justifyContent: 'center'

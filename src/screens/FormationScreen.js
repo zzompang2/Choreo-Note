@@ -32,7 +32,7 @@ export default class FormationScreen extends React.Component {
 		isPlay: false,
 		titleOnFocus: false,
 		dancerScreenPop: false,
-		coordinateGap: 50,
+		coordinateGap: 40,
 		alignWithCoordinate: false,
 	}
 	
@@ -478,6 +478,20 @@ export default class FormationScreen extends React.Component {
 		const { alignWithCoordinate } = this.state;
 		this.setState({ alignWithCoordinate: !alignWithCoordinate });
 	}
+
+	changeCoordinateGap = (isUp) => {
+		const { coordinateGap } = this.state;
+
+		if(isUp) {
+			if(coordinateGap < 100)
+			this.setState({ coordinateGap: coordinateGap+20 });
+		}
+		else {
+			if(coordinateGap > 40)
+			this.setState({ coordinateGap: coordinateGap-20 });
+		}
+	}
+
 	/**
 	 * DB 가 수정될 때 마다 edit date 를 업데이트 한다.
 	 * state 의 정보는 업데이트 하지 않으니 조심하자.
@@ -832,6 +846,7 @@ export default class FormationScreen extends React.Component {
 			changeName,
 			changeColor,
 			setAlignWithCoordinate,
+			changeCoordinateGap,
 		} = this;
 
 		return(
@@ -914,7 +929,8 @@ export default class FormationScreen extends React.Component {
 				setDancerScreen={setDancerScreen}
 				isPlay={isPlay}
 				alignWithCoordinate={alignWithCoordinate}
-				setAlignWithCoordinate={setAlignWithCoordinate} />
+				setAlignWithCoordinate={setAlignWithCoordinate}
+				changeCoordinateGap={changeCoordinateGap} />
 				</View>
 				}
 
