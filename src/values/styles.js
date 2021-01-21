@@ -7,24 +7,39 @@ const unitBoxWidth = 10;
 
 export const COLORS = {
   white: '#a5a29d',
-  blackDark: '#161616',
+  blackDark: '#000000',
 	blackMiddle: '#1e1e1e',
-	blackLight: '#303030',
+	blackLight: '#2b2b2b',
   grayMiddle: '#757370',
-  grayLight: '#aaaaaa',
+  grayLight: '#93918f',
 	yellow: '#EF9C1C',
 	yellowLight: '#EF9C1C88',
-  red: '#D63F72',
-  purple: '#B036BC',
+	red: '#D63F72',
+	orange: '#ce4102',
+  purple: '#8249d3', 
   blue: '#4469EB',
-  green: '#3CAEA3',
+  green: '#00817a',
 }
+
+const DANCER_COLORS_DARK = [
+	COLORS.blackMiddle,
+	COLORS.orange,
+	COLORS.purple,
+	COLORS.green,
+];
+
+const DANCER_COLORS_LIGHT = [
+	COLORS.red,
+	COLORS.yellow,
+	COLORS.blue,
+	COLORS.green,
+];
 
 const basicStyleSheet = StyleSheet.create({
 	bg: {
 		flex: 1,
 	},
-	toolbar: {
+	navigationBar: {
 		width: '100%',
 		height: 50,
 		flexDirection: 'row',
@@ -32,16 +47,16 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'space-between',
 		paddingHorizontal: 10,
 	},
-	toolbarTitle: {
+	navigationBar__title: {
 		fontSize: 28,
 	},
-	toolbarButton: {
+	navigationBar__button: {
 		fontSize: 16,
 		// paddingVertical: 15,
 		paddingRight: 10,
 		// backgroundColor: COLORS.red
 	},
-	toolbarText: {
+	navigationBarText: {
 		fontSize: 15,
 		paddingVertical: 15,
 		paddingHorizontal: 10,
@@ -98,7 +113,10 @@ const basicStyleSheet = StyleSheet.create({
 		height: 25,
 		borderRadius: 15,
 		alignItems: 'center',
-		justifyContent: 'center'
+		justifyContent: 'center',
+	},
+	dancer__number: {
+		fontSize: 13,
 	},
 	timeline: {
 		width: '100%',
@@ -114,16 +132,17 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	formationBox: {
 		height: formationBoxHeight,
+		marginVertical: 10,
 		// borderRadius: 10,
 	},
 	formationMarker: {
 		position: 'absolute',
 		height: formationBoxHeight,
-		borderWidth: 5,
+		top: 10,
 	},
 	formationMarker__btn: {
 		position: 'absolute',
-		top: formationBoxHeight,
+		top: formationBoxHeight + 10,
 		width: 30,
 		height: 30,
 		borderRadius: 15,
@@ -133,21 +152,42 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	timeMarkerContainer: {
 		position: 'absolute',
-		width: '100%',
+		// width: '100%',
 		height: '100%',
 		alignItems: 'center',
-		justifyContent: 'center',
+		justifyContent: 'flex-start',
+		paddingVertical: 6,
+		// backgroundColor: 'red'
 	},
 	timeMarker: {
-		width: unitBoxWidth,
-		height: 10,
-		borderRadius: 5,
-		backgroundColor: COLORS.green,
+		width: 80,
+		height: 20,
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: COLORS.white,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 	timeMarkerLine: {
 		width: 1,
 		height: '100%',
-		backgroundColor: COLORS.green,
+		backgroundColor: COLORS.white,
+	},
+	addFormationBtn: {
+		position: 'absolute',
+		top: 70,
+		width: 20,
+		height: 20,
+		alignItems: 'center',
+		justifyContent: 'center',
+		borderRadius: 15,
+		borderWidth: 1,
+		borderColor: COLORS.white,
+		backgroundColor: COLORS.blackMiddle,
+		color: COLORS.white,
+	},
+	addFormationBtn__text: {
+		fontSize: 15,
 	},
 	toolBar: {
 		width: '100%',
@@ -156,7 +196,7 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center',
 		flexDirection: 'row',
 	},
-	tool: {
+	toolBar__tool: {
 		padding: 10,
 	},
 	itemSeparator: {
@@ -177,6 +217,10 @@ const basicStyleSheet = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		marginHorizontal: 12,
+		shadowColor: COLORS.blackDark,
+		shadowOffset: { width: 1, height: 1, },
+		shadowOpacity: 0.4,
+		shadowRadius: 4,
 	},
 	dancerEntry__text: {
 		fontSize: 14,
@@ -227,19 +271,15 @@ const basicStyleSheet = StyleSheet.create({
 		marginRight: 30,
 		borderRadius: 20,
 	},
-	playerBar: {
-		width: '100%',
-		height: 50,
-		alignItems: 'center',
-		flexDirection: 'row',
-	},
-	playerBar__timeBox: {
-		width: 35,
-		height: '100%',
-		alignItems: 'center',
-		justifyContent: 'center',
-		// backgroundColor: COLORS.red,
-	},
+	// playerBar: {
+	// 	width: '100%',
+	// 	height: 5,
+	// 	alignItems: 'center',
+	// 	flexDirection: 'row',
+	// },
+	// playerBar__timeBox: {
+	// 	backgroundColor: COLORS.red,
+	// },
 	playerBar__time: {
 		fontSize: 14,
 	},
@@ -247,25 +287,24 @@ const basicStyleSheet = StyleSheet.create({
 		fontSize: 20
 	},
 	playerBar__track: {
-		width: width - 105,
-		height: 40,	// thumb 의 세로길이
+		width: width,
+		height: 8,
 		alignItems: 'center',
 		flexDirection: 'row',
 		// backgroundColor: COLORS.yellow,
 	},
-	playerBar__trackBg: {
-		height: 5,
-		width: 50,
-		borderRadius: 5,
+	playerBar__trackLeft: {
+		height: '100%',
+		// width: 50,
 	},
-	playerBar__thumb: {
-		position: 'absolute',
-		left: 0,		// 0 ~ width-140
-		width: 20,
-		height: 20,
-		marginVertical: 10,
-		borderRadius: 15,
-	},
+	// playerBar__thumb: {
+	// 	position: 'absolute',
+	// 	left: 0,		// 0 ~ width-140
+	// 	width: 20,
+	// 	height: 20,
+	// 	marginVertical: 10,
+	// 	borderRadius: 15,
+	// },
 	editNote__title: {
 		fontSize: 15,
 		marginBottom: 5,
@@ -309,20 +348,20 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.bg,
 		backgroundColor: COLORS.blackMiddle,
 	},
-	toolbar: {
-		...basicStyleSheet.toolbar,
+	navigationBar: {
+		...basicStyleSheet.navigationBar,
 		// backgroundColor: COLORS.blackMiddle,
 	},
-	toolbarTitle: {
-		...basicStyleSheet.toolbarTitle,
+	navigationBar__title: {
+		...basicStyleSheet.navigationBar__title,
 		color: COLORS.white,
 	},
-	toolbarButton: {
-		...basicStyleSheet.toolbarButton,
+	navigationBar__button: {
+		...basicStyleSheet.navigationBar__button,
 		color: COLORS.white,
 	},
-	toolbarText: {
-		...basicStyleSheet.toolbarText,
+	navigationBarText: {
+		...basicStyleSheet.navigationBarText,
 		color: COLORS.white,
 	},
 	noteList: {
@@ -352,26 +391,29 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	stageAxisVertical: {
 		...basicStyleSheet.stageAxisVertical,
-		backgroundColor: COLORS.grayMiddle
+		backgroundColor: COLORS.grayLight,
 	},
 	stageAxisHorizontal: {
 		...basicStyleSheet.stageAxisHorizontal,
-		backgroundColor: COLORS.grayMiddle
+		backgroundColor: COLORS.grayLight,
 	},
 	dancer: {
 		...basicStyleSheet.dancer,
 		backgroundColor: COLORS.white
 	},
+	dancer__number: {
+		...basicStyleSheet.dancer__number,
+		color: COLORS.white,
+	},
 	timeline: {
 		...basicStyleSheet.timeline,
-		backgroundColor: COLORS.grayLight,
 	},
 	timeline__scrollPadding: {
 		...basicStyleSheet.timeline__scrollPadding,
-		backgroundColor: COLORS.blackLight,
+		// backgroundColor: COLORS.blackLight,
 	},
 	timeboxContainer: {
-		...basicStyleSheet.timeboxContainer
+		...basicStyleSheet.timeboxContainer,
 	},
 	timeMarkerContainer: {
 		...basicStyleSheet.timeMarkerContainer,
@@ -382,9 +424,16 @@ const darkStyleSheet = StyleSheet.create({
 	timeMarkerLine: {
 		...basicStyleSheet.timeMarkerLine,
 	},
+	addFormationBtn: {
+		...basicStyleSheet.addFormationBtn,
+	},
+	addFormationBtn__text: {
+		...basicStyleSheet.addFormationBtn__text,
+		color: COLORS.white,
+	},
 	formationBox: {
 		...basicStyleSheet.formationBox,
-		backgroundColor: COLORS.grayMiddle,
+		backgroundColor: COLORS.white,
 	},
 	formationBoxSelected: {
 		...basicStyleSheet.formationBox,
@@ -393,27 +442,29 @@ const darkStyleSheet = StyleSheet.create({
 	formationMarker: {
 		...basicStyleSheet.formationMarker,
 		borderColor: COLORS.white,
-		backgroundColor: COLORS.yellow
+		backgroundColor: COLORS.yellow,
 	},
 	formationMarker__leftbtn: {
 		...basicStyleSheet.formationMarker__btn,
 		borderTopRightRadius: 0,
+		backgroundColor: COLORS.yellow,
 	},
 	formationMarker__rightbtn: {
 		...basicStyleSheet.formationMarker__btn,
 		borderTopLeftRadius: 0,
+		backgroundColor: COLORS.yellow,
 	},
 	toolBar: {
 		...basicStyleSheet.toolBar,
-		backgroundColor: COLORS.grayMiddle
+		backgroundColor: COLORS.blackLight,
 	},
-	tool: {
-		...basicStyleSheet.tool,
+	toolBar__tool: {
+		...basicStyleSheet.toolBar__tool,
 		color: COLORS.white
 	},
-	toolDisabled: {
-		...basicStyleSheet.tool,
-		color: COLORS.grayLight
+	toolBar__toolDisabled: {
+		...basicStyleSheet.toolBar__tool,
+		color: COLORS.grayMiddle
 	},
 	itemSeparator: {
 		...basicStyleSheet.itemSeparator,
@@ -424,7 +475,6 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	dancerEntry__color: {
 		...basicStyleSheet.dancerEntry__color,
-		backgroundColor: COLORS.yellow
 	},
 	dancerEntry__text: {
 		...basicStyleSheet.dancerEntry__text,
@@ -451,13 +501,13 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.dancerAddBtn,
 		// backgroundColor: COLORS.red
 	},
-	playerBar: {
-		...basicStyleSheet.playerBar,
-		backgroundColor: COLORS.blackDark
-	},
-	playerBar__timeBox: {
-		...basicStyleSheet.playerBar__timeBox,
-	},
+	// playerBar: {
+	// 	...basicStyleSheet.playerBar,
+	// 	backgroundColor: COLORS.blackDark
+	// },
+	// playerBar__timeBox: {
+	// 	...basicStyleSheet.playerBar__timeBox,
+	// },
 	playerBar__time: {
 		...basicStyleSheet.playerBar__time,
 		color: COLORS.white,
@@ -468,21 +518,20 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	playerBar__track: {
 		...basicStyleSheet.playerBar__track,
+		backgroundColor: COLORS.blackDark,
 	},
-	playerBar__trackBgLeft: {
-		...basicStyleSheet.playerBar__trackBg,
-		marginLeft: 10,
-		backgroundColor: COLORS.grayLight,
-	},
-	playerBar__trackBgRight: {
-		...basicStyleSheet.playerBar__trackBg,
-		marginRight: 10,
-		backgroundColor: COLORS.blackLight,
-	},
-	playerBar__thumb: {
-		...basicStyleSheet.playerBar__thumb,
+	playerBar__trackLeft: {
+		...basicStyleSheet.playerBar__trackLeft,
 		backgroundColor: COLORS.white,
 	},
+	// playerBar__trackBgRight: {
+	// 	...basicStyleSheet.playerBar__trackBg,
+	// 	backgroundColor: COLORS.blackDark,
+	// },
+	// playerBar__thumb: {
+	// 	...basicStyleSheet.playerBar__thumb,
+	// 	backgroundColor: COLORS.white,
+	// },
 	editNote__title: {
 		...basicStyleSheet.editNote__title,
 		color: COLORS.grayMiddle,
@@ -521,11 +570,11 @@ const lightStyleSheet = StyleSheet.create({
 const dbStyleSheet = StyleSheet.create({
 	bg: {
 		...basicStyleSheet.bg,
-		backgroundColor: COLORS.blackDark,
+		backgroundColor: COLORS.blackMiddle,
 	},
 	toolbar: {
 		...basicStyleSheet.toolbar,
-		backgroundColor: COLORS.blackDark,
+		backgroundColor: COLORS.blackLight,
 	},
 	toolbarTitle: {
 		...basicStyleSheet.toolbarTitle,
@@ -572,20 +621,6 @@ export default function getStyleSheet(theme) {
 			return darkStyleSheet;
 	}
 }
-
-const DANCER_COLORS_DARK = [
-	COLORS.red,
-	COLORS.yellow,
-	COLORS.blue,
-	COLORS.green,
-];
-
-const DANCER_COLORS_LIGHT = [
-	COLORS.red,
-	COLORS.yellow,
-	COLORS.blue,
-	COLORS.green,
-];
 
 export function getDancerColors(theme) {
 	switch(theme) {

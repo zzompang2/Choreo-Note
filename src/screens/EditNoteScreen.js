@@ -72,9 +72,9 @@ export default class EditNoteScreen extends React.Component {
 		Keyboard.dismiss();
 
 		if(!isValidTitle)
-		Alert.alert('Note Title', '제목을 입력해 주세요.');
+		Alert.alert('Note Title', 'Please enter a title.');
 		else if(!isValidDancerNum)
-		Alert.alert('댄서 수', '댄서는 최소 1명, 최대 30명까지 가능합니다.');
+		Alert.alert('Dancer Number', 'You should write at least one dancer and up to 30 dancers.');
 		else {
 			if(this.sound)
 			this.sound.pause();
@@ -83,7 +83,7 @@ export default class EditNoteScreen extends React.Component {
 				// 노래 가져오기 실패
 				if (selectedMusicName != '/' && error) {
 					console.log('MUSIC LOAD FAIL', error);
-					Alert.alert('노래 불러오기 실패', '노래를 불러올 수 없습니다.');
+					Alert.alert('Music', 'Failed to load music.');
 					return;
 				}
 				// 노래 가져오기 성공
@@ -101,7 +101,7 @@ export default class EditNoteScreen extends React.Component {
 							[title, selectedMusicName, musicLength, editDate, nid],
 							txn => {
 								for(let did=0; did<dancerNum; did++) {
-									const name = `댄서 ${did+1}`;
+									const name = `Dancer ${did+1}`;
 									const posx = dancerNum == 1 ? 0 : did * (600 / (dancerNum-1)) - 300;
 									txn.executeSql(
 										"INSERT INTO dancers VALUES (?, ?, ?, 0)",
@@ -203,16 +203,16 @@ export default class EditNoteScreen extends React.Component {
 			activeOpacity={1}>
 
 				{/* Tool Bar */}
-				<View style={styles.toolbar}>
+				<View style={styles.navigationBar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+							<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
 						</TouchableOpacity>
-						<Text style={styles.toolbarTitle}>Edit Note</Text>
+						<Text style={styles.navigationBar__title}>Edit Note</Text>
 					</View>
 					<TouchableOpacity
 					onPress={() => goToFormationScreen()}>
-						<Text style={styles.toolbarText}>확인</Text>
+						<Text style={styles.navigationBarText}>확인</Text>
 					</TouchableOpacity>
 				</View>
 

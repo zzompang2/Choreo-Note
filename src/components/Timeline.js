@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-	Dimensions, View, Text
+	Dimensions, View, Text, TouchableOpacity
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import getStyleSheet, { COLORS } from "../values/styles";
@@ -20,42 +20,24 @@ export default class Timeline extends React.Component {
 	createTimeTextViews = (props) => {
 		const { musicLength, unitBoxWidth, unitTime } = props;
 
-		this.timebox_text = [];
 		this.timebox_mark = [];
 		const boxPerSec = 1000/unitTime;
 
-		this.timebox_text.push(<View key={-1} style={{height: '100%', width: width/2}} />);
 		this.timebox_mark.push(<View key={-1} style={{height: '100%', width: width/2}} />);
 
 		for(let i=0; i < musicLength * boxPerSec-1; i++) {
-			if(i % boxPerSec == 0) {
-				if(unitBoxWidth >= 10)
-				this.timebox_text.push(
-					<View key={i} style={{height: '100%', width: unitBoxWidth * boxPerSec, left: -(unitBoxWidth * boxPerSec)/2, alignItems: 'center', flexDirection: 'column',  justifyContent: 'center'}}>
-						<Text style={{fontSize: 10}}>{this.musicLengthFormat(i/boxPerSec)}</Text>
-					</View>
-				);
-				// 너비가 너무 작으면 2초 마다 표시하기로 한다
-				else if((i / boxPerSec) % 2 == 0)
-				this.timebox_text.push(
-					<View key={i} style={{height: '100%', width: unitBoxWidth * boxPerSec * 2, left: -(unitBoxWidth * boxPerSec), alignItems: 'center', flexDirection: 'column',  justifyContent: 'center'}}>
-						<Text style={{fontSize: 10}}>{this.musicLengthFormat(i/boxPerSec)}</Text>
-					</View>
-				);
-			}
-			
 			this.timebox_mark.push(
 				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end'}}>
-					<View style={{width: 1, height: i % boxPerSec == 0 ? 7 : 3, backgroundColor: COLORS.grayDark}} />
+					<View style={{width: 1, height: i % boxPerSec == 0 ? 6 : 2, backgroundColor: COLORS.white}} />
 				</View>
 			)
 		}
-		this.timebox_text.push(<View key={-2} style={{height: '100%', width: width/2}} />);
 		this.timebox_mark.push(<View key={-2} style={{height: '100%', width: width/2}} />);
 	}
 
-	musicLengthFormat(time) {
-		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + Math.floor(time % 60)}`;
+	musicLengthFormat(millisecond) {
+		const second = millisecond / 1000;
+		return `${Math.floor(second / 60)}:${(second % 60 < 10 ? '0' : '') + Math.floor(second % 60)}.${(millisecond % 1000 == 0 ? '00' : '') + millisecond % 1000}`;
 	}
 
 	shouldComponentUpdate(nextProps) {
@@ -72,7 +54,11 @@ export default class Timeline extends React.Component {
 		const { musicLength, dancers, times, positions, curTime, scrollEnable,
 						setCurTime, setScrollEnable, selectedPosTime, selectFormationBox,
 						changeFormationBoxLength, isPlay, unitBoxWidth, unitTime,
-						setTimelineScroll, setBottomScroll, scrollBottomScroll } = this.props;
+						setTimelineScroll, setBottomScroll, scrollBottomScroll,
+						addFormation, formationAddable } = this.props;
+		const {
+			musicLengthFormat,
+		} = this;
 		const styles = getStyleSheet();
 		const boxPerSec = 1000 / unitTime;
 
@@ -98,62 +84,68 @@ export default class Timeline extends React.Component {
 		const scrollWidth = width+(musicLength*boxPerSec-1)*unitBoxWidth;
 
 		return (
-			<View style={{flex: 1}}>
-			<ScrollView
-			horizontal={true}
-			bounces={false} 					// 오버스크롤 막기 (iOS)
-			decelerationRate={0}		// 스크롤 속도 (iOS)
-			scrollEnabled={false}
-			scrollEventThrottle={16}
-			ref={ref => setTimelineScroll(ref)}>
-				<View style={styles.timeline}>
+			<View style={[styles.bg, {alignItems: 'center'}]}>
+				<ScrollView
+				horizontal={true}
+				bounces={false} 					// 오버스크롤 막기 (iOS)
+				decelerationRate={0}		// 스크롤 속도 (iOS)
+				scrollEnabled={false}
+				scrollEventThrottle={16}
+				ref={ref => setTimelineScroll(ref)}>
+					<View style={styles.timeline}>
 
-					<View style={[styles.timeboxContainer, {width: scrollWidth, backgroundColor: COLORS.grayMiddle}]}>
-						{this.timebox_text}
+						<View style={[styles.timeboxContainer, {width: scrollWidth}]}>
+							{this.timebox_mark}
+						</View>
+
+						<View style={{flexDirection: 'row'}}>
+
+							{this.formationBoxs}
+
+							{selectedPosTime >= 0 ?
+							<FormationMarker
+							time={selectedPosTime}
+							duration={this.selectedPosDuration}
+							setScrollEnable={setScrollEnable}
+							changeFormationBoxLength={changeFormationBoxLength}
+							selectFormationBox={selectFormationBox}
+							unitBoxWidth={unitBoxWidth}
+							unitTime={unitTime} />
+							: null}
+
+						</View>
 					</View>
-					<View style={[styles.timeboxContainer, {position: 'absolute', width: scrollWidth}]}>
-						{this.timebox_mark}
+					<View style={styles.timeline__scrollPadding} />
+				</ScrollView>
+
+				<ScrollView
+				horizontal={true}
+				bounces={false} 					// 오버스크롤 막기 (iOS)
+				decelerationRate={0.7}		// 스크롤 속도 (iOS)
+				scrollEnabled={!isPlay}
+				scrollEventThrottle={16}
+				ref={ref => setBottomScroll(ref)}
+				onScroll={event => scrollBottomScroll(event)}>
+					<View style={{width: scrollWidth}} />
+				</ScrollView>
+
+				{/* Time Marker */}
+				<View
+				pointerEvents='none'	// 터치되지 않도록
+				style={styles.timeMarkerContainer}>
+					<View style={styles.timeMarker}>
+						<Text style={styles.playerBar__time}>{musicLengthFormat(curTime)}</Text>
 					</View>
-
-					<View style={{flexDirection: 'row'}}>
-
-						{this.formationBoxs}
-
-						{selectedPosTime >= 0 ?
-						<FormationMarker
-						time={selectedPosTime}
-						duration={this.selectedPosDuration}
-						setScrollEnable={setScrollEnable}
-						changeFormationBoxLength={changeFormationBoxLength}
-						selectFormationBox={selectFormationBox}
-						unitBoxWidth={unitBoxWidth}
-						unitTime={unitTime} />
-						: null}
-
-					</View>
+					<View style={styles.timeMarkerLine} />
 				</View>
-				<View style={styles.timeline__scrollPadding} />
-			</ScrollView>
 
-			<ScrollView
-			horizontal={true}
-			bounces={false} 					// 오버스크롤 막기 (iOS)
-			decelerationRate={0.7}		// 스크롤 속도 (iOS)
-			scrollEnabled={!isPlay}
-			scrollEventThrottle={16}
-			ref={ref => setBottomScroll(ref)}
-			onScroll={event => scrollBottomScroll(event)}>
-				<View style={{width: scrollWidth}} />
-			</ScrollView>
-
-			{/* Time Marker */}
-			<View
-			pointerEvents='none'	// 터치되지 않도록
-			style={styles.timeMarkerContainer}>
-				<View style={styles.timeMarker} />
-				<View style={styles.timeMarkerLine} />
-			</View>
-
+				{!formationAddable || isPlay ? null :
+				<TouchableOpacity
+				onPress={addFormation}
+				style={styles.addFormationBtn}>
+					<Text style={styles.addFormationBtn__text}>+</Text>
+				</TouchableOpacity>
+				}
 			</View>
     )
   }

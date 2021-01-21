@@ -12,6 +12,7 @@ import Timeline from '../components/Timeline';
 import ToolBar from '../components/ToolBar';
 import PlayerBar from '../components/PlayerBar';
 import DancerScreen from '../components/DancerScreen';
+import ToolBarForFormation from '../components/ToolBarForFormation';
 
 const { width } = Dimensions.get('window');
 
@@ -892,14 +893,14 @@ export default class FormationScreen extends React.Component {
 			{/* Dancer Screen 을 SafeAreaView 에 넣기 위한 View */}
 			<View style={{flex: 1}}>
 				{/* Tool Bar */}
-				<View style={styles.toolbar}>
+				<View style={styles.navigationBar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<TouchableOpacity onPress={() => this.props.navigation.navigate('Main')}>
-							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+							<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
 						</TouchableOpacity>
 						<TextInput
 						numberOfLines={1} 
-						style={[styles.toolbarTitle, {flex: 1}]}
+						style={[styles.navigationBar__title, {flex: 1}]}
 						ref={ref => (this.titleInput = ref)}
 						placeholder={noteInfo == undefined ? '' : noteInfo.title}
 						onFocus={() => this.setState({ titleOnFocus: true })}
@@ -908,7 +909,7 @@ export default class FormationScreen extends React.Component {
 						</TextInput>
 						{titleOnFocus ?
 						<TouchableOpacity onPress={() => Keyboard.dismiss()}>
-							<Text style={styles.toolbarText}>확인</Text>
+							<Text style={styles.navigationBarText}>확인</Text>
 						</TouchableOpacity>
 						: null}
 					</View>
@@ -930,8 +931,6 @@ export default class FormationScreen extends React.Component {
 				<PlayerBar
 				curTime={curTime}
 				musicLength={noteInfo.musicLength}
-				pressPlayButton={pressPlayButton}
-				isPlay={isPlay}
 				setCurTime={setCurTime}
 				unitBoxWidth={unitBoxWidth}
 				unitTime={unitTime}
@@ -955,20 +954,24 @@ export default class FormationScreen extends React.Component {
 				unitTime={unitTime}
 				setTimelineScroll={setTimelineScroll}
 				setBottomScroll={setBottomScroll}
-				scrollBottomScroll={scrollBottomScroll} />
+				scrollBottomScroll={scrollBottomScroll}
+				addFormation={addFormation}
+				formationAddable={this.formationAddable} />
 
 				{/* Tool bar */}
+				{ selectedPosTime == undefined ?
 				<ToolBar
-				addFormation={addFormation}
-				deleteFormation={deleteFormation}
-				selectedPosTime={selectedPosTime}
-				formationAddable={this.formationAddable}
 				setDancerScreen={setDancerScreen}
 				isPlay={isPlay}
 				alignWithCoordinate={alignWithCoordinate}
 				setAlignWithCoordinate={setAlignWithCoordinate}
 				changeCoordinateGap={changeCoordinateGap}
-				changeUnitBoxWidth={changeUnitBoxWidth} />
+				changeUnitBoxWidth={changeUnitBoxWidth}
+				pressPlayButton={pressPlayButton} />	
+				:
+				<ToolBarForFormation
+				deleteFormation={deleteFormation} />}
+
 				</View>
 				}
 

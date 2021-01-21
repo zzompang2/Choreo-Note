@@ -131,6 +131,7 @@ export default class DancerScreen extends React.Component {
 			addDancer,
 			deleteDancer,
 			deleteButtonDisable,
+			listViewItemSeparator,
 		} = this;
 		const styles = getStyleSheet();
 		const dancerColors = getDancerColors();
@@ -142,14 +143,14 @@ export default class DancerScreen extends React.Component {
 
 		return(
 			<View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'flex-end'}}>
-			<View style={{width: '100%', height: '90%'}}>
-				{/* Tool Bar */}
-				<View style={[styles.toolbar, {borderTopLeftRadius: 30, borderTopRightRadius: 30}]}>
+			<View style={{width: '100%', height: '90%', backgroundColor: COLORS.blackMiddle}}>
+				{/* Navigation Bar */}
+				<View style={[styles.navigationBar, {borderTopLeftRadius: 30, borderTopRightRadius: 30}]}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<TouchableOpacity onPress={() => this.props.setDancerScreen(false)}>
-							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+							<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
 						</TouchableOpacity>
-						<Text style={styles.toolbarTitle}>Dancer</Text>
+						<Text style={styles.navigationBar__title}>Dancer</Text>
 					</View>
 					
 					<Switch
@@ -160,73 +161,76 @@ export default class DancerScreen extends React.Component {
 					value={!!displayName} />
 				</View>
 
+				{listViewItemSeparator()}
+
 				{/* Dancer 리스트 */}
 				<FlatList
 				style={styles.noteList}
 				data={dancers}
 				keyExtractor={(item, idx) => idx.toString()}
-				ItemSeparatorComponent={this.listViewItemSeparator}
+				ItemSeparatorComponent={listViewItemSeparator}
 				renderItem={({ item, index }) =>
 				<View>
-				<View style={styles.dancerEntry}>
-					<TouchableOpacity
-					onPress={() => changeColor(item.did)}
-					style={{...styles.dancerEntry__color, backgroundColor: dancerColors[item.color]}}>
-						<Text style={styles.dancerEntry__text}>
-							{displayName ? item.name.slice(0, 2) : item.did+1}
-						</Text>
-					</TouchableOpacity>
-					<TextInput
-					maxLength={30}
-					style={{...styles.dancerEntry__input}}
-					placeholder="이름을 입력해 주세요."
-					onEndEditing={e => changeName(e.nativeEvent.text, item.did)}
-					autoCorrect={false}>
-						{item.name}
-					</TextInput>
-					<TouchableOpacity
-					onPress={() => deleteDancer(item.did)}
-					style={styles.dancerEntry__btn}>
-						<Animated.View style={[
-							styles.dancerEntry__btnIcon, 
-							{
-								height: this.deleteBtnAnim[item.did][0],
-								width: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
-								backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
-									inputRange: [0, 1],
-									outputRange: [COLORS.blackDark, COLORS.grayDark]
-								}),
-								transform: [{
-									rotate: this.deleteBtnAnim[item.did][1].interpolate({
+					<View style={styles.dancerEntry}>
+						<TouchableOpacity
+						onPress={() => changeColor(item.did)}
+						style={{...styles.dancerEntry__color, backgroundColor: dancerColors[item.color]}}>
+							<Text style={styles.dancerEntry__text}>
+								{displayName ? item.name.slice(0, 2) : item.did+1}
+							</Text>
+						</TouchableOpacity>
+						<TextInput
+						maxLength={30}
+						style={{...styles.dancerEntry__input}}
+						placeholder="이름을 입력해 주세요."
+						onEndEditing={e => changeName(e.nativeEvent.text, item.did)}
+						autoCorrect={false}>
+							{item.name}
+						</TextInput>
+						<TouchableOpacity
+						onPress={() => deleteDancer(item.did)}
+						style={styles.dancerEntry__btn}>
+							<Animated.View style={[
+								styles.dancerEntry__btnIcon, 
+								{
+									height: this.deleteBtnAnim[item.did][0],
+									width: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
+									backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
 										inputRange: [0, 1],
-										outputRange: ['0deg', '45deg']
-									})
-								}]
-							}
-						]} />
-						<Animated.View style={[
-							styles.dancerEntry__btnIcon, 
-							{
-								width: this.deleteBtnAnim[item.did][0],
-								height: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
-								backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
-									inputRange: [0, 1],
-									outputRange: [COLORS.blackDark, COLORS.grayDark]
-								}),
-								transform: [{
-									rotate: this.deleteBtnAnim[item.did][1].interpolate({
-										inputRange: [0, 1],
-										outputRange: ['0deg', '45deg']
-									})
+										outputRange: [COLORS.blackDark, COLORS.red]
+									}),
+									transform: [{
+										rotate: this.deleteBtnAnim[item.did][1].interpolate({
+											inputRange: [0, 1],
+											outputRange: ['0deg', '45deg']
+										})
+									}]
 								}
-							]}
-						]} />
-					</TouchableOpacity>
-				</View>
-				{/* 맨 마지막 entry 에만 여백 공간을 둔다. 버튼에 가려지지 않게 하기 위해 */}
-				{index == dancers.length-1 ? <View style={{height: 120}} /> : null}
+							]} />
+							<Animated.View style={[
+								styles.dancerEntry__btnIcon, 
+								{
+									width: this.deleteBtnAnim[item.did][0],
+									height: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
+									backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
+										inputRange: [0, 1],
+										outputRange: [COLORS.blackDark, COLORS.red]
+									}),
+									transform: [{
+										rotate: this.deleteBtnAnim[item.did][1].interpolate({
+											inputRange: [0, 1],
+											outputRange: ['0deg', '45deg']
+										})
+									}
+								]}
+							]} />
+						</TouchableOpacity>
+					</View>
+					{/* 맨 마지막 entry 에만 여백 공간을 둔다. 버튼에 가려지지 않게 하기 위해 */}
+					{index == dancers.length-1 ? <View style={{height: 120}} /> : null}
 				</View>
 				} />
+
 				{/* Add 버튼 */}
 				<View>
 					<Animated.View style={[styles.dancerAddBtnContainer, addBtnContainerStyle]}>

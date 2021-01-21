@@ -65,12 +65,12 @@ export default class DatabaseScreen extends React.Component {
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
-				<View style={styles.toolbar}>
+				<View style={styles.navigationBar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-							<IconIonicons name="chevron-back" size={20} style={styles.toolbarButton} />
+							<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
 						</TouchableOpacity>
-						<Text style={styles.toolbarTitle}>Database</Text>
+						<Text style={styles.navigationBar__title}>Database</Text>
 					</View>
 				</View>
 

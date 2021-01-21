@@ -259,10 +259,10 @@ export default class MainScreen extends React.Component {
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
-				<View style={styles.toolbar}>
-					<Text numberOfLines={1} style={styles.toolbarTitle}>Choreo Note</Text>
+				<View style={styles.navigationBar}>
+					<Text numberOfLines={1} style={styles.navigationBar__title}>Choreo Note</Text>
 					<TouchableOpacity onPress={this.addNote}>
-						<Text style={[styles.toolbarText, {fontSize: 30, paddingVertical: 0}]}>+</Text>
+						<Text style={[styles.navigationBarText, {fontSize: 30, paddingVertical: 0}]}>+</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -283,20 +283,20 @@ export default class MainScreen extends React.Component {
 
 				{listViewItemSeparator()}
 
-				<View style={[styles.toolbar, {height: 35}]}>
+				<View style={[styles.navigationBar, {height: 35}]}>
 					<TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.toolbarButton}>how to use</Text>
+						<Text style={styles.navigationBar__button}>how to use</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.toolbarButton}>setting</Text>
+						<Text style={styles.navigationBar__button}>setting</Text>
 					</TouchableOpacity>
 					{/* Footer (for debug) */}
 					{/* <TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.toolbarButton}>DB</Text>
+						<Text style={styles.navigationBar__button}>DB</Text>
 					</TouchableOpacity> */}
 				</View>
 			</SafeAreaView>
