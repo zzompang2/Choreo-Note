@@ -2,7 +2,7 @@ import React from "react";
 import { 
 	Dimensions, View, Text, TouchableOpacity, Animated, PanResponder
 } from "react-native";
-import getStyleSheet from "../values/styles";
+import getStyleSheet, { COLORS } from "../values/styles";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 const TAG = "NoteItem/";
@@ -51,7 +51,12 @@ export default class NoteItem extends React.Component {
 			style={styles.noteEntry}>
 				<View style={{flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center'}}>
 					<Text numberOfLines={1} style={styles.noteTitle}>{item.title}</Text>
-					<Text numberOfLines={1} style={styles.noteSubInfo}>수정일 {item.editDate}</Text>
+					<View flexDirection='row'>
+						<IconIonicons name="calendar" style={styles.noteSubInfo} />
+						<Text numberOfLines={1} style={styles.noteSubInfo}>Modified {item.editDate}</Text>
+						<IconIonicons name="musical-notes" style={styles.noteSubInfo} />
+						<Text numberOfLines={1} style={styles.noteSubInfo}>{item.music == '/' ? 'no music(60s silence)' : item.music}</Text>
+					</View>
 				</View>
 				<Animated.View style={[btnStyle]}>
 					<IconIonicons name="trash-sharp" size={40} color={'red'} />

@@ -525,8 +525,8 @@ export default class FormationScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
-	musicLoad = (path) => {
-		this.sound = new Sound(encodeURI(path), '', (error) => {
+	musicLoad = (name) => {
+		this.sound = new Sound(encodeURI(name), Sound.DOCUMENT, (error) => {
 			if (error)
 			console.log('MUSIC LOAD FAIL', error);
 			else

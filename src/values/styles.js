@@ -6,12 +6,11 @@ const formationBoxHeight = 60;
 const unitBoxWidth = 10;
 
 export const COLORS = {
-  white: '#F9F9F9',
-  blackDark: '#191A1E',
-	blackMiddle: '#232323',
+  white: '#a5a29d',
+  blackDark: '#161616',
+	blackMiddle: '#1e1e1e',
 	blackLight: '#303030',
-  grayDark: '#555555',
-  grayMiddle: '#707070',
+  grayMiddle: '#757370',
   grayLight: '#aaaaaa',
 	yellow: '#EF9C1C',
 	yellowLight: '#EF9C1C88',
@@ -34,12 +33,11 @@ const basicStyleSheet = StyleSheet.create({
 		paddingHorizontal: 10,
 	},
 	toolbarTitle: {
-		fontSize: 24,
-		fontWeight: "bold",
+		fontSize: 28,
 	},
 	toolbarButton: {
-		fontSize: 20,
-		paddingVertical: 15,
+		fontSize: 16,
+		// paddingVertical: 15,
 		paddingRight: 10,
 		// backgroundColor: COLORS.red
 	},
@@ -61,10 +59,12 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'space-between'
 	},
 	noteTitle: {
-		fontSize: 18
+		fontSize: 20,
+		marginBottom: 3,
 	},
 	noteSubInfo: {
-		fontSize: 14
+		fontSize: 11,
+		marginRight: 7,
 	},
 	stage: {
 		width: width,
@@ -210,6 +210,10 @@ const basicStyleSheet = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'flex-end',
 		flexDirection: 'row',
+		shadowColor: COLORS.blackDark,
+		shadowOffset: { width: 8, height: 8, },
+		shadowOpacity: 0.4,
+		shadowRadius: 4,
 	},
 	dancerControlBtn: {
 		width: 60,
@@ -264,33 +268,32 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	editNote__title: {
 		fontSize: 15,
+		marginBottom: 5,
 	},
 	editNote__input: {
-		height: 50,
-		fontSize: 15,
-		borderColor: COLORS.grayDark,
-		borderWidth: 1,
-		borderRadius: 10,
-		marginTop: 9,
-		marginBottom: 15,
-		paddingHorizontal: 13,
+		height: 30,
+		fontSize: 20,
+		borderColor: COLORS.grayMiddle,
+		borderBottomWidth: 1,
+		marginBottom: 25,
+		// paddingHorizontal: 13,
 	},
 	editNote__flag: {
 		width: 8,
 		height: 8,
 		borderRadius: 4,
 		marginHorizontal: 10,
+		marginBottom: 5,
 	},
 	editNote__musicList: {
-		borderColor: COLORS.grayDark,
+		borderColor: COLORS.grayMiddle,
 		borderWidth: 1,
-		borderRadius: 10,
 	},
 	editNote__musicEntry: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		// paddingHorizontal: 10,
+		paddingHorizontal: 10,
 		height: 50,
 	},
 	editNote__text: {
@@ -304,11 +307,11 @@ const basicStyleSheet = StyleSheet.create({
 const darkStyleSheet = StyleSheet.create({
 	bg: {
 		...basicStyleSheet.bg,
-		backgroundColor: COLORS.blackDark,
+		backgroundColor: COLORS.blackMiddle,
 	},
 	toolbar: {
 		...basicStyleSheet.toolbar,
-		backgroundColor: COLORS.blackDark,
+		// backgroundColor: COLORS.blackMiddle,
 	},
 	toolbarTitle: {
 		...basicStyleSheet.toolbarTitle,
@@ -324,7 +327,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	noteList: {
 		...basicStyleSheet.noteList,
-		backgroundColor: COLORS.blackLight
+		// backgroundColor: COLORS.blackLight
 	},
 	noteEntry: {
 		...basicStyleSheet.noteEntry,
@@ -335,11 +338,11 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	noteSubInfo: {
 		...basicStyleSheet.noteSubInfo,
-		color: COLORS.grayLight
+		color: COLORS.grayMiddle
 	},
 	stage: {
 		...basicStyleSheet.stage,
-		backgroundColor: COLORS.grayDark
+		backgroundColor: COLORS.white
 	},
 	stageSelected: {
 		...basicStyleSheet.stageSelected,
@@ -381,7 +384,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	formationBox: {
 		...basicStyleSheet.formationBox,
-		backgroundColor: COLORS.grayDark,
+		backgroundColor: COLORS.grayMiddle,
 	},
 	formationBoxSelected: {
 		...basicStyleSheet.formationBox,
@@ -402,7 +405,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	toolBar: {
 		...basicStyleSheet.toolBar,
-		backgroundColor: COLORS.grayDark
+		backgroundColor: COLORS.grayMiddle
 	},
 	tool: {
 		...basicStyleSheet.tool,
@@ -414,7 +417,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	itemSeparator: {
 		...basicStyleSheet.itemSeparator,
-		backgroundColor: COLORS.blackDark,
+		backgroundColor: COLORS.grayMiddle,
 	},
 	dancerEntry: {
 		...basicStyleSheet.dancerEntry,
@@ -500,7 +503,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	editNote__btn: {
 		...basicStyleSheet.editNote__btn,
-		color: COLORS.white,
+		color: COLORS.grayMiddle,
 	}
 });
 

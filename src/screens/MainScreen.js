@@ -1,7 +1,6 @@
 import React from 'react';
-import { Alert } from 'react-native';
 import {
-	SafeAreaView, View, Text, TouchableOpacity, FlatList, LogBox
+	SafeAreaView, View, Text, TouchableOpacity, FlatList, LogBox, Alert
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import NoteItem from '../components/NoteItem';
@@ -40,7 +39,7 @@ export default class MainScreen extends React.Component {
 						txn.executeSql(
 							"INSERT INTO metadata VALUES (0, 0)", []);
 
-						const title = 'Choreo Note에 오신걸 환영해요!';
+						const title = 'Welcome to Choreo Note!';
 						const createDate = this.getTodayDate();
 						const stageRatio = 2;
 						const music = '/';
@@ -54,10 +53,10 @@ export default class MainScreen extends React.Component {
 							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?, ?)",
 							[title, createDate, createDate, stageRatio, music, musicLength, displayName]);
 						txn.executeSql(
-							"INSERT INTO dancers VALUES (0, 0, 'ham', 0)", []);
+							"INSERT INTO dancers VALUES (0, 0, 'Ham', 0)", []);
 			
 						txn.executeSql(
-							"INSERT INTO dancers VALUES (0, 1, 'Juicy', 1)", []);
+							"INSERT INTO dancers VALUES (0, 1, 'Changsu', 1)", []);
 			
 						txn.executeSql(
 							"INSERT INTO times VALUES (0, 0, 2000)", []);
@@ -158,7 +157,7 @@ export default class MainScreen extends React.Component {
 	addNote = () => {
 		const { notes } = this.state;
 		// const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
-		const title = '새 노트';
+		const title = 'New Note';
 		const createDate = this.getTodayDate();
 		const stageRatio = 2;
 		const music = '';
@@ -210,9 +209,6 @@ export default class MainScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
-	componentDidMount() {
-		this.getDatabaseData();
-	}
 
 	onPressHandler = (music, nid) => {
 		this.props.navigation.navigate(music == '' ? 'EditNote' : 'Formation', {
@@ -223,9 +219,9 @@ export default class MainScreen extends React.Component {
 
 	deleteNote = (nid) => {
 		const { notes } = this.state;
-		Alert.alert("노트 삭제", "정말 노트를 삭제하실 건가요?",
-		[{text: "아니오", style: 'cancel'}, {
-			text: "네",
+		Alert.alert("Delete Note", "Really?",
+		[{text: "No", style: 'cancel'}, {
+			text: "Delete",
 			onPress: () => {
 				for(let i=0; i<notes.length; i++)
 				if(notes[i].nid == nid) {
@@ -245,9 +241,16 @@ export default class MainScreen extends React.Component {
 		}]);
 	}
 
+	listViewItemSeparator = () => 
+	<View style={getStyleSheet().itemSeparator} />
+
+	componentDidMount() {
+		this.getDatabaseData();
+	}
+
 	render() {
 		const { notes } = this.state;
-		const { getTodayDate, updateMainStateFromDB, onPressHandler, deleteNote } = this;
+		const { onPressHandler, deleteNote, listViewItemSeparator } = this;
 		const styles = getStyleSheet();
 
 		return(
@@ -259,15 +262,18 @@ export default class MainScreen extends React.Component {
 				<View style={styles.toolbar}>
 					<Text numberOfLines={1} style={styles.toolbarTitle}>Choreo Note</Text>
 					<TouchableOpacity onPress={this.addNote}>
-						<Text style={styles.toolbarText}>추가</Text>
+						<Text style={[styles.toolbarText, {fontSize: 30, paddingVertical: 0}]}>+</Text>
 					</TouchableOpacity>
 				</View>
+
+				{listViewItemSeparator()}
 
 				{/* Note 리스트 */}
 				<FlatList
 				style={styles.noteList}
 				data={notes}
 				keyExtractor={(item, idx) => idx.toString()}
+				ItemSeparatorComponent={listViewItemSeparator}
 				renderItem={({ item, index }) =>
 				<NoteItem 
 				item={item}
@@ -275,12 +281,23 @@ export default class MainScreen extends React.Component {
 				deleteNote={deleteNote} />
 				} />
 
-				{/* Footer (for debug) */}
-				<View style={styles.toolbar}>
+				{listViewItemSeparator()}
+
+				<View style={[styles.toolbar, {height: 35}]}>
 					<TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.toolbarButton}>DB</Text>
+						<Text style={styles.toolbarButton}>how to use</Text>
 					</TouchableOpacity>
+
+					<TouchableOpacity
+					onPress={() => this.props.navigation.navigate('Database')}>
+						<Text style={styles.toolbarButton}>setting</Text>
+					</TouchableOpacity>
+					{/* Footer (for debug) */}
+					{/* <TouchableOpacity
+					onPress={() => this.props.navigation.navigate('Database')}>
+						<Text style={styles.toolbarButton}>DB</Text>
+					</TouchableOpacity> */}
 				</View>
 			</SafeAreaView>
 			</View>
