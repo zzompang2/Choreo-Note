@@ -2,7 +2,7 @@ import React from "react";
 import { 
 	View, TouchableOpacity, Text
 } from "react-native";
-import getStyleSheet from "../values/styles";
+import getStyleSheet, { COLORS } from "../values/styles";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 
@@ -34,19 +34,22 @@ export default class ToolBar extends React.Component {
 				{/* Dancer 수정 */}
 				<TouchableOpacity
 				disabled={isPlay}
-				onPress={setDancerScreen}>
-					<Text style={!isPlay ? styles.toolBar__tool : styles.toolBar__toolDisabled}>dancers</Text>
+				onPress={setDancerScreen}
+				style={[styles.toolBar__toolDisabled, {width: 70}]}>
+					<Text style={{color: !isPlay ? COLORS.white : COLORS.blackMiddle}}>dancers</Text>
 				</TouchableOpacity>
 				{/* 좌표축에 맞추기 */}
 				<TouchableOpacity
 				disabled={isPlay}
-				onPress={setAlignWithCoordinate}>
-					<Text style={alignWithCoordinate ? styles.toolBar__tool : styles.toolBar__toolDisabled}>align</Text>
+				onPress={setAlignWithCoordinate}
+				style={alignWithCoordinate ? styles.toolBar__tool : styles.toolBar__toolDisabled}>
+					<Text style={{color: alignWithCoordinate ? COLORS.white : COLORS.blackMiddle}}>align</Text>
 				</TouchableOpacity>
 				{/* id / name 표시 */}
 				<TouchableOpacity
-				onPress={changeDisplayType}>
-					<Text style={displayName ? styles.toolBar__tool : styles.toolBar__toolDisabled}>name</Text>
+				onPress={changeDisplayType}
+				style={displayName ? styles.toolBar__tool : styles.toolBar__toolDisabled}>
+					<Text style={{color: displayName ? COLORS.white : COLORS.blackMiddle}}>name</Text>
 				</TouchableOpacity>
 			</View>
     )

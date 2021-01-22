@@ -160,12 +160,15 @@ export default class FormationScreen extends React.Component {
 			return;
 
 		// 왼쪽 블럭과 닿거나 넘어가는 경우
-		if(i != 0 && newTime <= times[i-1].time + times[i-1].duration)
-			return;
+		if(i != 0 && newTime <= times[i-1].time + times[i-1].duration) {
+			const temp = times[i-1].time + times[i-1].duration + unitTime;
+			newDuration -= (temp - newTime);
+			newTime = temp;
+		}
 
 		// 오른쪽 블럭과 닿거나 넘어가는 경우
-		if(i != times.length-1 && times[i+1].time <= newTime + newDuration)
-			return;
+		else if(i != times.length-1 && times[i+1].time <= newTime + newDuration)
+		newDuration = times[i+1].time - newTime - unitTime;
 
 		// times 없데이트
 		newTimes = [
@@ -600,16 +603,18 @@ export default class FormationScreen extends React.Component {
 	}
 
 	onTimelineScroll = (event) => {
-		const scrollX = event.nativeEvent.contentOffset.x;
-		const centerTime = Math.floor(scrollX / this.state.unitBoxWidth) * unitTime;
-		
-		this.setState({ curTime: centerTime });
+		if(!this.state.isPlay) {
+			const scrollX = event.nativeEvent.contentOffset.x;
+			const centerTime = Math.floor(scrollX / this.state.unitBoxWidth) * unitTime;
+			
+			this.setState({ curTime: centerTime });
+		}
 	}
 
 	addDancer = (colorIdx) => {
 		const { noteInfo: { nid }, dancers, times, positions } = this.state;
 		const did = dancers.length;
-		const name = `댄서 ${did+1}`;
+		const name = `Dancer ${did+1}`;
 
 		// dancers 업데이트
 		const newKey = dancers.length == 0 ? 0 : dancers[dancers.length-1].key + 1;

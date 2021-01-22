@@ -34,7 +34,7 @@ export default class FormationMarker extends React.Component {
 				setScrollEnable(true);
 				const preTime = this.props.time;												// 초기값
 				const endTime = this.props.time + this.props.duration;	// box 의 오른쪽 끝부분
-				const newTime = this.props.time + Math.round(gesture.dx / this.props.unitBoxWidth) * this.props.unitTime;
+				let newTime = this.props.time + Math.round(gesture.dx / this.props.unitBoxWidth) * this.props.unitTime;
 				if(preTime != newTime && newTime < endTime)
 					changeFormationBoxLength(newTime, endTime - newTime);
       }

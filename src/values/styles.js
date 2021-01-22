@@ -88,7 +88,7 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center',
 	},
 	stageSelected: {
-		borderWidth: 5,
+		borderWidth: 3,
 		borderColor: COLORS.yellow,
 	},
 	stageAxis: {
@@ -191,13 +191,19 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	toolBar: {
 		width: '100%',
-		height: 70,
+		height: 60,
 		alignItems: 'center',
 		justifyContent: 'center',
 		flexDirection: 'row',
 	},
 	toolBar__tool: {
-		padding: 10,
+		width: 40,
+		height: 40,
+		backgroundColor: COLORS.blackMiddle,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center',
+		margin: 10,
 	},
 	itemSeparator: {
 		height: 0.5,
@@ -255,9 +261,9 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'flex-end',
 		flexDirection: 'row',
 		shadowColor: COLORS.blackDark,
-		shadowOffset: { width: 8, height: 8, },
+		shadowOffset: { width: 2, height: 2, },
 		shadowOpacity: 0.4,
-		shadowRadius: 4,
+		shadowRadius: 10,
 	},
 	dancerControlBtn: {
 		width: 60,
@@ -270,6 +276,10 @@ const basicStyleSheet = StyleSheet.create({
 		height: 30,
 		marginRight: 30,
 		borderRadius: 20,
+		shadowColor: COLORS.blackDark,
+		shadowOffset: { width: 1, height: 1, },
+		shadowOpacity: 0.6,
+		shadowRadius: 4,
 	},
 	// playerBar: {
 	// 	width: '100%',
@@ -460,11 +470,12 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	toolBar__tool: {
 		...basicStyleSheet.toolBar__tool,
-		color: COLORS.white
 	},
 	toolBar__toolDisabled: {
 		...basicStyleSheet.toolBar__tool,
-		color: COLORS.grayMiddle
+		borderWidth: 1,
+		borderColor: COLORS.blackMiddle,
+		backgroundColor: '#fff0'
 	},
 	itemSeparator: {
 		...basicStyleSheet.itemSeparator,
@@ -559,7 +570,7 @@ const darkStyleSheet = StyleSheet.create({
 const lightStyleSheet = StyleSheet.create({
 	toolbar: {
 		width:'100%', 
-		height:50, 
+		height: 40, 
 		flexDirection: 'row', 
 		backgroundColor:COLORS.purple, 
 		alignItems: 'center', 

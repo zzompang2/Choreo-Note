@@ -2,7 +2,7 @@ import React from "react";
 import { 
 	View, TouchableOpacity, Text
 } from "react-native";
-import getStyleSheet from "../values/styles";
+import getStyleSheet, { COLORS } from "../values/styles";
 
 const TAG = "ToolBarForFormation/";
 
@@ -20,23 +20,26 @@ export default class ToolBarForFormation extends React.Component {
 		const isCopy = false;
 
 		return (
-			<View style={styles.toolBar}>
+			<View style={[styles.toolBar, styles.stageSelected]}>
 				{/* Formation 삭제 */}
 				<TouchableOpacity
-				onPress={deleteFormation}>
-					<Text style={styles.toolBar__tool}>delete</Text>
+				onPress={deleteFormation}
+				style={[styles.toolBar__toolDisabled, {width: 70}]}>
+					<Text style={{color: COLORS.white}}>delete</Text>
 				</TouchableOpacity>
 
 				{/* Formation 복사 */}
 				<TouchableOpacity
-				onPress={copyFormation}>
-					<Text style={styles.toolBar__tool}>copy</Text>
+				onPress={copyFormation}
+				style={[styles.toolBar__toolDisabled, {width: 70}]}>
+					<Text style={{color: COLORS.white}}>copy</Text>
 				</TouchableOpacity>
 
 				{/* Formation 붙여넣기 */}
 				<TouchableOpacity
-				onPress={pasteFormation}>
-					<Text style={isCopy ? styles.toolBar__tool : styles.toolBar__toolDisabled}>paste</Text>
+				onPress={pasteFormation}
+				style={[styles.toolBar__toolDisabled, {width: 70}]}>
+					<Text style={{color: isCopy ? COLORS.white : COLORS.blackMiddle}}>paste</Text>
 				</TouchableOpacity>
 				
 			</View>

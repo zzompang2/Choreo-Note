@@ -142,8 +142,7 @@ export default class DancerScreen extends React.Component {
 		deleteButtonDisable();
 
 		return(
-			<View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'flex-end'}}>
-			<View style={{width: '100%', height: '90%', backgroundColor: COLORS.blackMiddle}}>
+			<View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'flex-end', backgroundColor: COLORS.blackMiddle}}>
 				{/* Navigation Bar */}
 				<View style={[styles.navigationBar, {borderTopLeftRadius: 30, borderTopRightRadius: 30}]}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -190,7 +189,7 @@ export default class DancerScreen extends React.Component {
 									width: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
 									backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
 										inputRange: [0, 1],
-										outputRange: [COLORS.blackDark, COLORS.red]
+										outputRange: [COLORS.blackDark, COLORS.white]
 									}),
 									transform: [{
 										rotate: this.deleteBtnAnim[item.did][1].interpolate({
@@ -207,7 +206,7 @@ export default class DancerScreen extends React.Component {
 									height: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
 									backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
 										inputRange: [0, 1],
-										outputRange: [COLORS.blackDark, COLORS.red]
+										outputRange: [COLORS.blackDark, COLORS.white]
 									}),
 									transform: [{
 										rotate: this.deleteBtnAnim[item.did][1].interpolate({
@@ -237,7 +236,6 @@ export default class DancerScreen extends React.Component {
 						onPress={controlAddButton} />
 					</Animated.View>
 				</View>
-			</View>
 			</View>
 		)
 	}
