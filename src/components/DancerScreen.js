@@ -125,7 +125,7 @@ export default class DancerScreen extends React.Component {
 	<View style={getStyleSheet().itemSeparator} />
 	
 	render() {
-		const { nid, displayName, dancers, changeDisplayType, changeName, changeColor } = this.props;
+		const { nid, displayName, dancers, changeName, changeColor } = this.props;
 		const {
 			controlAddButton,
 			addDancer,
@@ -152,13 +152,6 @@ export default class DancerScreen extends React.Component {
 						</TouchableOpacity>
 						<Text style={styles.navigationBar__title}>Dancer</Text>
 					</View>
-					
-					<Switch
-					trackColor={{ false: COLORS.grayLight, true: COLORS.grayLight }}
-					// thumbColor={displayName ? "#f5dd4b" : "#f4f3f4"}
-					ios_backgroundColor={COLORS.blackMiddle}
-					onValueChange={changeDisplayType}
-					value={!!displayName} />
 				</View>
 
 				{listViewItemSeparator()}

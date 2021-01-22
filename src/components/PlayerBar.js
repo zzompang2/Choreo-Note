@@ -11,7 +11,7 @@ export default class PlayerBar extends React.Component {
 	constructor(props) {
 		super(props);
 
-		const { musicLength, setCurTime, bottomScrollMoveTo } = props;
+		const { musicLength } = props;
 
 		this.musicTimeString = this.musicLengthFormat(musicLength);
 
@@ -23,7 +23,7 @@ export default class PlayerBar extends React.Component {
 	}
 
   render() {
-		const { curTime, musicLength, unitTime } = this.props;
+		const { curTime, musicLength } = this.props;
 		const styles = getStyleSheet();
 		
 		const trackLeftStyle = { width: Animated.add(width * curTime / (musicLength*1000), this.thumbLeft) };

@@ -27,7 +27,6 @@ export default class FormationScreen extends React.Component {
 		times: [],									// 단위 msec
 		positions: [],
 		curTime: 0,									// 단위 msec
-		scrollEnable: true,
 		selectedPosTime: undefined,	// 단위 msec
 		isPlay: false,
 		titleOnFocus: false,
@@ -55,7 +54,7 @@ export default class FormationScreen extends React.Component {
 					console.log(TAG, "play/", `${musicTime}/${musicLength*1000}`);
 					if(musicTime >= musicLength * 1000) {
 						clearInterval(this.interval);
-						this.bottomScroll.scrollTo({x: 0, animated: true});
+						this.timelineScroll.scrollTo({x: 0, animated: true});
 						this.setState({ curTime: 0, isPlay: false });
 					}
 					else {
@@ -72,7 +71,7 @@ export default class FormationScreen extends React.Component {
 
 	pause = () => {
 		clearInterval(this.interval);
-		this.bottomScrollMoveTo(this.state.curTime / unitTime * this.state.unitBoxWidth);
+		this.timelineScroll.scrollTo({x: this.state.curTime / unitTime * this.state.unitBoxWidth, animated: false});
 		this.setState({ isPlay: false });
 		this.sound.pause();
 	}
@@ -101,12 +100,6 @@ export default class FormationScreen extends React.Component {
 		if(!this.state.isPlay)
 		this.setState({ selectedPosTime: msec });
 	}
-
-	/**
-	 * ScrollView 들의 scroll 을 가능하게 또는 불가능하게 조절한다.
-	 * @param {boolean} scrollEnable true 인 경우 scroll 가능
-	 */
-	setScrollEnable = (scrollEnable) => this.setState({ scrollEnable })
 
 	/**
 	 * note 의 title 을 변경한다.
@@ -223,7 +216,7 @@ export default class FormationScreen extends React.Component {
 	 */
 	changeDancerPosition = (did, newX, newY) => {
 		const { noteInfo: { nid, stageRatio }, times, positions, selectedPosTime, coordinateGap, alignWithCoordinate } = this.state;
-		const { transDeviceToStandard } = this;
+		const { transDeviceToStandardXY } = this;
 
 		if(selectedPosTime === undefined)		// ERROR
 			return;
@@ -233,7 +226,7 @@ export default class FormationScreen extends React.Component {
 			if(times[i].time == selectedPosTime)
 			break;
 
-		const standXY = transDeviceToStandard({x: newX, y: newY});
+		const standXY = transDeviceToStandardXY({x: newX, y: newY});
 
 		if(alignWithCoordinate) {
 			standXY.x = Math.round(standXY.x / coordinateGap) * coordinateGap;
@@ -271,7 +264,7 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
-	transDeviceToStandard({ x, y }) {
+	transDeviceToStandardXY({ x, y }) {
 		const standX = x * 1000 / width;
 		const standY = y * 1000 / width;
 		return { x: standX, y: standY };
@@ -286,6 +279,11 @@ export default class FormationScreen extends React.Component {
 	transStandardToDevice(x) {
 		const deviceX = x / 1000 * width;
 		return deviceX;
+	}
+
+	transDeviceToStandard(x) {
+		const standX = x * 1000 / width;
+		return standX;
 	}
 	/**
 	 * state 상태에서 각 Dancer 의 위치를 계산한다
@@ -479,30 +477,19 @@ export default class FormationScreen extends React.Component {
 		this.setState({ alignWithCoordinate: !alignWithCoordinate });
 	}
 
-	changeCoordinateGap = (isUp) => {
+	changeCoordinateGap = (gapInDevice) => {
 		const { coordinateGap } = this.state;
-
-		if(isUp) {
-			if(coordinateGap < 100)
-			this.setState({ coordinateGap: coordinateGap+20 });
-		}
-		else {
-			if(coordinateGap > 40)
-			this.setState({ coordinateGap: coordinateGap-20 });
-		}
+		const gap = Math.round(this.transDeviceToStandard(gapInDevice) / 20) * 20;
+		if(coordinateGap != gap && gap <= 100 && gap >= 40)
+		this.setState({ coordinateGap: gap });
 	}
 
-	changeUnitBoxWidth = (isUp) => {
-		const { curTime, unitBoxWidth } = this.state;
-		if(isUp) {
-			if(unitBoxWidth < 20)
-			this.setState({ unitBoxWidth: unitBoxWidth+5 },
-				() => this.bottomScrollMoveTo(curTime / unitTime * (unitBoxWidth+5)));		// 너비 조절 후 현재 시간 위치로 이동
-		}
-		else {
-			if(unitBoxWidth > 5)
-			this.setState({ unitBoxWidth: unitBoxWidth-5 },
-				() => this.bottomScrollMoveTo(curTime / unitTime * (unitBoxWidth-5)));
+	changeUnitBoxWidth = (width) => {
+		const { unitBoxWidth, curTime } = this.state;
+		const newWidth = Math.round(width / 3) * 3;
+		if(unitBoxWidth != newWidth && newWidth <= 20 && newWidth >= 5) {
+			this.timelineScroll.scrollTo({x: curTime / unitTime * newWidth, animated: false});		// 너비 조절 후 현재 시간 위치로 이동
+			this.setState({ unitBoxWidth: newWidth });
 		}
 	}
 
@@ -612,20 +599,11 @@ export default class FormationScreen extends React.Component {
 		this.timelineScroll = ref;
 	}
 
-	setBottomScroll = (ref) => {
-		this.bottomScroll = ref;
-	}
-
-	scrollBottomScroll = (event) => {
+	onTimelineScroll = (event) => {
 		const scrollX = event.nativeEvent.contentOffset.x;
 		const centerTime = Math.floor(scrollX / this.state.unitBoxWidth) * unitTime;
 		
-		this.timelineScroll.scrollTo({x: scrollX, animated: false});
 		this.setState({ curTime: centerTime });
-	}
-
-	bottomScrollMoveTo = (scrollX) => {
-		this.bottomScroll.scrollTo({x: scrollX, animated: false});
 	}
 
 	addDancer = (colorIdx) => {
@@ -765,6 +743,9 @@ export default class FormationScreen extends React.Component {
 		this.updateEditDate();
 	}
 
+	listViewItemSeparator = () => 
+	<View style={getStyleSheet().itemSeparator} />
+
 	componentDidMount() {
 		const { nid } = this.props.route.params;
 
@@ -859,14 +840,13 @@ export default class FormationScreen extends React.Component {
 
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
-						scrollEnable, selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
+						selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
 						coordinateGap, alignWithCoordinate, unitBoxWidth } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
 			changeDancerPosition,
 			setCurTime,
-			setScrollEnable,
 			selectFormationBox,
 			changeFormationBoxLength,
 			addFormation,
@@ -874,9 +854,7 @@ export default class FormationScreen extends React.Component {
 			setDancerScreen,
 			pressPlayButton,
 			setTimelineScroll,
-			setBottomScroll,
-			scrollBottomScroll,
-			bottomScrollMoveTo,
+			onTimelineScroll,
 			addDancer,
 			deleteDancer,
 			changeDisplayType,
@@ -885,6 +863,7 @@ export default class FormationScreen extends React.Component {
 			setAlignWithCoordinate,
 			changeCoordinateGap,
 			changeUnitBoxWidth,
+			listViewItemSeparator,
 		} = this;
 
 		return(
@@ -915,6 +894,8 @@ export default class FormationScreen extends React.Component {
 					</View>
 				</View>
 
+				{listViewItemSeparator()}
+
 				{noteInfo === undefined ? null :
 				<View style={{flex: 1}}>
 				{/* Stage: Coordinate & Dancer */}
@@ -925,16 +906,14 @@ export default class FormationScreen extends React.Component {
 				selectedPosTime={selectedPosTime}
 				dancers={dancers}
 				displayName={noteInfo.displayName}
-				coordinateGapInDevice={this.transStandardToDevice(coordinateGap)} />
+				coordinateGapInDevice={this.transStandardToDevice(coordinateGap)}
+				changeCoordinateGap={changeCoordinateGap} />
 
 				{/* Music Bar */}
 				<PlayerBar
 				curTime={curTime}
 				musicLength={noteInfo.musicLength}
-				setCurTime={setCurTime}
-				unitBoxWidth={unitBoxWidth}
-				unitTime={unitTime}
-				bottomScrollMoveTo={bottomScrollMoveTo} />
+				unitBoxWidth={unitBoxWidth} />
 
 				{/* Timeline */}
 				<Timeline
@@ -944,8 +923,6 @@ export default class FormationScreen extends React.Component {
 				positions={positions}
 				curTime={curTime}
 				setCurTime={setCurTime}
-				scrollEnable={scrollEnable}
-				setScrollEnable={setScrollEnable}
 				selectedPosTime={selectedPosTime}
 				selectFormationBox={selectFormationBox}
 				changeFormationBoxLength={changeFormationBoxLength}
@@ -953,10 +930,10 @@ export default class FormationScreen extends React.Component {
 				unitBoxWidth={unitBoxWidth}
 				unitTime={unitTime}
 				setTimelineScroll={setTimelineScroll}
-				setBottomScroll={setBottomScroll}
-				scrollBottomScroll={scrollBottomScroll}
+				onTimelineScroll={onTimelineScroll}
 				addFormation={addFormation}
-				formationAddable={this.formationAddable} />
+				formationAddable={this.formationAddable}
+				changeUnitBoxWidth={changeUnitBoxWidth} />
 
 				{/* Tool bar */}
 				{ selectedPosTime == undefined ?
@@ -965,9 +942,10 @@ export default class FormationScreen extends React.Component {
 				isPlay={isPlay}
 				alignWithCoordinate={alignWithCoordinate}
 				setAlignWithCoordinate={setAlignWithCoordinate}
-				changeCoordinateGap={changeCoordinateGap}
-				changeUnitBoxWidth={changeUnitBoxWidth}
-				pressPlayButton={pressPlayButton} />	
+				pressPlayButton={pressPlayButton}
+				changeDisplayType={changeDisplayType}
+				displayName={noteInfo.displayName}
+				/>	
 				:
 				<ToolBarForFormation
 				deleteFormation={deleteFormation} />}
@@ -978,12 +956,11 @@ export default class FormationScreen extends React.Component {
 				{dancerScreenPop ?
 				<DancerScreen
 				nid={noteInfo.nid}
-				displayName={noteInfo.displayName}
 				dancers={dancers}
+				displayName={noteInfo.displayName}
 				setDancerScreen={setDancerScreen}
 				addDancer={addDancer}
 				deleteDancer={deleteDancer}
-				changeDisplayType={changeDisplayType}
 				changeName={changeName}
 				changeColor={changeColor} /> : null}
 			</View>

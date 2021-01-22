@@ -1,7 +1,6 @@
 import React from "react";
-import { 
-	Dimensions, View,
-} from "react-native";
+import { View } from "react-native";
+import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import getStyleSheet from "../values/styles";
 
 const TAG = "Coordinate/";
@@ -77,6 +76,20 @@ export default class Coordinate extends React.Component {
 		}
 	}
 
+	// pinch 이벤트가 시작할 때 좌표 간격 초기값을 저장한다
+	_onPinchHandlerStateChange = (event) => {
+		const { coordinateGapInDevice } = this.props;
+		if (event.nativeEvent.oldState === State.BEGAN)
+		this.coordinateGapInDevice = coordinateGapInDevice;
+	};
+	
+	// 저장했던 초기값과 pinch scale 을 이용하여 gap 을 변경한다.
+	_changeCoordinateGap = (scale) => {
+		const { changeCoordinateGap } = this.props;
+		const newGap = this.coordinateGapInDevice * scale;
+		changeCoordinateGap(newGap);
+	}
+
 	shouldComponentUpdate(nextProps) {
 		if(this.props.stageSize != nextProps.stageSize ||
 			this.coordinateGapInDevice != nextProps.coordinateGapInDevice)
@@ -90,9 +103,13 @@ export default class Coordinate extends React.Component {
 		this.drawAxises(styles);
 
     return (
-      <View style={{...styles.stageAxis, height: '100%'}}>
-				{this.axises}
-			</View>
+			<PinchGestureHandler
+			onGestureEvent={event => this._changeCoordinateGap(event.nativeEvent.scale)}
+			onHandlerStateChange={this._onPinchHandlerStateChange}>
+				<View style={{...styles.stageAxis, height: '100%'}}>
+					{this.axises}
+				</View>
+			</PinchGestureHandler>
     )
   }
 }

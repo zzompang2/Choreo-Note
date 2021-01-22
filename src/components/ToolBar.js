@@ -1,13 +1,10 @@
 import React from "react";
 import { 
-	View, TouchableOpacity, Switch, Text
+	View, TouchableOpacity, Text
 } from "react-native";
-import getStyleSheet, { COLORS } from "../values/styles";
+import getStyleSheet from "../values/styles";
 import IconIonicons from 'react-native-vector-icons/Ionicons';
-// custom icon 
-import {createIconSetFromFontello} from 'react-native-vector-icons';
-import fontelloConfig from '../../assets/font/config.json';
-const CustomIcon = createIconSetFromFontello(fontelloConfig);
+
 
 const TAG = "ToolBar/";
 
@@ -19,9 +16,9 @@ export default class ToolBar extends React.Component {
 			isPlay,
 			alignWithCoordinate,
 			setAlignWithCoordinate,
-			changeCoordinateGap,
-			changeUnitBoxWidth,
 			pressPlayButton,
+			changeDisplayType,
+			displayName,
 		} = this.props;
 		const styles = getStyleSheet();
 
@@ -46,19 +43,10 @@ export default class ToolBar extends React.Component {
 				onPress={setAlignWithCoordinate}>
 					<Text style={alignWithCoordinate ? styles.toolBar__tool : styles.toolBar__toolDisabled}>align</Text>
 				</TouchableOpacity>
-				{/* 좌표 간격 바꾸기 */}
-				<TouchableOpacity onPress={() => changeCoordinateGap(false)}>
-					<CustomIcon name='coordinate-narrow' size={40} />
-				</TouchableOpacity>
-				<TouchableOpacity onPress={() => changeCoordinateGap(true)}>
-					<CustomIcon name='coordinate-wide' size={40} />
-				</TouchableOpacity>
-				{/* timebox 너비 바꾸기 */}
-				<TouchableOpacity onPress={() => changeUnitBoxWidth(false)}>
-					<CustomIcon name='box-width-down' size={40} />
-				</TouchableOpacity>
-				<TouchableOpacity onPress={() => changeUnitBoxWidth(true)}>
-					<CustomIcon name='box-width-up' size={40} />
+				{/* id / name 표시 */}
+				<TouchableOpacity
+				onPress={changeDisplayType}>
+					<Text style={displayName ? styles.toolBar__tool : styles.toolBar__toolDisabled}>name</Text>
 				</TouchableOpacity>
 			</View>
     )

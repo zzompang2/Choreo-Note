@@ -13,15 +13,19 @@ export default class Stage extends React.Component {
 
   render() {
 		const { stageRatio, positionsAtCurTime, changeDancerPosition, selectedPosTime,
-			dancers, displayName, coordinateGapInDevice } = this.props;
+			dancers, displayName, coordinateGapInDevice, changeCoordinateGap } = this.props;
 		const styles = getStyleSheet();
 		const height = width / stageRatio;
 
 		const selectedStageStyle = selectedPosTime === undefined ? {} : styles.stageSelected;
 
 		return (
+			<View style={{height: width, justifyContent: 'center'}}>
 			<View style={{...styles.stage, height: height, ...selectedStageStyle}}>
-				<Coordinate stageSize={{ width, height }} coordinateGapInDevice={coordinateGapInDevice} />
+				<Coordinate
+				stageSize={{ width, height }}
+				coordinateGapInDevice={coordinateGapInDevice}
+				changeCoordinateGap={changeCoordinateGap} />
 				{positionsAtCurTime.map((animated, did) =>
 				<Dancer
 				key={dancers[did].key}
@@ -30,6 +34,7 @@ export default class Stage extends React.Component {
 				selectedPosTime={selectedPosTime}
 				curPosAnimated={animated}
 				displayName={displayName} />)}
+			</View>
 			</View>
     )
   }
