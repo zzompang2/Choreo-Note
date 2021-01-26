@@ -35,6 +35,7 @@ export default class FormationScreen extends React.Component {
 		alignWithCoordinate: false,
 		unitBoxWidth: 10,						// 한 단위시간 박스의 가로 길이
 		copiedFormationDataData: undefined,
+		isStageRotate: false,
 	}
 	
 	pressPlayButton = () => {
@@ -98,7 +99,7 @@ export default class FormationScreen extends React.Component {
 	 * @param {number} msec 선택된 box 의 time 값
 	 */
 	selectFormationBox = (msec) => {
-		if(!this.state.isPlay)
+		if(!this.state.isPlay && !this.state.isStageRotate)
 		this.setState({ selectedPosTime: msec });
 	}
 
@@ -787,6 +788,11 @@ export default class FormationScreen extends React.Component {
 		}
 	}
 
+	rotateStage = () => {
+		const { isStageRotate } = this.state;
+		this.setState({ isStageRotate: !isStageRotate, selectedPosTime: undefined });
+	}
+
 	componentDidMount() {
 		const { nid } = this.props.route.params;
 
@@ -883,7 +889,7 @@ export default class FormationScreen extends React.Component {
 		const { noteInfo, dancers, times, positions, curTime,
 						selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
 						coordinateGap, alignWithCoordinate, unitBoxWidth,
-						copiedFormationData } = this.state;
+						copiedFormationData, isStageRotate } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
@@ -908,6 +914,7 @@ export default class FormationScreen extends React.Component {
 			listViewItemSeparator,
 			copyFormation,
 			pasteFormation,
+			rotateStage,
 		} = this;
 
 		return(
@@ -952,7 +959,9 @@ export default class FormationScreen extends React.Component {
 					dancers={dancers}
 					displayName={noteInfo.displayName}
 					coordinateGapInDevice={this.transStandardToDevice(coordinateGap)}
-					changeCoordinateGap={changeCoordinateGap} />
+					changeCoordinateGap={changeCoordinateGap}
+					isPlay={isPlay}
+					isRotate={isStageRotate} />
 
 					{/* Music Bar */}
 					<PlayerBar
@@ -989,6 +998,8 @@ export default class FormationScreen extends React.Component {
 					pressPlayButton={pressPlayButton}
 					changeDisplayType={changeDisplayType}
 					displayName={noteInfo.displayName}
+					rotateStage={rotateStage}
+					isRotate={isStageRotate}
 					/>	
 					
 					<ToolBarForFormation
