@@ -122,6 +122,7 @@ export default class Timeline extends React.Component {
 					decelerationRate={0}			// 스크롤 속도 (iOS)
 					scrollEnabled={scrollEnable}
 					scrollEventThrottle={16}
+					showsHorizontalScrollIndicator={false}	// 스크롤 바 숨기기
 					ref={ref => setTimelineScroll(ref)}
 					onScroll={event => onTimelineScroll(event)}>
 						<View style={styles.timeline}>
