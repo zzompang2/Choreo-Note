@@ -37,6 +37,9 @@ export default class FormationScreen extends React.Component {
 		copiedFormationDataData: undefined,
 		isStageRotate: false,
 	}
+
+	toastOpacity = new Animated.Value(0);
+	toastMessage = "none";
 	
 	pressPlayButton = () => {
 		if(!this.state.isPlay)
@@ -759,7 +762,23 @@ export default class FormationScreen extends React.Component {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
 				const copiedFormationData = [...positions[i]];
+				this.toastMessage = "Copy!";
 				this.setState({ copiedFormationData });
+
+				Animated.timing(
+					this.toastOpacity, {
+						toValue: 1,
+						duration: 300,
+						useNativeDriver: false,
+					}
+				).start(() => Animated.timing(
+					this.toastOpacity, {
+						toValue: 0,
+						duration: 250,
+						delay: 700,
+						useNativeDriver: false,
+					}
+				).start());
 				break;
 			}
 		}
@@ -771,7 +790,23 @@ export default class FormationScreen extends React.Component {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
 				const newPositions = [...positions.slice(0, i), [...copiedFormationData], ...positions.slice(i+1)];
+				this.toastMessage = "Paste!";
 				this.setState({ positions: newPositions });
+
+				Animated.timing(
+					this.toastOpacity, {
+						toValue: 1,
+						duration: 300,
+						useNativeDriver: false,
+					}
+				).start(() => Animated.timing(
+					this.toastOpacity, {
+						toValue: 0,
+						duration: 250,
+						delay: 700,
+						useNativeDriver: false,
+					}
+				).start());
 
 				db.transaction(txn => {
 					copiedFormationData.forEach(pos =>
@@ -987,7 +1022,9 @@ export default class FormationScreen extends React.Component {
 					onTimelineScroll={onTimelineScroll}
 					addFormation={addFormation}
 					formationAddable={this.formationAddable}
-					changeUnitBoxWidth={changeUnitBoxWidth} />
+					changeUnitBoxWidth={changeUnitBoxWidth}
+					toastOpacity={this.toastOpacity}
+					toastMessage={this.toastMessage} />
 
 					{/* Tool bar */}
 					<ToolBar

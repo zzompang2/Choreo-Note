@@ -242,7 +242,7 @@ export default class EditNoteScreen extends React.Component {
 				<View style={{flex: 1, paddingHorizontal: 30}}>
 
 					{/* Note 제목 */}
-					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+					<View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 5}}>
 						<Text style={styles.editNote__title}>Title</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidTitle ? COLORS.green : COLORS.red}]} />
 						<Text style={{color: COLORS.red}}>{isValidTitle ? '' : 'No blanks.'}</Text>
@@ -258,7 +258,7 @@ export default class EditNoteScreen extends React.Component {
 					</TextInput>
 
 					{/* Dancer 인원 수 */}
-					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+					<View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 5}}>
 						<Text style={styles.editNote__title}>How many dancers (up to 30)</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidDancerNum ? COLORS.green : COLORS.red}]} />
 						<Text style={{color: COLORS.red}}>{isValidDancerNum ? '' : 'Only number 1~30'}</Text>
@@ -272,7 +272,7 @@ export default class EditNoteScreen extends React.Component {
 					onChange={event => changeDancerNum(event)}>{dancerNum}</TextInput>
 
 					{/* Stage 비율 */}
-					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+					<View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 5}}>
 						<Text style={styles.editNote__title}>Stage Ratio</Text>
 					</View>
 
@@ -292,13 +292,16 @@ export default class EditNoteScreen extends React.Component {
 					</View>
 					
 					{/* Select Music */}
-					<Text style={styles.editNote__title}>Select Music</Text>
+					<View style={{marginTop: 20, marginBottom: 5}}>
+						<Text style={styles.editNote__title}>Select Music</Text>
+					</View>
 
 					<FlatList
 					style={styles.editNote__musicList}
 					data={musicList}
 					keyExtractor={(item, idx) => idx.toString()}
 					ItemSeparatorComponent={listViewItemSeparator}
+					showsVerticalScrollIndicator={false}
 					renderItem={({ item, index }) =>
 					<View style={styles.editNote__musicEntry}>
 						<TouchableOpacity

@@ -25,25 +25,29 @@ export default class DatabaseScreen extends React.Component {
         [],
         (txn, result) => {
 					for (let i = 0; i < result.rows.length; i++)
-						notes.push({...result.rows.item(i), key: i});
+					notes.push({...result.rows.item(i), key: i});
+					console.log(notes);
 					txn.executeSql(
 						"SELECT * FROM dancers",
 						[],
 						(txn, result) => {
 							for (let i = 0; i < result.rows.length; i++)
-								dancers.push({...result.rows.item(i), key: i});
+							dancers.push({...result.rows.item(i), key: i});
+							console.log(dancers);
 							txn.executeSql(
 								"SELECT * FROM times",
 								[],
 								(txn, result) => {
 									for (let i = 0; i < result.rows.length; i++)
-										times.push({...result.rows.item(i), key: i});
+									times.push({...result.rows.item(i), key: i});
+									console.log(times);
 									txn.executeSql(
 										"SELECT * FROM positions",
 										[],
 										(txn, result) => {
 											for (let i = 0; i < result.rows.length; i++)
-												positions.push({...result.rows.item(i), key: i});
+											positions.push({...result.rows.item(i), key: i});
+											console.log(positions);
 											this.setState({ notes, dancers, times, positions });
 										}
 									);

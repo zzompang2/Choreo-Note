@@ -1,6 +1,10 @@
 import React from "react";
 import { 
-	Dimensions, View, Text, TouchableOpacity
+	Dimensions,
+	View,
+	Text,
+	TouchableOpacity,
+	Animated,
 } from "react-native";
 import { ScrollView, PinchGestureHandler, State } from "react-native-gesture-handler";
 import getStyleSheet, { COLORS } from "../values/styles";
@@ -81,7 +85,8 @@ export default class Timeline extends React.Component {
 						setCurTime, selectedPosTime, selectFormationBox,
 						changeFormationBoxLength, isPlay, unitBoxWidth, unitTime,
 						setTimelineScroll, onTimelineScroll,
-						addFormation, formationAddable } = this.props;
+						addFormation, formationAddable,
+						toastOpacity, toastMessage } = this.props;
 		const {
 			musicLengthFormat,
 			setScrollEnable,
@@ -109,6 +114,7 @@ export default class Timeline extends React.Component {
 		})
 
 		const scrollWidth = width+(musicLength*boxPerSec-1)*unitBoxWidth;
+		const toastOpacityStyle = { opacity: toastOpacity };
 
 		return (
 			<View style={[styles.bg, {alignItems: 'center'}]}>
@@ -169,6 +175,16 @@ export default class Timeline extends React.Component {
 					<Text style={styles.addFormationBtn__text}>+</Text>
 				</TouchableOpacity>
 				}
+
+				<Animated.View style={[toastOpacityStyle, {
+					position: 'absolute', top: 65,
+					height: 30, backgroundColor: COLORS.blackDark,
+					alignItems: 'center', justifyContent: 'center',
+					paddingHorizontal: 15,
+					borderRadius: 15
+				}]}>
+					<Text style={{color: COLORS.white}}>{toastMessage}</Text>
+				</Animated.View>
 			</View>
     )
   }

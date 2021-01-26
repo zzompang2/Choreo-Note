@@ -317,8 +317,8 @@ const basicStyleSheet = StyleSheet.create({
 	// },
 	editNote__title: {
 		fontSize: 15,
-		marginTop: 20,
-		marginBottom: 5,
+		// marginTop: 20,
+		// marginBottom: 5,
 	},
 	editNote__input: {
 		height: 30,
@@ -333,8 +333,8 @@ const basicStyleSheet = StyleSheet.create({
 		height: 8,
 		borderRadius: 4,
 		marginHorizontal: 10,
-		marginTop: 20,
-		marginBottom: 5,
+		// marginTop: 20,
+		// marginBottom: 5,
 	},
 	editNote__musicList: {
 		borderColor: COLORS.grayMiddle,
