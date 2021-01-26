@@ -14,6 +14,7 @@ export default class ToolBarForFormation extends React.Component {
 			deleteFormation,
 			copyFormation,
 			pasteFormation,
+			copiedFormationData,
 		} = this.props;
 		const styles = getStyleSheet();
 
@@ -37,9 +38,10 @@ export default class ToolBarForFormation extends React.Component {
 
 				{/* Formation 붙여넣기 */}
 				<TouchableOpacity
+				disabled={copiedFormationData == undefined}
 				onPress={pasteFormation}
 				style={[styles.toolBar__toolDisabled, {width: 70}]}>
-					<Text style={{color: isCopy ? COLORS.white : COLORS.blackMiddle}}>paste</Text>
+					<Text style={{color: copiedFormationData != undefined ? COLORS.white : COLORS.blackMiddle}}>paste</Text>
 				</TouchableOpacity>
 				
 			</View>

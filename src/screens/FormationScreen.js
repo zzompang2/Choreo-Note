@@ -34,6 +34,7 @@ export default class FormationScreen extends React.Component {
 		coordinateGap: 40,
 		alignWithCoordinate: false,
 		unitBoxWidth: 10,						// 한 단위시간 박스의 가로 길이
+		copiedFormationDataData: undefined,
 	}
 	
 	pressPlayButton = () => {
@@ -751,6 +752,41 @@ export default class FormationScreen extends React.Component {
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
 
+	copyFormation = () => {
+		const { selectedPosTime, times, positions } = this.state;
+		if(selectedPosTime !== undefined) {
+			for(let i=0; i<times.length; i++)
+			if(times[i].time == selectedPosTime) {
+				const copiedFormationData = [...positions[i]];
+				this.setState({ copiedFormationData });
+				break;
+			}
+		}
+	}
+
+	pasteFormation = () => {
+		const { noteInfo: { nid }, selectedPosTime, times, positions, copiedFormationData } = this.state;
+		if(selectedPosTime !== undefined && copiedFormationData != undefined) {
+			for(let i=0; i<times.length; i++)
+			if(times[i].time == selectedPosTime) {
+				const newPositions = [...positions.slice(0, i), [...copiedFormationData], ...positions.slice(i+1)];
+				this.setState({ positions: newPositions });
+
+				db.transaction(txn => {
+					copiedFormationData.forEach(pos =>
+						txn.executeSql(
+							"UPDATE positions SET x=?, y=? WHERE nid=? AND time=? AND did=?",
+							[pos.x, pos.y, nid, selectedPosTime, pos.did])
+					);
+				},
+				e => console.log("DB ERROR", e),
+				() => console.log("DB SUCCESS"));
+				this.updateEditDate();
+				break;
+			}
+		}
+	}
+
 	componentDidMount() {
 		const { nid } = this.props.route.params;
 
@@ -846,7 +882,8 @@ export default class FormationScreen extends React.Component {
 	render() {
 		const { noteInfo, dancers, times, positions, curTime,
 						selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
-						coordinateGap, alignWithCoordinate, unitBoxWidth } = this.state;
+						coordinateGap, alignWithCoordinate, unitBoxWidth,
+						copiedFormationData } = this.state;
 		const styles = getStyleSheet();
 		const { 
 			changeTitle,
@@ -869,6 +906,8 @@ export default class FormationScreen extends React.Component {
 			changeCoordinateGap,
 			changeUnitBoxWidth,
 			listViewItemSeparator,
+			copyFormation,
+			pasteFormation,
 		} = this;
 
 		return(
@@ -953,7 +992,10 @@ export default class FormationScreen extends React.Component {
 				/>	
 				:
 				<ToolBarForFormation
-				deleteFormation={deleteFormation} />}
+				deleteFormation={deleteFormation}
+				copyFormation={copyFormation}
+				pasteFormation={pasteFormation}
+				copiedFormationData={copiedFormationData} />}
 
 				</View>
 				}
