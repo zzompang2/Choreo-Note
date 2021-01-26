@@ -1,6 +1,13 @@
 import React from 'react';
 import {
-	SafeAreaView, View, Text, TouchableOpacity, FlatList, TextInput, Alert, Keyboard,
+	SafeAreaView,
+	View,
+	Text,
+	TouchableOpacity,
+	FlatList,
+	TextInput,
+	Alert,
+	Keyboard,
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import RNFS from 'react-native-fs';
@@ -12,6 +19,12 @@ import IconIonicons from 'react-native-vector-icons/Ionicons';
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'EditNoteScreen/';
 
+const stageRatioData = [
+	{width: 1, height: 1},
+	{width: 4, height: 3},
+	{width: 3, height: 2},
+	{width: 2, height: 1},
+]
 export default class EditNoteScreen extends React.Component {
 	state = {
 		noteInfo: undefined,
@@ -21,6 +34,7 @@ export default class EditNoteScreen extends React.Component {
 		playingMusicIdx: -1,
 		isValidTitle: true,
 		isValidDancerNum: true,
+		stageRatioIdx: 0,
 	}
 
 	musicLoad = () => {
@@ -65,8 +79,13 @@ export default class EditNoteScreen extends React.Component {
 		this.setState({ selectedMusicName: name });
 	}
 
+	getStageRatio = (idx) => {
+		const data = stageRatioData[idx];
+		return data.width / data.height;
+	}
+
 	goToFormationScreen = () => {
-		const { noteInfo: { nid, title }, dancerNum, musicList, selectedMusicName, isValidTitle, isValidDancerNum } = this.state;
+		const { noteInfo: { nid, title }, dancerNum, musicList, selectedMusicName, isValidTitle, isValidDancerNum, stageRatioIdx } = this.state;
 		const { getTodayDate, updateMainStateFromDB } = this.props.route.params;
 
 		Keyboard.dismiss();
@@ -90,15 +109,16 @@ export default class EditNoteScreen extends React.Component {
 				else {
 					const musicLength = selectedMusicName == '/' ? 60 : Math.ceil(this.sound.getDuration());
 					const editDate = getTodayDate();
+					const stageRatio = this.getStageRatio(stageRatioIdx);
 					
 					console.log('MUSIC LOAD SUCCESS:', musicLength);
 
 					db.transaction(async txn => {
 						await txn.executeSql(
 							"UPDATE notes " +
-							"SET title=?, music=?, musicLength=?, editDate=? " +
+							"SET title=?, music=?, musicLength=?, editDate=?, stageRatio=? " +
 							"WHERE nid=?",
-							[title, selectedMusicName, musicLength, editDate, nid],
+							[title, selectedMusicName, musicLength, editDate, stageRatio, nid],
 							txn => {
 								for(let did=0; did<dancerNum; did++) {
 									const name = `Dancer ${did+1}`;
@@ -183,7 +203,7 @@ export default class EditNoteScreen extends React.Component {
 
 	render() {
 		const { noteInfo, dancerNum, musicList, selectedMusicName, playingMusicIdx,
-			isValidTitle, isValidDancerNum } = this.state;
+			isValidTitle, isValidDancerNum, stageRatioIdx } = this.state;
 		const {
 			changeTitle,
 			changeDancerNum,
@@ -219,7 +239,9 @@ export default class EditNoteScreen extends React.Component {
 				{listViewItemSeparator()}
 
 				{noteInfo == undefined ? null :
-				<View style={{flex: 1, padding: 30}}>
+				<View style={{flex: 1, paddingHorizontal: 30}}>
+
+					{/* Note 제목 */}
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>Title</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidTitle ? COLORS.green : COLORS.red}]} />
@@ -235,6 +257,7 @@ export default class EditNoteScreen extends React.Component {
 						{noteInfo.title}
 					</TextInput>
 
+					{/* Dancer 인원 수 */}
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<Text style={styles.editNote__title}>How many dancers (up to 30)</Text>
 						<View style={[styles.editNote__flag, {backgroundColor: isValidDancerNum ? COLORS.green : COLORS.red}]} />
@@ -248,6 +271,27 @@ export default class EditNoteScreen extends React.Component {
 					keyboardType={'number-pad'}
 					onChange={event => changeDancerNum(event)}>{dancerNum}</TextInput>
 
+					{/* Stage 비율 */}
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<Text style={styles.editNote__title}>Stage Ratio</Text>
+					</View>
+
+					<View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+					{stageRatioData.map((data, idx) =>
+					<TouchableOpacity
+					activeOpacity={.8}
+					onPress={() => this.setState({ stageRatioIdx: idx })}
+					style={{
+						width: 50/data.height*data.width, height: 50,
+						borderWidth: 1, borderColor: idx == stageRatioIdx ? COLORS.green : COLORS.grayMiddle,
+						alignItems: 'center', justifyContent: 'center'
+					}}>
+						<Text style={{color: idx == stageRatioIdx ? COLORS.green : COLORS.grayMiddle, fontSize: 16}}>{data.width}:{data.height}</Text>
+					</TouchableOpacity>
+					)}
+					</View>
+					
+					{/* Select Music */}
 					<Text style={styles.editNote__title}>Select Music</Text>
 
 					<FlatList
