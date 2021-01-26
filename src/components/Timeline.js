@@ -125,7 +125,10 @@ export default class Timeline extends React.Component {
 					showsHorizontalScrollIndicator={false}	// 스크롤 바 숨기기
 					ref={ref => setTimelineScroll(ref)}
 					onScroll={event => onTimelineScroll(event)}>
-						<View style={styles.timeline}>
+						<TouchableOpacity
+						activeOpacity={1}
+						style={styles.timeline}
+						onPress={() => selectFormationBox(undefined)}>
 							<View style={[styles.timeboxContainer, {width: scrollWidth}]}>
 								{this.timebox_mark}
 							</View>
@@ -145,7 +148,7 @@ export default class Timeline extends React.Component {
 								setScrollEnable={setScrollEnable} />
 								: null}
 							</View>
-						</View>
+						</TouchableOpacity>
 					</ScrollView>
 				</PinchGestureHandler>
 

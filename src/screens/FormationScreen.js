@@ -942,60 +942,61 @@ export default class FormationScreen extends React.Component {
 
 				{noteInfo === undefined ? null :
 				<View style={{flex: 1}}>
-				{/* Stage: Coordinate & Dancer */}
-				<Stage
-				stageRatio={noteInfo.stageRatio}
-				positionsAtCurTime={this.positionsAtCurTime}
-				changeDancerPosition={changeDancerPosition}
-				selectedPosTime={selectedPosTime}
-				dancers={dancers}
-				displayName={noteInfo.displayName}
-				coordinateGapInDevice={this.transStandardToDevice(coordinateGap)}
-				changeCoordinateGap={changeCoordinateGap} />
 
-				{/* Music Bar */}
-				<PlayerBar
-				curTime={curTime}
-				musicLength={noteInfo.musicLength}
-				unitBoxWidth={unitBoxWidth} />
+					{/* Stage: Coordinate & Dancer */}
+					<Stage
+					stageRatio={noteInfo.stageRatio}
+					positionsAtCurTime={this.positionsAtCurTime}
+					changeDancerPosition={changeDancerPosition}
+					selectedPosTime={selectedPosTime}
+					dancers={dancers}
+					displayName={noteInfo.displayName}
+					coordinateGapInDevice={this.transStandardToDevice(coordinateGap)}
+					changeCoordinateGap={changeCoordinateGap} />
 
-				{/* Timeline */}
-				<Timeline
-				musicLength={noteInfo.musicLength}
-				dancers={dancers}
-				times={times}
-				positions={positions}
-				curTime={curTime}
-				setCurTime={setCurTime}
-				selectedPosTime={selectedPosTime}
-				selectFormationBox={selectFormationBox}
-				changeFormationBoxLength={changeFormationBoxLength}
-				isPlay={isPlay}
-				unitBoxWidth={unitBoxWidth}
-				unitTime={unitTime}
-				setTimelineScroll={setTimelineScroll}
-				onTimelineScroll={onTimelineScroll}
-				addFormation={addFormation}
-				formationAddable={this.formationAddable}
-				changeUnitBoxWidth={changeUnitBoxWidth} />
+					{/* Music Bar */}
+					<PlayerBar
+					curTime={curTime}
+					musicLength={noteInfo.musicLength}
+					unitBoxWidth={unitBoxWidth} />
 
-				{/* Tool bar */}
-				{ selectedPosTime == undefined ?
-				<ToolBar
-				setDancerScreen={setDancerScreen}
-				isPlay={isPlay}
-				alignWithCoordinate={alignWithCoordinate}
-				setAlignWithCoordinate={setAlignWithCoordinate}
-				pressPlayButton={pressPlayButton}
-				changeDisplayType={changeDisplayType}
-				displayName={noteInfo.displayName}
-				/>	
-				:
-				<ToolBarForFormation
-				deleteFormation={deleteFormation}
-				copyFormation={copyFormation}
-				pasteFormation={pasteFormation}
-				copiedFormationData={copiedFormationData} />}
+					{/* Timeline */}
+					<Timeline
+					musicLength={noteInfo.musicLength}
+					dancers={dancers}
+					times={times}
+					positions={positions}
+					curTime={curTime}
+					setCurTime={setCurTime}
+					selectedPosTime={selectedPosTime}
+					selectFormationBox={selectFormationBox}
+					changeFormationBoxLength={changeFormationBoxLength}
+					isPlay={isPlay}
+					unitBoxWidth={unitBoxWidth}
+					unitTime={unitTime}
+					setTimelineScroll={setTimelineScroll}
+					onTimelineScroll={onTimelineScroll}
+					addFormation={addFormation}
+					formationAddable={this.formationAddable}
+					changeUnitBoxWidth={changeUnitBoxWidth} />
+
+					{/* Tool bar */}
+					<ToolBar
+					setDancerScreen={setDancerScreen}
+					isPlay={isPlay}
+					alignWithCoordinate={alignWithCoordinate}
+					setAlignWithCoordinate={setAlignWithCoordinate}
+					pressPlayButton={pressPlayButton}
+					changeDisplayType={changeDisplayType}
+					displayName={noteInfo.displayName}
+					/>	
+					
+					<ToolBarForFormation
+					selectedPosTime={selectedPosTime}
+					deleteFormation={deleteFormation}
+					copyFormation={copyFormation}
+					pasteFormation={pasteFormation}
+					copiedFormationData={copiedFormationData} />
 
 				</View>
 				}

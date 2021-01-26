@@ -1,13 +1,39 @@
 import React from "react";
 import { 
-	View, TouchableOpacity, Text
+	View, TouchableOpacity, Text, Animated
 } from "react-native";
 import getStyleSheet, { COLORS } from "../values/styles";
 
 const TAG = "ToolBarForFormation/";
 
 export default class ToolBarForFormation extends React.Component {
-	copiedFormation = undefined;
+	constructor(props) {
+		super(props);
+		this.toolBarBottom = new Animated.Value(-60);
+	}
+
+	shouldComponentUpdate(nextProps) {
+		if(nextProps.selectedPosTime == undefined)
+		Animated.timing(
+			this.toolBarBottom, {
+				toValue: -60,
+				duration: 200,
+				useNativeDriver: false,
+			}
+		).start();
+		else
+		Animated.timing(
+			this.toolBarBottom, {
+				toValue: 0,
+				duration: 300,
+				useNativeDriver: false,
+			}
+		).start();
+
+		if((this.props.copiedFormationData == undefined) !== (nextProps.copiedFormationData == undefined))
+		return true;
+		return false;
+	}
 
   render() {
 		const {
@@ -18,10 +44,21 @@ export default class ToolBarForFormation extends React.Component {
 		} = this.props;
 		const styles = getStyleSheet();
 
-		const isCopy = false;
+		const toolBarBottomStyle = { bottom: this.toolBarBottom };
 
 		return (
-			<View style={[styles.toolBar, styles.stageSelected]}>
+			<Animated.View style={[
+				styles.toolBar,
+				toolBarBottomStyle,
+				{
+					position: 'absolute',
+					justifyContent: 'space-around',
+					borderTopWidth: 5, borderLeftWidth: 5, borderEndWidth: 5,
+					borderTopEndRadius: 20, borderTopLeftRadius: 20,
+					borderColor: COLORS.yellow,
+				}
+			]}>
+				<View />
 				{/* Formation 삭제 */}
 				<TouchableOpacity
 				onPress={deleteFormation}
@@ -43,8 +80,8 @@ export default class ToolBarForFormation extends React.Component {
 				style={[styles.toolBar__toolDisabled, {width: 70}]}>
 					<Text style={{color: copiedFormationData != undefined ? COLORS.white : COLORS.blackMiddle}}>paste</Text>
 				</TouchableOpacity>
-				
-			</View>
+				<View />
+			</Animated.View>
     )
   }
 }

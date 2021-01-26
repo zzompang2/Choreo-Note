@@ -88,7 +88,7 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center',
 	},
 	stageSelected: {
-		borderWidth: 3,
+		borderWidth: 5,
 		borderColor: COLORS.yellow,
 	},
 	stageAxis: {
@@ -193,7 +193,7 @@ const basicStyleSheet = StyleSheet.create({
 		width: '100%',
 		height: 60,
 		alignItems: 'center',
-		justifyContent: 'center',
+		justifyContent: 'space-between',
 		flexDirection: 'row',
 	},
 	toolBar__tool: {
@@ -203,7 +203,7 @@ const basicStyleSheet = StyleSheet.create({
 		borderRadius: 5,
 		alignItems: 'center',
 		justifyContent: 'center',
-		margin: 10,
+		// margin: 10,
 	},
 	itemSeparator: {
 		height: 0.5,
