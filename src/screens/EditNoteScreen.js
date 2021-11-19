@@ -251,7 +251,7 @@ export default class EditNoteScreen extends React.Component {
 					style={styles.editNote__input}
 					maxLength={30}
 					placeholder="Please enter a title."
-					placeholderTextColor={COLORS.grayDark}
+					placeholderTextColor={COLORS.container_20}
 					onChange={event => changeTitle(event)}
 					autoCorrect={false}>
 						{noteInfo.title}
@@ -267,7 +267,7 @@ export default class EditNoteScreen extends React.Component {
 					style={styles.editNote__input}
 					maxLength={4}
 					placeholder={'0'}
-					placeholderTextColor={COLORS.grayDark}
+					placeholderTextColor={COLORS.container_20}
 					keyboardType={'number-pad'}
 					onChange={event => changeDancerNum(event)}>{dancerNum}</TextInput>
 
@@ -283,10 +283,10 @@ export default class EditNoteScreen extends React.Component {
 					onPress={() => this.setState({ stageRatioIdx: idx })}
 					style={{
 						width: 50/data.height*data.width, height: 50,
-						borderWidth: 1, borderColor: idx == stageRatioIdx ? COLORS.green : COLORS.grayMiddle,
+						borderWidth: 1, borderColor: idx == stageRatioIdx ? COLORS.green : COLORS.container_30,
 						alignItems: 'center', justifyContent: 'center'
 					}}>
-						<Text style={{color: idx == stageRatioIdx ? COLORS.green : COLORS.grayMiddle, fontSize: 16}}>{data.width}:{data.height}</Text>
+						<Text style={{color: idx == stageRatioIdx ? COLORS.green : COLORS.container_30, fontSize: 16}}>{data.width}:{data.height}</Text>
 					</TouchableOpacity>
 					)}
 					</View>
@@ -307,7 +307,7 @@ export default class EditNoteScreen extends React.Component {
 						<TouchableOpacity
 						style={{flex: 1, height: '100%', paddingRight: 10, justifyContent: 'center'}}
 						onPress={() => selectMusic(item)}>
-							<Text numberOfLines={2} style={[styles.dancerEntry__text], {color: selectedMusicName == item ? COLORS.green : COLORS.grayMiddle}}>
+							<Text numberOfLines={2} style={[styles.dancerEntry__text], {color: selectedMusicName == item ? COLORS.green : COLORS.container_30}}>
 								{item == '/' ? 'no music (60s silence)' : item}
 							</Text>
 						</TouchableOpacity>

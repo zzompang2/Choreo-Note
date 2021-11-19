@@ -63,14 +63,14 @@ export default class ToolBarForFormation extends React.Component {
 				<TouchableOpacity
 				onPress={deleteFormation}
 				style={[styles.toolBar__toolDisabled, {width: 70}]}>
-					<Text style={{color: COLORS.white}}>delete</Text>
+					<Text style={{color: COLORS.container_white}}>delete</Text>
 				</TouchableOpacity>
 
 				{/* Formation 복사 */}
 				<TouchableOpacity
 				onPress={copyFormation}
 				style={[styles.toolBar__toolDisabled, {width: 70}]}>
-					<Text style={{color: COLORS.white}}>copy</Text>
+					<Text style={{color: COLORS.container_white}}>copy</Text>
 				</TouchableOpacity>
 
 				{/* Formation 붙여넣기 */}
@@ -78,7 +78,7 @@ export default class ToolBarForFormation extends React.Component {
 				disabled={copiedFormationData == undefined}
 				onPress={pasteFormation}
 				style={[styles.toolBar__toolDisabled, {width: 70}]}>
-					<Text style={{color: copiedFormationData != undefined ? COLORS.white : COLORS.blackMiddle}}>paste</Text>
+					<Text style={{color: copiedFormationData != undefined ? COLORS.container_white : COLORS.blackMiddle}}>paste</Text>
 				</TouchableOpacity>
 				<View />
 			</Animated.View>

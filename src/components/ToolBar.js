@@ -32,7 +32,7 @@ export default class ToolBar extends React.Component {
 					disabled={isPlay}
 					onPress={setDancerScreen}
 					style={[styles.toolBar__toolDisabled, {width: 90}]}>
-						<Text style={{color: !isPlay ? COLORS.white : COLORS.blackMiddle}}>dancers</Text>
+						<Text style={{color: !isPlay ? COLORS.container_white : COLORS.blackMiddle}}>dancers</Text>
 					</TouchableOpacity>
 					<View style={{width: 40}} />
 				</View>
@@ -50,19 +50,19 @@ export default class ToolBar extends React.Component {
 					disabled={isPlay}
 					onPress={setAlignWithCoordinate}
 					style={alignWithCoordinate ? styles.toolBar__tool : styles.toolBar__toolDisabled}>
-						<Text style={{color: alignWithCoordinate ? COLORS.white : COLORS.blackMiddle}}>align</Text>
+						<Text style={{color: alignWithCoordinate ? COLORS.container_white : COLORS.blackMiddle}}>align</Text>
 					</TouchableOpacity>
 					{/* id / name 표시 */}
 					<TouchableOpacity
 					onPress={changeDisplayType}
 					style={displayName ? styles.toolBar__tool : styles.toolBar__toolDisabled}>
-						<Text style={{color: displayName ? COLORS.white : COLORS.blackMiddle}}>name</Text>
+						<Text style={{color: displayName ? COLORS.container_white : COLORS.blackMiddle}}>name</Text>
 					</TouchableOpacity>
 					{/*  */}
 					<TouchableOpacity
 					onPress={rotateStage}
 					style={isRotate ? styles.toolBar__tool : styles.toolBar__toolDisabled}>
-						<Text style={{color: isRotate ? COLORS.white : COLORS.blackMiddle}}>rotate</Text>
+						<Text style={{color: isRotate ? COLORS.container_white : COLORS.blackMiddle}}>rotate</Text>
 					</TouchableOpacity>
 				</View>
 			</View>

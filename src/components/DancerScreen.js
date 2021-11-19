@@ -213,7 +213,7 @@ export default class DancerScreen extends React.Component {
 										width: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
 										backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
 											inputRange: [0, 1],
-											outputRange: [COLORS.blackDark, COLORS.white]
+											outputRange: [COLORS.container_black, COLORS.container_white]
 										}),
 										transform: [{
 											rotate: this.deleteBtnAnim[item.did][1].interpolate({
@@ -230,7 +230,7 @@ export default class DancerScreen extends React.Component {
 										height: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
 										backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
 											inputRange: [0, 1],
-											outputRange: [COLORS.blackDark, COLORS.white]
+											outputRange: [COLORS.container_black, COLORS.container_white]
 										}),
 										transform: [{
 											rotate: this.deleteBtnAnim[item.did][1].interpolate({

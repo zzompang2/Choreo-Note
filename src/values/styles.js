@@ -6,12 +6,12 @@ const formationBoxHeight = 60;
 const unitBoxWidth = 10;
 
 export const COLORS = {
-  white: '#a5a29d',
-  blackDark: '#000000',
-	blackMiddle: '#1e1e1e',
-	blackLight: '#2b2b2b',
-  grayMiddle: '#757370',
-  grayLight: '#93918f',
+  container_white: '#ffffff',
+  container_black: '#000000',
+	container_10: '#1e1e1e',
+	container_20: '#2B2B2B',
+	container_30: '#646464',
+  container_40: '#8D8D8D',
 	yellow: '#EF9C1C',
 	yellowLight: '#EF9C1C88',
 	red: '#D63F72',
@@ -19,6 +19,7 @@ export const COLORS = {
   purple: '#8249d3', 
   blue: '#4469EB',
   green: '#00817a',
+	pink: '#CB5692',
 }
 
 const DANCER_COLORS_DARK = [
@@ -45,10 +46,12 @@ const basicStyleSheet = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingHorizontal: 10,
+		// paddingHorizontal: 10,
 	},
 	navigationBar__title: {
-		fontSize: 28,
+		fontSize: 20,
+		fontFamily: 'GmarketSansTTFMedium',
+		paddingLeft: 12,
 	},
 	navigationBar__button: {
 		fontSize: 16,
@@ -57,10 +60,11 @@ const basicStyleSheet = StyleSheet.create({
 		// backgroundColor: COLORS.red
 	},
 	navigationBarText: {
-		fontSize: 15,
-		paddingVertical: 15,
-		paddingHorizontal: 10,
-		// backgroundColor: 'red'
+		fontSize: 16,
+		paddingVertical: 17,
+		paddingHorizontal: 20,
+		color: COLORS.pink,
+		fontFamily: 'GmarketSansTTFMedium',
 	},
 	noteList: {
 		flex: 1,
@@ -68,18 +72,26 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	noteEntry: {
 		flexDirection: 'row',
-		height: 60,
-		paddingHorizontal: 10,
-		alignItems: 'center',
-		justifyContent: 'space-between'
+		padding: 16,
 	},
 	noteTitle: {
-		fontSize: 20,
-		marginBottom: 3,
+		fontSize: 16,
+		fontFamily: 'GmarketSansTTFMedium',
+		lineHeight: 26,
 	},
 	noteSubInfo: {
-		fontSize: 11,
-		marginRight: 7,
+		fontSize: 12,
+		marginTop: 12,
+		fontFamily: 'GmarketSansTTFMedium',
+	},
+	noteThumbnail: {
+		height: 140,
+		width: 140,
+		borderRadius: 20,
+		marginRight: 16,
+		backgroundColor: COLORS.container_white,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 	stage: {
 		width: width,
@@ -148,7 +160,7 @@ const basicStyleSheet = StyleSheet.create({
 		borderRadius: 15,
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: COLORS.blackDark
+		backgroundColor: COLORS.container_black
 	},
 	timeMarkerContainer: {
 		position: 'absolute',
@@ -164,14 +176,14 @@ const basicStyleSheet = StyleSheet.create({
 		height: 20,
 		borderRadius: 10,
 		borderWidth: 1,
-		borderColor: COLORS.white,
+		borderColor: COLORS.container_white,
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
 	timeMarkerLine: {
 		width: 1,
 		height: '100%',
-		backgroundColor: COLORS.white,
+		backgroundColor: COLORS.container_white,
 	},
 	addFormationBtn: {
 		position: 'absolute',
@@ -182,9 +194,9 @@ const basicStyleSheet = StyleSheet.create({
 		justifyContent: 'center',
 		borderRadius: 15,
 		borderWidth: 1,
-		borderColor: COLORS.white,
+		borderColor: COLORS.container_white,
 		backgroundColor: COLORS.blackMiddle,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	addFormationBtn__text: {
 		fontSize: 15,
@@ -223,7 +235,7 @@ const basicStyleSheet = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		marginHorizontal: 12,
-		shadowColor: COLORS.blackDark,
+		shadowColor: COLORS.container_black,
 		shadowOffset: { width: 1, height: 1, },
 		shadowOpacity: 0.4,
 		shadowRadius: 4,
@@ -235,7 +247,7 @@ const basicStyleSheet = StyleSheet.create({
 		height: 42,
 		flex: 1,
 		paddingHorizontal: 10,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	dancerEntry__btn: {
 		width: 50,
@@ -260,7 +272,7 @@ const basicStyleSheet = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'flex-end',
 		flexDirection: 'row',
-		shadowColor: COLORS.blackDark,
+		shadowColor: COLORS.container_black,
 		shadowOffset: { width: 2, height: 2, },
 		shadowOpacity: 0.4,
 		shadowRadius: 10,
@@ -276,7 +288,7 @@ const basicStyleSheet = StyleSheet.create({
 		height: 30,
 		marginRight: 30,
 		borderRadius: 20,
-		shadowColor: COLORS.blackDark,
+		shadowColor: COLORS.container_black,
 		shadowOffset: { width: 1, height: 1, },
 		shadowOpacity: 0.6,
 		shadowRadius: 4,
@@ -323,7 +335,7 @@ const basicStyleSheet = StyleSheet.create({
 	editNote__input: {
 		height: 30,
 		fontSize: 20,
-		borderColor: COLORS.grayMiddle,
+		borderColor: COLORS.container_30,
 		borderBottomWidth: 1,
 		// marginBottom: 25,
 		// paddingHorizontal: 13,
@@ -337,7 +349,7 @@ const basicStyleSheet = StyleSheet.create({
 		// marginBottom: 5,
 	},
 	editNote__musicList: {
-		borderColor: COLORS.grayMiddle,
+		borderColor: COLORS.container_30,
 		borderWidth: 1,
 	},
 	editNote__musicEntry: {
@@ -358,7 +370,7 @@ const basicStyleSheet = StyleSheet.create({
 const darkStyleSheet = StyleSheet.create({
 	bg: {
 		...basicStyleSheet.bg,
-		backgroundColor: COLORS.blackMiddle,
+		backgroundColor: COLORS.container_black,
 	},
 	navigationBar: {
 		...basicStyleSheet.navigationBar,
@@ -366,15 +378,15 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	navigationBar__title: {
 		...basicStyleSheet.navigationBar__title,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	navigationBar__button: {
 		...basicStyleSheet.navigationBar__button,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	navigationBarText: {
 		...basicStyleSheet.navigationBarText,
-		color: COLORS.white,
+		// color: COLORS.container_white,
 	},
 	noteList: {
 		...basicStyleSheet.noteList,
@@ -385,15 +397,18 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	noteTitle: {
 		...basicStyleSheet.noteTitle,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	noteSubInfo: {
 		...basicStyleSheet.noteSubInfo,
-		color: COLORS.grayMiddle
+		color: COLORS.container_40
+	},
+	noteThumbnail: {
+		...basicStyleSheet.noteThumbnail,
 	},
 	stage: {
 		...basicStyleSheet.stage,
-		backgroundColor: COLORS.white
+		backgroundColor: COLORS.container_white
 	},
 	stageSelected: {
 		...basicStyleSheet.stageSelected,
@@ -403,19 +418,19 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	stageAxisVertical: {
 		...basicStyleSheet.stageAxisVertical,
-		backgroundColor: COLORS.grayLight,
+		backgroundColor: COLORS.container_40,
 	},
 	stageAxisHorizontal: {
 		...basicStyleSheet.stageAxisHorizontal,
-		backgroundColor: COLORS.grayLight,
+		backgroundColor: COLORS.container_40,
 	},
 	dancer: {
 		...basicStyleSheet.dancer,
-		backgroundColor: COLORS.white
+		backgroundColor: COLORS.container_white
 	},
 	dancer__number: {
 		...basicStyleSheet.dancer__number,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	timeline: {
 		...basicStyleSheet.timeline,
@@ -441,11 +456,11 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	addFormationBtn__text: {
 		...basicStyleSheet.addFormationBtn__text,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	formationBox: {
 		...basicStyleSheet.formationBox,
-		backgroundColor: COLORS.white,
+		backgroundColor: COLORS.container_white,
 	},
 	formationBoxSelected: {
 		...basicStyleSheet.formationBox,
@@ -453,7 +468,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	formationMarker: {
 		...basicStyleSheet.formationMarker,
-		borderColor: COLORS.white,
+		borderColor: COLORS.container_white,
 		backgroundColor: COLORS.yellow,
 	},
 	formationMarker__leftbtn: {
@@ -481,7 +496,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	itemSeparator: {
 		...basicStyleSheet.itemSeparator,
-		backgroundColor: COLORS.grayMiddle,
+		backgroundColor: COLORS.container_30,
 	},
 	dancerEntry: {
 		...basicStyleSheet.dancerEntry,
@@ -491,7 +506,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	dancerEntry__text: {
 		...basicStyleSheet.dancerEntry__text,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	dancerEntry__input: {
 		...basicStyleSheet.dancerEntry__input,
@@ -508,7 +523,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	dancerControlBtn: {
 		...basicStyleSheet.dancerControlBtn,
-		backgroundColor: COLORS.blackDark
+		backgroundColor: COLORS.container_black
 	},
 	dancerAddBtn: {
 		...basicStyleSheet.dancerAddBtn,
@@ -516,42 +531,42 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	// playerBar: {
 	// 	...basicStyleSheet.playerBar,
-	// 	backgroundColor: COLORS.blackDark
+	// 	backgroundColor: COLORS.container_black
 	// },
 	// playerBar__timeBox: {
 	// 	...basicStyleSheet.playerBar__timeBox,
 	// },
 	playerBar__time: {
 		...basicStyleSheet.playerBar__time,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	playerBar__btn: {
 		...basicStyleSheet.playerBar__btn,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	playerBar__track: {
 		...basicStyleSheet.playerBar__track,
-		backgroundColor: COLORS.blackDark,
+		backgroundColor: COLORS.container_black,
 	},
 	playerBar__trackLeft: {
 		...basicStyleSheet.playerBar__trackLeft,
-		backgroundColor: COLORS.white,
+		backgroundColor: COLORS.container_white,
 	},
 	// playerBar__trackBgRight: {
 	// 	...basicStyleSheet.playerBar__trackBg,
-	// 	backgroundColor: COLORS.blackDark,
+	// 	backgroundColor: COLORS.container_black,
 	// },
 	// playerBar__thumb: {
 	// 	...basicStyleSheet.playerBar__thumb,
-	// 	backgroundColor: COLORS.white,
+	// 	backgroundColor: COLORS.container_white,
 	// },
 	editNote__title: {
 		...basicStyleSheet.editNote__title,
-		color: COLORS.grayMiddle,
+		color: COLORS.container_30,
 	},
 	editNote__input: {
 		...basicStyleSheet.editNote__input,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	editNote__flag: {
 		...basicStyleSheet.editNote__flag,
@@ -565,7 +580,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	editNote__btn: {
 		...basicStyleSheet.editNote__btn,
-		color: COLORS.grayMiddle,
+		color: COLORS.container_30,
 	}
 });
 
@@ -591,11 +606,11 @@ const dbStyleSheet = StyleSheet.create({
 	},
 	toolbarTitle: {
 		...basicStyleSheet.toolbarTitle,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	toolbarButton: {
 		...basicStyleSheet.toolbarButton,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	noteList: {
 		...basicStyleSheet.noteList,
@@ -612,11 +627,11 @@ const dbStyleSheet = StyleSheet.create({
 	},
 	dbText: {
 		fontSize: 11,
-		color: COLORS.white,
+		color: COLORS.container_white,
 	},
 	noteSubInfo: {
 		...basicStyleSheet.noteSubInfo,
-		color: COLORS.grayLight
+		color: COLORS.container_40
 	}
 });
 

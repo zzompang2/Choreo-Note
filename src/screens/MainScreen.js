@@ -4,7 +4,9 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import NoteItem from '../components/NoteItem';
-import getStyleSheet from '../values/styles';
+import getStyleSheet, { COLORS } from '../values/styles';
+import Svg, {Rect, SvgUri} from 'react-native-svg';
+import Add from '../assets/icons/X_large(48)/Add';
 
 LogBox.ignoreLogs(['Non-serializable values were found in the navigation state']);
 
@@ -217,29 +219,29 @@ export default class MainScreen extends React.Component {
 			updateMainStateFromDB: this.updateMainStateFromDB });
 	}
 
-	deleteNote = (nid) => {
-		const { notes } = this.state;
-		Alert.alert("Delete Note", "Really?",
-		[{text: "No", style: 'cancel'}, {
-			text: "Delete",
-			onPress: () => {
-				for(let i=0; i<notes.length; i++)
-				if(notes[i].nid == nid) {
-					const newNotes = [...notes.slice(0, i), ...notes.slice(i+1)];
-					this.setState({ notes: newNotes });
+	// deleteNote = (nid) => {
+	// 	const { notes } = this.state;
+	// 	Alert.alert("Delete Note", "Really?",
+	// 	[{text: "No", style: 'cancel'}, {
+	// 		text: "Delete",
+	// 		onPress: () => {
+	// 			for(let i=0; i<notes.length; i++)
+	// 			if(notes[i].nid == nid) {
+	// 				const newNotes = [...notes.slice(0, i), ...notes.slice(i+1)];
+	// 				this.setState({ notes: newNotes });
 
-					db.transaction(txn => {
-						txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
-						txn.executeSql("DELETE FROM dancers WHERE nid=?", [nid]);
-						txn.executeSql("DELETE FROM times WHERE nid=?", [nid]);
-						txn.executeSql("DELETE FROM positions WHERE nid=?", [nid]);
-					},
-					e => console.log("DB ERROR", e),
-					() => console.log("DB SUCCESS"));
-				}
-			},
-		}]);
-	}
+	// 				db.transaction(txn => {
+	// 					txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
+	// 					txn.executeSql("DELETE FROM dancers WHERE nid=?", [nid]);
+	// 					txn.executeSql("DELETE FROM times WHERE nid=?", [nid]);
+	// 					txn.executeSql("DELETE FROM positions WHERE nid=?", [nid]);
+	// 				},
+	// 				e => console.log("DB ERROR", e),
+	// 				() => console.log("DB SUCCESS"));
+	// 			}
+	// 		},
+	// 	}]);
+	// }
 
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
@@ -250,8 +252,10 @@ export default class MainScreen extends React.Component {
 
 	render() {
 		const { notes } = this.state;
-		const { onPressHandler, deleteNote, listViewItemSeparator } = this;
+		const { onPressHandler, listViewItemSeparator } = this;
 		const styles = getStyleSheet();
+
+		console.log(notes);
 
 		return(
 			// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
@@ -261,8 +265,8 @@ export default class MainScreen extends React.Component {
 				{/* Tool Bar */}
 				<View style={styles.navigationBar}>
 					<Text numberOfLines={1} style={styles.navigationBar__title}>Choreo Note</Text>
-					<TouchableOpacity onPress={this.addNote}>
-						<Text style={[styles.navigationBarText, {fontSize: 30, paddingVertical: 0}]}>+</Text>
+					<TouchableOpacity onPress={()=>{}}>
+						<Text style={styles.navigationBarText}>편집</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -271,32 +275,35 @@ export default class MainScreen extends React.Component {
 				{/* Note 리스트 */}
 				<FlatList
 				style={styles.noteList}
-				data={notes}
+				data={[[], ...notes]}
 				keyExtractor={(item, idx) => idx.toString()}
-				ItemSeparatorComponent={listViewItemSeparator}
+				// ItemSeparatorComponent={listViewItemSeparator}
 				renderItem={({ item, index }) =>
-				<NoteItem 
+				index  == 0 ?
+				<TouchableOpacity
+				onPress={this.addNote}
+				style={styles.noteEntry}>
+					<View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
+						<View style={{...styles.noteThumbnail, backgroundColor: COLORS.container_20}}>
+							<Add color={COLORS.container_40}/>
+						</View>
+						<Text numberOfLines={2} style={styles.noteTitle}>새 노트 만들기</Text>
+					</View>
+				</TouchableOpacity>
+				:
+				<NoteItem
 				item={item}
-				onPressHandler={onPressHandler}
-				deleteNote={deleteNote} />
+				onPressHandler={onPressHandler} />
 				} />
 
 				{listViewItemSeparator()}
 
-				<View style={[styles.navigationBar, {height: 35}]}>
-					<TouchableOpacity
-					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.navigationBar__button}>how to use</Text>
-					</TouchableOpacity>
+				{/* Footer (for debug) */}
+				<View style={[styles.navigationBar, {height: 50}]}>
 
-					<TouchableOpacity
-					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.navigationBar__button}>setting</Text>
-					</TouchableOpacity>
-					{/* Footer (for debug) */}
 					{/* <TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.navigationBar__button}>DB</Text>
+						<Text style={styles.navigationBarText}>설정</Text>
 					</TouchableOpacity> */}
 				</View>
 			</SafeAreaView>

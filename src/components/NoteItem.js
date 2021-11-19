@@ -14,26 +14,6 @@ export default class NoteItem extends React.Component {
 		this.btnScale = new Animated.Value(0);
 	}
 
-	popDeleteButton = () => {
-		Animated.timing(
-			this.btnScale, {
-				toValue: 1,
-				duration: 1000,
-				useNativeDriver: true
-			}
-		).start();
-	}
-
-	clearDeleteButton = () => {
-		Animated.timing(
-			this.btnScale, {
-				toValue: 0,
-				duration: 1,
-				useNativeDriver: true
-			}
-		).start();
-	}
-
   render() {
 		const { item, onPressHandler, deleteNote } = this.props;
 		const { popDeleteButton, clearDeleteButton } = this;
@@ -44,23 +24,18 @@ export default class NoteItem extends React.Component {
 		return (
 			<TouchableOpacity
 			onPress={() => onPressHandler(item.music, item.nid)}
-			onLongPress={() => deleteNote(item.nid)}
-			delayLongPress={1000}
-			onPressIn={popDeleteButton}
-			onPressOut={clearDeleteButton}
 			style={styles.noteEntry}>
-				<View style={{flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center'}}>
-					<Text numberOfLines={1} style={styles.noteTitle}>{item.title}</Text>
-					<View flexDirection='row'>
-						<IconIonicons name="calendar" style={styles.noteSubInfo} />
-						<Text numberOfLines={1} style={styles.noteSubInfo}>Modified {item.editDate}</Text>
-						<IconIonicons name="musical-notes" style={styles.noteSubInfo} />
-						<Text numberOfLines={1} style={styles.noteSubInfo}>{item.music == '/' ? 'no music(60s silence)' : item.music}</Text>
+				<View style={{flexDirection: 'row', flex: 1}}>
+					<View style={styles.noteThumbnail}></View>
+					<View style={{flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', flex: 1}}>
+						<Text numberOfLines={2} style={styles.noteTitle}>{item.title}</Text>
+						<Text numberOfLines={2} style={styles.noteSubInfo}>{item.music == '' ? '(choose music)' : item.music == '/' ? 'no music(60s silence)' : item.music}</Text>
+						<Text numberOfLines={1} style={styles.noteSubInfo}>{item.createDate}</Text>
 					</View>
 				</View>
-				<Animated.View style={[btnStyle]}>
+				{/* <Animated.View style={[btnStyle]}>
 					<IconIonicons name="trash-sharp" size={40} color={'red'} />
-				</Animated.View>
+				</Animated.View> */}
 			</TouchableOpacity>
     )
   }

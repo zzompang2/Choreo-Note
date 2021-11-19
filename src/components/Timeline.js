@@ -36,7 +36,7 @@ export default class Timeline extends React.Component {
 		for(let i=0; i < musicLength * boxPerSec-1; i++) {
 			this.timebox_mark.push(
 				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end'}}>
-					<View style={{width: 1, height: i % boxPerSec == 0 ? 6 : 2, backgroundColor: COLORS.white}} />
+					<View style={{width: 1, height: i % boxPerSec == 0 ? 6 : 2, backgroundColor: COLORS.container_white}} />
 				</View>
 			)
 		}
@@ -178,12 +178,12 @@ export default class Timeline extends React.Component {
 
 				<Animated.View style={[toastOpacityStyle, {
 					position: 'absolute', top: 65,
-					height: 30, backgroundColor: COLORS.blackDark,
+					height: 30, backgroundColor: COLORS.container_black,
 					alignItems: 'center', justifyContent: 'center',
 					paddingHorizontal: 15,
 					borderRadius: 15
 				}]}>
-					<Text style={{color: COLORS.white}}>{toastMessage}</Text>
+					<Text style={{color: COLORS.container_white}}>{toastMessage}</Text>
 				</Animated.View>
 			</View>
     )
