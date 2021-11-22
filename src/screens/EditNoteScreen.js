@@ -27,7 +27,7 @@ const stageRatioData = [
 ]
 export default class EditNoteScreen extends React.Component {
 	state = {
-		noteInfo: undefined,
+		noteInfo: {nid: this.props.nid, title: 'New Note'},
 		dancerNum: 2,
 		musicList: [],
 		selectedMusicName: '/',
@@ -115,36 +115,44 @@ export default class EditNoteScreen extends React.Component {
 
 					db.transaction(async txn => {
 						await txn.executeSql(
-							"UPDATE notes " +
-							"SET title=?, music=?, musicLength=?, editDate=?, stageRatio=? " +
-							"WHERE nid=?",
-							[title, selectedMusicName, musicLength, editDate, stageRatio, nid],
-							txn => {
-								for(let did=0; did<dancerNum; did++) {
-									const name = `Dancer ${did+1}`;
-									const posx = dancerNum == 1 ? 0 : did * (600 / (dancerNum-1)) - 300;
-									txn.executeSql(
-										"INSERT INTO dancers VALUES (?, ?, ?, 0)",
-										[nid, did, name]);
-		
-									txn.executeSql(
-										"INSERT INTO positions VALUES (?, 0, ?, ?, 0)",
-										[nid, did, posx]);
-						
-									txn.executeSql(
-										"INSERT INTO positions VALUES (?, 5000, ?, ?, -100)",
-										[nid, did, posx]);
-								}
-					
-								txn.executeSql(
-									"INSERT INTO times VALUES (?, 0, 3000)",
-									[nid]);
-		
-								txn.executeSql(
-									"INSERT INTO times VALUES (?, 5000, 5000)",
-									[nid]);
-							}
+							"UPDATE metadata SET nidMax=? WHERE id=0",
+							[nid]
 						);
+						txn.executeSql(
+							"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+							[nid, title, editDate, editDate, stageRatio, music, musicLength, 0]
+						);
+						// await txn.executeSql(
+						// 	"UPDATE notes " +
+						// 	"SET title=?, music=?, musicLength=?, editDate=?, stageRatio=? " +
+						// 	"WHERE nid=?",
+						// 	[title, selectedMusicName, musicLength, editDate, stageRatio, nid],
+						// 	txn => {
+						// 		for(let did=0; did<dancerNum; did++) {
+						// 			const name = `Dancer ${did+1}`;
+						// 			const posx = dancerNum == 1 ? 0 : did * (600 / (dancerNum-1)) - 300;
+						// 			txn.executeSql(
+						// 				"INSERT INTO dancers VALUES (?, ?, ?, 0)",
+						// 				[nid, did, name]);
+		
+						// 			txn.executeSql(
+						// 				"INSERT INTO positions VALUES (?, 0, ?, ?, 0)",
+						// 				[nid, did, posx]);
+						
+						// 			txn.executeSql(
+						// 				"INSERT INTO positions VALUES (?, 5000, ?, ?, -100)",
+						// 				[nid, did, posx]);
+						// 		}
+					
+						// 		txn.executeSql(
+						// 			"INSERT INTO times VALUES (?, 0, 3000)",
+						// 			[nid]);
+		
+						// 		txn.executeSql(
+						// 			"INSERT INTO times VALUES (?, 5000, 5000)",
+						// 			[nid]);
+						// 	}
+						// );
 
 						this.props.navigation.navigate('Formation', { 
 							nid: nid,
@@ -188,17 +196,17 @@ export default class EditNoteScreen extends React.Component {
 
 		this.musicLoad();
 
-		db.transaction(txn => {
-      txn.executeSql(
-				"SELECT * FROM notes WHERE nid = ?",
-				[nid],
-        (txn, result) => {
-					const noteInfo = result.rows.item(0);
-					console.log(TAG, noteInfo);
-					this.setState({ noteInfo });
-				}
-			);
-		});
+		// db.transaction(txn => {
+    //   txn.executeSql(
+		// 		"SELECT * FROM notes WHERE nid = ?",
+		// 		[nid],
+    //     (txn, result) => {
+		// 			const noteInfo = result.rows.item(0);
+		// 			console.log(TAG, noteInfo);
+		// 			this.setState({ noteInfo });
+		// 		}
+		// 	);
+		// });
 	}
 
 	render() {

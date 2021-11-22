@@ -15,7 +15,8 @@ const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 
 export default class MainScreen extends React.Component {
 	state = {
-		notes: []
+		notes: [],
+		isEditMode: false,
 	};
 
 	getDatabaseData() {
@@ -157,31 +158,41 @@ export default class MainScreen extends React.Component {
 	}
 
 	addNote = () => {
-		const { notes } = this.state;
+		const { notes, isEditMode } = this.state;
+
+		// if(isEditMode) return;
+		// if(isEditMode) this.setState({ isEditMode: false });
+
 		// const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
-		const title = 'New Note';
-		const createDate = this.getTodayDate();
-		const stageRatio = 2;
-		const music = '';
-		const musicLength = 60;
-		const displayName = 0;
+		// const title = 'New Note';
+		// const createDate = this.getTodayDate();
+		// const stageRatio = 2;
+		// const music = '';
+		// const musicLength = 60;
+		// const displayName = 0;
 
 		db.transaction(txn => {
 			txn.executeSql(
 				"SELECT * FROM metadata", [],
 				(txn, result) => {
 					const nid = result.rows.item(0).nidMax + 1;
-					const newNotes = [{ nid, title, createDate, editDate: createDate, music }, ...notes];
-					this.setState({ notes: newNotes });
 
-					txn.executeSql(
-						"UPDATE metadata SET nidMax=? WHERE id=0",
-						[nid]
-					);
-					txn.executeSql(
-						"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-						[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]
-					);
+					this.props.navigation.navigate('EditNote', {
+						nid: nid,
+						getTodayDate: this.getTodayDate,
+						updateMainStateFromDB: this.updateMainStateFromDB });
+
+					// const newNotes = [{ nid, title, createDate, editDate: createDate, music }, ...notes];
+					// this.setState({ notes: newNotes });
+
+					// txn.executeSql(
+					// 	"UPDATE metadata SET nidMax=? WHERE id=0",
+					// 	[nid]
+					// );
+					// txn.executeSql(
+					// 	"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+					// 	[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]
+					// );
 				},
 				e => console.log("DB ERROR", e),
 				() => console.log("DB SUCCESS"));
@@ -213,35 +224,41 @@ export default class MainScreen extends React.Component {
 
 
 	onPressHandler = (music, nid) => {
+		if(this.state.isEditMode)
+		this.deleteNote(nid);
+		else
 		this.props.navigation.navigate(music == '' ? 'EditNote' : 'Formation', {
 			nid: nid,
 			getTodayDate: this.getTodayDate,
 			updateMainStateFromDB: this.updateMainStateFromDB });
 	}
 
-	// deleteNote = (nid) => {
-	// 	const { notes } = this.state;
-	// 	Alert.alert("Delete Note", "Really?",
-	// 	[{text: "No", style: 'cancel'}, {
-	// 		text: "Delete",
-	// 		onPress: () => {
-	// 			for(let i=0; i<notes.length; i++)
-	// 			if(notes[i].nid == nid) {
-	// 				const newNotes = [...notes.slice(0, i), ...notes.slice(i+1)];
-	// 				this.setState({ notes: newNotes });
+	deleteNote = (nid) => {
+		const { notes } = this.state;
+		let idx;
 
-	// 				db.transaction(txn => {
-	// 					txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
-	// 					txn.executeSql("DELETE FROM dancers WHERE nid=?", [nid]);
-	// 					txn.executeSql("DELETE FROM times WHERE nid=?", [nid]);
-	// 					txn.executeSql("DELETE FROM positions WHERE nid=?", [nid]);
-	// 				},
-	// 				e => console.log("DB ERROR", e),
-	// 				() => console.log("DB SUCCESS"));
-	// 			}
-	// 		},
-	// 	}]);
-	// }
+		for(let i=0; i<notes.length; i++)
+		if(notes[i].nid == nid)
+		idx = i;
+
+		Alert.alert("노트 삭제", "\"" + notes[idx].title + "\" 노트를 정말 삭제하시겠어요?",
+		[{text: "아니요", style: 'cancel'}, {
+			text: "네, 삭제할게요", style: 'destructive',
+			onPress: () => {
+				const newNotes = [...notes.slice(0, idx), ...notes.slice(idx+1)];
+				this.setState({ notes: newNotes });
+
+				db.transaction(txn => {
+					txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
+					txn.executeSql("DELETE FROM dancers WHERE nid=?", [nid]);
+					txn.executeSql("DELETE FROM times WHERE nid=?", [nid]);
+					txn.executeSql("DELETE FROM positions WHERE nid=?", [nid]);
+				},
+				e => console.log("DB ERROR", e),
+				() => console.log("DB SUCCESS"));
+			},
+		}]);
+	}
 
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
@@ -251,7 +268,7 @@ export default class MainScreen extends React.Component {
 	}
 
 	render() {
-		const { notes } = this.state;
+		const { notes, isEditMode } = this.state;
 		const { onPressHandler, listViewItemSeparator } = this;
 		const styles = getStyleSheet();
 
@@ -265,8 +282,8 @@ export default class MainScreen extends React.Component {
 				{/* Tool Bar */}
 				<View style={styles.navigationBar}>
 					<Text numberOfLines={1} style={styles.navigationBar__title}>Choreo Note</Text>
-					<TouchableOpacity onPress={()=>{}}>
-						<Text style={styles.navigationBarText}>편집</Text>
+					<TouchableOpacity onPress={()=>this.setState({isEditMode: !isEditMode})}>
+						<Text style={styles.navigationBarText}>{isEditMode ? "취소" : "편집"}</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -278,22 +295,22 @@ export default class MainScreen extends React.Component {
 				data={[[], ...notes]}
 				keyExtractor={(item, idx) => idx.toString()}
 				// ItemSeparatorComponent={listViewItemSeparator}
+				numColumns={2}
 				renderItem={({ item, index }) =>
 				index  == 0 ?
 				<TouchableOpacity
 				onPress={this.addNote}
 				style={styles.noteEntry}>
-					<View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
-						<View style={{...styles.noteThumbnail, backgroundColor: COLORS.container_20}}>
-							<Add color={COLORS.container_40}/>
-						</View>
-						<Text numberOfLines={2} style={styles.noteTitle}>새 노트 만들기</Text>
+					<View style={{...styles.noteThumbnail, backgroundColor: COLORS.container_20}}>
+						<Add color={COLORS.container_40}/>
 					</View>
 				</TouchableOpacity>
 				:
 				<NoteItem
+				key={index}
 				item={item}
-				onPressHandler={onPressHandler} />
+				onPressHandler={onPressHandler}
+				isEditMode={isEditMode} />
 				} />
 
 				{listViewItemSeparator()}
