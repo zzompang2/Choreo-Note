@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import Sound from 'react-native-sound';
-import IconIonicons from 'react-native-vector-icons/Ionicons';
+// import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 import getStyleSheet, { getDancerColors } from '../values/styles';
 import Stage from '../components/Stage';
@@ -961,7 +961,7 @@ export default class FormationScreen extends React.Component {
 				<View style={styles.navigationBar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 						<TouchableOpacity onPress={() => this.props.navigation.navigate('Main')}>
-							<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
+							{/* <IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} /> */}
 						</TouchableOpacity>
 						<TextInput
 						numberOfLines={1} 

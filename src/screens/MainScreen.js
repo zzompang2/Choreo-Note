@@ -44,8 +44,8 @@ export default class MainScreen extends React.Component {
 
 						const title = 'Welcome to Choreo Note!';
 						const createDate = this.getTodayDate();
-						const stageRatio = 2;
-						const music = '/';
+						const stageRatio = 0;
+						const music = '';
 						const musicLength = 60;
 						const displayName = 0;
 
@@ -79,7 +79,9 @@ export default class MainScreen extends React.Component {
 						txn.executeSql(
 							"INSERT INTO positions VALUES (0, 5000, 1, 0, -100)", []);
 					}
-				}
+				},
+				e => console.log("DB ERROR", e),
+				(e) => console.log("DB SUCCESS", e)
 			);
 
 			/*=== TABLE 생성 ===*/
@@ -227,7 +229,7 @@ export default class MainScreen extends React.Component {
 		if(this.state.isEditMode)
 		this.deleteNote(nid);
 		else
-		this.props.navigation.navigate(music == '' ? 'EditNote' : 'Formation', {
+		this.props.navigation.navigate('Formation', {
 			nid: nid,
 			getTodayDate: this.getTodayDate,
 			updateMainStateFromDB: this.updateMainStateFromDB });
@@ -281,7 +283,7 @@ export default class MainScreen extends React.Component {
 			<SafeAreaView style={styles.bg}>
 				{/* Tool Bar */}
 				<View style={styles.navigationBar}>
-					<Text numberOfLines={1} style={styles.navigationBar__title}>Choreo Note</Text>
+					<Text numberOfLines={1} style={{...styles.navigationBar__title, paddingLeft: 12}}>Choreo Note</Text>
 					<TouchableOpacity onPress={()=>this.setState({isEditMode: !isEditMode})}>
 						<Text style={styles.navigationBarText}>{isEditMode ? "취소" : "편집"}</Text>
 					</TouchableOpacity>
@@ -318,10 +320,10 @@ export default class MainScreen extends React.Component {
 				{/* Footer (for debug) */}
 				<View style={[styles.navigationBar, {height: 50}]}>
 
-					{/* <TouchableOpacity
+					<TouchableOpacity
 					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.navigationBarText}>설정</Text>
-					</TouchableOpacity> */}
+						<Text style={styles.navigationBarText}>DB</Text>
+					</TouchableOpacity>
 				</View>
 			</SafeAreaView>
 			</View>

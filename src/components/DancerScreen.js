@@ -3,7 +3,7 @@ import {
 	View, Text, TouchableOpacity, FlatList, TextInput, Animated, Switch
 } from 'react-native';
 import getStyleSheet, { COLORS, getDancerColors } from '../values/styles';
-import IconIonicons from 'react-native-vector-icons/Ionicons';
+// import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 const TAG = "DancerScreen/";
 
@@ -170,7 +170,7 @@ export default class DancerScreen extends React.Component {
 										useNativeDriver: false,
 									}
 								).start(() => this.props.setDancerScreen(false))}>
-								<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
+								{/* <IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} /> */}
 							</TouchableOpacity>
 							<Text style={styles.navigationBar__title}>Dancer</Text>
 						</View>

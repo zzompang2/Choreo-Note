@@ -25,7 +25,7 @@ export const COLORS = {
 }
 
 const DANCER_COLORS_DARK = [
-	COLORS.blackMiddle,
+	COLORS.pink,
 	COLORS.orange,
 	COLORS.purple,
 	COLORS.green,
@@ -53,7 +53,7 @@ const basicStyleSheet = StyleSheet.create({
 	navigationBar__title: {
 		fontSize: 20,
 		fontFamily: 'GmarketSansTTFMedium',
-		paddingLeft: 12,
+		// paddingLeft: 12,
 	},
 	navigationBar__button: {
 		fontSize: 16,
@@ -63,7 +63,7 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	navigationBarText: {
 		fontSize: 16,
-		paddingVertical: 17,
+		// paddingVertical: 17,
 		paddingHorizontal: 20,
 		color: COLORS.pink,
 		fontFamily: 'GmarketSansTTFMedium',
@@ -232,32 +232,37 @@ const basicStyleSheet = StyleSheet.create({
 		height: 0.5,
 		width: '100%',
 	},
+	dancerList: {
+		backgroundColor: COLORS.container_20,
+		borderRadius: 4,
+		// position: 'relative'
+	},
 	dancerEntry: {
 		flexDirection: 'row',
-		width: '100%',
-		height: 50,
+		// width: '100%',
 		alignItems: 'center',
-		paddingHorizontal: 10,
+		paddingRight: 4,
 	},
 	dancerEntry__color: {
-		width: 30,
-		height: 30,
-		borderRadius: 20,
+		width: 24,
+		height: 24,
+		borderRadius: 12,
 		alignItems: 'center',
 		justifyContent: 'center',
-		marginHorizontal: 12,
+		margin: 8,
 		shadowColor: COLORS.container_black,
 		shadowOffset: { width: 1, height: 1, },
 		shadowOpacity: 0.4,
 		shadowRadius: 4,
 	},
 	dancerEntry__text: {
-		fontSize: 14,
+		fontSize: 10,
+		color: COLORS.container_white,
 	},
 	dancerEntry__input: {
-		height: 42,
+		fontSize: 14,
+		fontFamily: 'GmarketSansTTFMedium',
 		flex: 1,
-		paddingHorizontal: 10,
 		color: COLORS.container_white,
 	},
 	dancerEntry__btn: {
@@ -339,17 +344,25 @@ const basicStyleSheet = StyleSheet.create({
 	// 	borderRadius: 15,
 	// },
 	editNote__title: {
-		fontSize: 15,
-		// marginTop: 20,
-		// marginBottom: 5,
+		fontFamily: 'GmarketSansTTFMedium',
+		fontSize: 12,
+		marginTop: 24,
+		marginBottom: 12,
+	},
+	editNote__box: {
+		height: 40,
+		borderRadius: 4,
+		borderColor: COLORS.abnormal,
+		backgroundColor: COLORS.container_20,
+		paddingHorizontal: 12,
+		flexDirection: 'row',
+		alignItems: 'center',
 	},
 	editNote__input: {
-		height: 30,
-		fontSize: 20,
-		borderColor: COLORS.container_30,
-		borderBottomWidth: 1,
-		// marginBottom: 25,
-		// paddingHorizontal: 13,
+		fontSize: 14,
+		fontFamily: 'GmarketSansTTFMedium',
+		// backgroundColor: COLORS.green,
+		flex: 1,
 	},
 	editNote__flag: {
 		width: 8,
@@ -360,15 +373,27 @@ const basicStyleSheet = StyleSheet.create({
 		// marginBottom: 5,
 	},
 	editNote__musicList: {
-		borderColor: COLORS.container_30,
-		borderWidth: 1,
+		position: 'absolute',
+		// flex: 1,
+		marginTop: 44,
+		width: '110%',
+		minHeight: 80,
+		maxHeight: 380,
+		backgroundColor: COLORS.container_10,
+		borderRadius: 4,
+		// paddingHorizontal: 12,
+		// elevation: 100,
+		// zIndex: 100,
 	},
 	editNote__musicEntry: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		justifyContent: 'space-between',
-		paddingHorizontal: 10,
-		height: 50,
+		// justifyContent: 'space-between',
+		height: 40,
+		paddingHorizontal: 12,
+	},
+	editNote__musicText: {
+
 	},
 	editNote__text: {
 		fontSize: 14,
@@ -509,6 +534,9 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.itemSeparator,
 		backgroundColor: COLORS.container_30,
 	},
+	dancerList: {
+		...basicStyleSheet.dancerList,
+	},
 	dancerEntry: {
 		...basicStyleSheet.dancerEntry,
 	},
@@ -575,6 +603,9 @@ const darkStyleSheet = StyleSheet.create({
 		...basicStyleSheet.editNote__title,
 		color: COLORS.container_30,
 	},
+	editNote__box: {
+		...basicStyleSheet.editNote__box,
+	},
 	editNote__input: {
 		...basicStyleSheet.editNote__input,
 		color: COLORS.container_white,
@@ -609,7 +640,7 @@ const lightStyleSheet = StyleSheet.create({
 const dbStyleSheet = StyleSheet.create({
 	bg: {
 		...basicStyleSheet.bg,
-		backgroundColor: COLORS.blackMiddle,
+		backgroundColor: COLORS.container_black,
 	},
 	toolbar: {
 		...basicStyleSheet.toolbar,

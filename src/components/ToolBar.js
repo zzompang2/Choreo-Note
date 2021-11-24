@@ -3,7 +3,7 @@ import {
 	View, TouchableOpacity, Text
 } from "react-native";
 import getStyleSheet, { COLORS } from "../values/styles";
-import IconIonicons from 'react-native-vector-icons/Ionicons';
+// import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 
 const TAG = "ToolBar/";
@@ -41,7 +41,7 @@ export default class ToolBar extends React.Component {
 				<TouchableOpacity
 				disabled={false}
 				onPress={pressPlayButton}>
-					<IconIonicons name={isPlay ? "pause" : "play"} style={styles.playerBar__btn} />
+					{/* <IconIonicons name={isPlay ? "pause" : "play"} style={styles.playerBar__btn} /> */}
 				</TouchableOpacity>
 
 				<View style={{flexDirection: 'row', width: 130, margin: 10, justifyContent: 'space-between'}}>

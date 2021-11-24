@@ -13,8 +13,12 @@ import SQLite from "react-native-sqlite-storage";
 import RNFS from 'react-native-fs';
 import Sound from 'react-native-sound';
 
-import getStyleSheet, { COLORS } from '../values/styles';
-import IconIonicons from 'react-native-vector-icons/Ionicons';
+import getStyleSheet, { COLORS, getDancerColors } from '../values/styles';
+import Left from '../assets/icons/Large(32)/Arrow/Left';
+import Add from '../assets/icons/Large(32)/Add';
+import Minus from '../assets/icons/Large(32)/Minus';
+import Down from '../assets/icons/Medium(24)/Down';
+import Up from '../assets/icons/Medium(24)/Up';
 
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const TAG = 'EditNoteScreen/';
@@ -27,56 +31,28 @@ const stageRatioData = [
 ]
 export default class EditNoteScreen extends React.Component {
 	state = {
-		noteInfo: {nid: this.props.nid, title: 'New Note'},
-		dancerNum: 2,
+		noteInfo: {nid: this.props.nid, title: '새로운 노트'},
+		dancers: [{name: '', color: 0}, {name: '', color: 0}],
 		musicList: [],
-		selectedMusicName: '/',
-		playingMusicIdx: -1,
+		selectedMusic: '',
 		isValidTitle: true,
-		isValidDancerNum: true,
 		stageRatioIdx: 0,
+		isMusicPopup: false,
 	}
 
 	musicLoad = () => {
 		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
 			const musicList = [];
-			musicList.push('/');
 			files.forEach(file => {
 				musicList.push(file.name);
-				console.log('name:', file.name);
+				console.log(TAG, 'loaded music name:', file.name);
 			});
 			this.setState({ musicList });
 		});
 	}
 
-	musicPlay = (name, idx) => {
-		const { playingMusicIdx } = this.state;
-		
-		if(this.sound)
-		this.sound.pause();
-
-		if(playingMusicIdx == idx) {
-			this.setState({ playingMusicIdx: -1 });
-		}
-		else {
-			this.setState({ playingMusicIdx: idx });
-
-			this.sound = new Sound(encodeURI(name), Sound.DOCUMENT, (error) => {
-				if (error)
-				console.log('MUSIC LOAD FAIL', error);
-				else {
-					console.log('MUSIC LOAD SUCCESS:', Math.ceil(this.sound.getDuration()));
-					this.sound.play(() => {
-						this.sound.pause();
-						this.setState({ playingMusicIdx: -1 });
-					});
-				}
-			});
-		}
-	}
-
 	selectMusic = (name) => {
-		this.setState({ selectedMusicName: name });
+		this.setState({ selectedMusic: name, isMusicPopup: false });
 	}
 
 	getStageRatio = (idx) => {
@@ -85,90 +61,78 @@ export default class EditNoteScreen extends React.Component {
 	}
 
 	goToFormationScreen = () => {
-		const { noteInfo: { nid, title }, dancerNum, musicList, selectedMusicName, isValidTitle, isValidDancerNum, stageRatioIdx } = this.state;
+		const { noteInfo: { nid, title }, selectedMusic, stageRatioIdx, dancers } = this.state;
 		const { getTodayDate, updateMainStateFromDB } = this.props.route.params;
 
-		Keyboard.dismiss();
+		if(this.sound)
+		this.sound.pause();
 
-		if(!isValidTitle)
-		Alert.alert('Note Title', 'Please enter a title.');
-		else if(!isValidDancerNum)
-		Alert.alert('Dancer Number', 'You should write at least one dancer and up to 30 dancers.');
-		else {
-			if(this.sound)
-			this.sound.pause();
-			// 노래 길이 계산
-			this.sound = new Sound(encodeURI(selectedMusicName), Sound.DOCUMENT, (error) => {
-				// 노래 가져오기 실패
-				if (selectedMusicName != '/' && error) {
-					console.log('MUSIC LOAD FAIL', error);
-					Alert.alert('Music', 'Failed to load music.');
-					return;
-				}
-				// 노래 가져오기 성공
-				else {
-					const musicLength = selectedMusicName == '/' ? 60 : Math.ceil(this.sound.getDuration());
-					const editDate = getTodayDate();
-					const stageRatio = this.getStageRatio(stageRatioIdx);
+		// 노래 길이 계산
+		this.sound = new Sound(encodeURI(selectedMusic), Sound.DOCUMENT, (error) => {
+			// 노래 가져오기 실패
+			if (selectedMusic != '' && error) {
+				console.log('MUSIC LOAD FAIL', error);
+				Alert.alert('노래', '노래를 가져오지 못했습니다.');
+				return;
+			}
+			// 노래 가져오기 성공
+			else {
+				const musicLength = selectedMusic == '' ? 60 : Math.ceil(this.sound.getDuration());
+				const createDate = getTodayDate();
+				const stageRatio = this.getStageRatio(stageRatioIdx);
+				
+				console.log('MUSIC LOAD SUCCESS:', musicLength);
+
+				db.transaction(async txn => {
+					await txn.executeSql(
+						"UPDATE metadata SET nidMax=? WHERE id=0",
+						[nid]
+					);
+					txn.executeSql(
+						"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+						[nid, title, createDate, createDate, stageRatio, selectedMusic, musicLength, 0],
+						txn => {
+							for(let did=0; did<dancers.length; did++) {
+								const posx = dancers.length == 1 ? 0 : did * (600 / (dancers.length-1)) - 300;
+								txn.executeSql(
+									"INSERT INTO dancers VALUES (?, ?, ?, 0)",
+									[nid, did, dancers[did].name]);
+	
+								txn.executeSql(
+									"INSERT INTO positions VALUES (?, 0, ?, ?, 0)",
+									[nid, did, posx]);
 					
-					console.log('MUSIC LOAD SUCCESS:', musicLength);
+								txn.executeSql(
+									"INSERT INTO positions VALUES (?, 5000, ?, ?, -100)",
+									[nid, did, posx]);
+							}
+				
+							txn.executeSql(
+								"INSERT INTO times VALUES (?, 0, 3000)",
+								[nid]);
+	
+							txn.executeSql(
+								"INSERT INTO times VALUES (?, 5000, 5000)",
+								[nid]);
+						}
+					);
 
-					db.transaction(async txn => {
-						await txn.executeSql(
-							"UPDATE metadata SET nidMax=? WHERE id=0",
-							[nid]
-						);
-						txn.executeSql(
-							"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-							[nid, title, editDate, editDate, stageRatio, music, musicLength, 0]
-						);
-						// await txn.executeSql(
-						// 	"UPDATE notes " +
-						// 	"SET title=?, music=?, musicLength=?, editDate=?, stageRatio=? " +
-						// 	"WHERE nid=?",
-						// 	[title, selectedMusicName, musicLength, editDate, stageRatio, nid],
-						// 	txn => {
-						// 		for(let did=0; did<dancerNum; did++) {
-						// 			const name = `Dancer ${did+1}`;
-						// 			const posx = dancerNum == 1 ? 0 : did * (600 / (dancerNum-1)) - 300;
-						// 			txn.executeSql(
-						// 				"INSERT INTO dancers VALUES (?, ?, ?, 0)",
-						// 				[nid, did, name]);
-		
-						// 			txn.executeSql(
-						// 				"INSERT INTO positions VALUES (?, 0, ?, ?, 0)",
-						// 				[nid, did, posx]);
-						
-						// 			txn.executeSql(
-						// 				"INSERT INTO positions VALUES (?, 5000, ?, ?, -100)",
-						// 				[nid, did, posx]);
-						// 		}
-					
-						// 		txn.executeSql(
-						// 			"INSERT INTO times VALUES (?, 0, 3000)",
-						// 			[nid]);
-		
-						// 		txn.executeSql(
-						// 			"INSERT INTO times VALUES (?, 5000, 5000)",
-						// 			[nid]);
-						// 	}
-						// );
-
-						this.props.navigation.navigate('Formation', { 
-							nid: nid,
-							getTodayDate: getTodayDate,
-							updateMainStateFromDB: updateMainStateFromDB,
-						});
-					},
-					e => console.log("DB ERROR", e),
-					(e) => console.log("DB SUCCESS", e));
-				}
-			});
-		}
+					this.props.navigation.navigate('Formation', { 
+						nid: nid,
+						getTodayDate: getTodayDate,
+						updateMainStateFromDB: updateMainStateFromDB,
+					});
+				},
+				e => console.log("DB ERROR", e),
+				(e) => console.log("DB SUCCESS", e));
+			}
+		});
 	}
 
 	changeTitle = (event) => {
 		const title = event.nativeEvent.text.trim();
+		
+		console.log(TAG, "changeTitle", title);
 
 		if(title == '') 
 		this.setState({ isValidTitle: false });
@@ -177,15 +141,6 @@ export default class EditNoteScreen extends React.Component {
 			const noteInfo = {...this.state.noteInfo, title};
 			this.setState({ noteInfo, isValidTitle: true });
 		}
-	}
-
-	changeDancerNum = (event) => {
-		const dancerNum = Number(event.nativeEvent.text);
-		if(isNaN(dancerNum) || dancerNum <= 0 || dancerNum > 30)
-		this.setState({ isValidDancerNum: false });
-
-		else
-		this.setState({ dancerNum, isValidDancerNum: true });
 	}
 
 	listViewItemSeparator = () => 
@@ -210,124 +165,181 @@ export default class EditNoteScreen extends React.Component {
 	}
 
 	render() {
-		const { noteInfo, dancerNum, musicList, selectedMusicName, playingMusicIdx,
-			isValidTitle, isValidDancerNum, stageRatioIdx } = this.state;
+		const { noteInfo, dancers, musicList, selectedMusic,
+			isValidTitle, stageRatioIdx, isMusicPopup } = this.state;
 		const {
 			changeTitle,
-			changeDancerNum,
-			musicPlay,
 			selectMusic,
 			goToFormationScreen,
 			listViewItemSeparator,
 		} = this;
 		const styles = getStyleSheet();
+		const dancerColors = getDancerColors();
 
 		return(
 			<View style={styles.bg}>
 			<SafeAreaView style={styles.bg}>
 			<TouchableOpacity 
 			style={{flex: 1}} 
-			onPress={Keyboard.dismiss}
+			onPress={() => {
+				Keyboard.dismiss();
+				if(isMusicPopup) this.setState({ isMusicPopup: false });
+			}}
 			activeOpacity={1}>
 
 				{/* Tool Bar */}
 				<View style={styles.navigationBar}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
-						<TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-							<IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} />
+						<TouchableOpacity
+						onPress={() => this.props.navigation.goBack()}
+						style={{ width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }}
+						>
+							<Left />
 						</TouchableOpacity>
-						<Text style={styles.navigationBar__title}>Edit Note</Text>
+						<Text style={styles.navigationBar__title}>노트 세부 설정</Text>
 					</View>
 					<TouchableOpacity
-					onPress={() => goToFormationScreen()}>
-						<Text style={styles.navigationBarText}>확인</Text>
+					disabled={!isValidTitle}
+					onPress={() => {
+						Keyboard.dismiss();
+						goToFormationScreen();
+						}}>
+						<Text style={{ ...styles.navigationBarText, color: isValidTitle ? COLORS.pink : COLORS.container_30 }}>확인</Text>
 					</TouchableOpacity>
 				</View>
 
 				{listViewItemSeparator()}
 
 				{noteInfo == undefined ? null :
-				<View style={{flex: 1, paddingHorizontal: 30}}>
+				<View style={{flex: 1, marginHorizontal: 50}}>
 
 					{/* Note 제목 */}
-					<View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 5}}>
-						<Text style={styles.editNote__title}>Title</Text>
-						<View style={[styles.editNote__flag, {backgroundColor: isValidTitle ? COLORS.green : COLORS.red}]} />
-						<Text style={{color: COLORS.red}}>{isValidTitle ? '' : 'No blanks.'}</Text>
-					</View>
+					<Text style={styles.editNote__title}>제목</Text>
+					<View style={{...styles.editNote__box, borderWidth: isValidTitle ? 0 : 2 }}>
 					<TextInput
 					style={styles.editNote__input}
 					maxLength={30}
-					placeholder="Please enter a title."
-					placeholderTextColor={COLORS.container_20}
+					placeholder="제목을 적어주세요."
+					placeholderTextColor={COLORS.container_40}
 					onChange={event => changeTitle(event)}
 					autoCorrect={false}>
 						{noteInfo.title}
 					</TextInput>
-
-					{/* Dancer 인원 수 */}
-					<View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 5}}>
-						<Text style={styles.editNote__title}>How many dancers (up to 30)</Text>
-						<View style={[styles.editNote__flag, {backgroundColor: isValidDancerNum ? COLORS.green : COLORS.red}]} />
-						<Text style={{color: COLORS.red}}>{isValidDancerNum ? '' : 'Only number 1~30'}</Text>
 					</View>
-					<TextInput
-					style={styles.editNote__input}
-					maxLength={4}
-					placeholder={'0'}
-					placeholderTextColor={COLORS.container_20}
-					keyboardType={'number-pad'}
-					onChange={event => changeDancerNum(event)}>{dancerNum}</TextInput>
+
+					{/* Select Music */}
+					<Text style={styles.editNote__title}>노래</Text>
+	
+					<View style={{zIndex: 100, alignItems: 'center'}}>
+						<TouchableOpacity
+						style={{...styles.editNote__box, paddingRight: 8}}
+						onPress={() => this.setState({ isMusicPopup: !isMusicPopup })}
+						>
+							<Text style={styles.editNote__input}>
+								{/* { noteInfo.music == null ? '노래 불러오기...' : noteInfo.music } */}
+								{selectedMusic == '' ? '1분 정적' : selectedMusic}
+							</Text>
+							{ isMusicPopup ? <Up /> : <Down /> }
+						</TouchableOpacity>
+
+						{ isMusicPopup ?
+						<FlatList
+						style={styles.editNote__musicList}
+						data={['', ...musicList]}
+						keyExtractor={(item, idx) => idx.toString()}
+						ItemSeparatorComponent={listViewItemSeparator}
+						showsVerticalScrollIndicator={false}
+						renderItem={({ item, index }) =>
+							<TouchableOpacity
+							key={index}
+							style={styles.editNote__musicEntry}
+							onPress={() => selectMusic(item)}>
+								<Text
+								numberOfLines={2}
+								style={{...styles.editNote__input, color: selectedMusic == item ? COLORS.pink : COLORS.container_30}}>
+									{index == 0 ? '1분 정적(초기값)' : item}
+								</Text>
+							</TouchableOpacity>
+						} />
+						: null }
+					</View>
 
 					{/* Stage 비율 */}
-					<View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 5}}>
-						<Text style={styles.editNote__title}>Stage Ratio</Text>
-					</View>
+					<Text style={styles.editNote__title}>무대 비율</Text>
 
 					<View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
 					{stageRatioData.map((data, idx) =>
 					<TouchableOpacity
+					key={idx}
 					activeOpacity={.8}
 					onPress={() => this.setState({ stageRatioIdx: idx })}
 					style={{
-						width: 50/data.height*data.width, height: 50,
-						borderWidth: 1, borderColor: idx == stageRatioIdx ? COLORS.green : COLORS.container_30,
+						width: 45/data.height*data.width, height: 45,
+						borderRadius: 4, backgroundColor: idx == stageRatioIdx ? COLORS.pink : COLORS.container_20,
 						alignItems: 'center', justifyContent: 'center'
 					}}>
-						<Text style={{color: idx == stageRatioIdx ? COLORS.green : COLORS.container_30, fontSize: 16}}>{data.width}:{data.height}</Text>
+						<Text style={{color: idx == stageRatioIdx ? COLORS.container_white : COLORS.container_40, fontSize: 12}}>{data.width}:{data.height}</Text>
 					</TouchableOpacity>
 					)}
 					</View>
-					
-					{/* Select Music */}
-					<View style={{marginTop: 20, marginBottom: 5}}>
-						<Text style={styles.editNote__title}>Select Music</Text>
+
+					<View style={{flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingRight: 4}}>
+						<Text style={styles.editNote__title}>댄서</Text>
+						<TouchableOpacity
+						onPress={() => {
+							const newDancers = [...dancers, {name: '', color: 0}];
+							this.setState({ dancers: newDancers });
+						}}>
+							<Add />
+						</TouchableOpacity>
 					</View>
 
 					<FlatList
-					style={styles.editNote__musicList}
-					data={musicList}
+					style={{...styles.dancerList, flexGrow: 0}}
+					data={dancers}
 					keyExtractor={(item, idx) => idx.toString()}
 					ItemSeparatorComponent={listViewItemSeparator}
 					showsVerticalScrollIndicator={false}
+					// bounces={false}
 					renderItem={({ item, index }) =>
-					<View style={styles.editNote__musicEntry}>
+					<View key={index} style={styles.dancerEntry}>
 						<TouchableOpacity
-						style={{flex: 1, height: '100%', paddingRight: 10, justifyContent: 'center'}}
-						onPress={() => selectMusic(item)}>
-							<Text numberOfLines={2} style={[styles.dancerEntry__text], {color: selectedMusicName == item ? COLORS.green : COLORS.container_30}}>
-								{item == '/' ? 'no music (60s silence)' : item}
+						style={{...styles.dancerEntry__color, backgroundColor: dancerColors[item.color]}}
+						onPress={() => {
+							const dancer = {...dancers[index]};
+							dancer.color = dancer.color+1 >= dancerColors.length ? 0 : dancer.color+1;
+							const newDancers = [...dancers.slice(0, index), dancer, ...dancers.slice(index+1)];
+
+							this.setState({ dancers: newDancers });
+						}}>
+							<Text style={styles.dancerEntry__text}>
+								{index+1}
 							</Text>
 						</TouchableOpacity>
-						{index == 0 ? null :
+						<TextInput
+						style={styles.dancerEntry__input}
+						maxLength={30}
+						placeholder={`이름없는 댄서`}
+						placeholderTextColor={COLORS.container_40}
+						onChange={event => {
+							const newDancers = [...dancers.slice(0, index), {...dancers[index], name: event.nativeEvent.text.trim()}, ...dancers.slice(index+1)];
+							this.setState({ dancers: newDancers });
+						}}
+						autoCorrect={false}>
+							{item.name}
+						</TextInput>
 						<TouchableOpacity
-						onPress={() => musicPlay(item, index)}>
-							<IconIonicons name={playingMusicIdx == index ? "pause" : "play"} size={20} style={styles.editNote__btn} />
+						onPress={() => {
+							if(dancers.length > 1){
+								const newDancers = [...dancers.slice(0, index), ...dancers.slice(index+1)];
+								this.setState({ dancers: newDancers });
+							}
+						}}>
+							<Minus />
 						</TouchableOpacity>
-						}
 					</View>
 					} />
-				</View>
+					</View>
 				}
 			</TouchableOpacity>
 			</SafeAreaView>
