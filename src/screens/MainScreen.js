@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	SafeAreaView, View, Text, TouchableOpacity, FlatList, LogBox, Alert
 } from 'react-native';
@@ -12,14 +12,13 @@ LogBox.ignoreLogs(['Non-serializable values were found in the navigation state']
 
 const TAG = 'MainScreen/';
 const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
+const styles = getStyleSheet();
 
-export default class MainScreen extends React.Component {
-	state = {
-		notes: [],
-		isEditMode: false,
-	};
+export default function MainScreen(props) {
+	const [ notes, setNotes ] = useState([]);
+	const [ isEditMode, setEditMode ] = useState(false);
 
-	getDatabaseData() {
+	function getDatabaseData() {
 		const notes = [];
 
 		db.transaction(txn => {
@@ -43,14 +42,14 @@ export default class MainScreen extends React.Component {
 							"INSERT INTO metadata VALUES (0, 0)", []);
 
 						const title = 'Welcome to Choreo Note!';
-						const createDate = this.getTodayDate();
+						const createDate = getTodayDate();
 						const stageRatio = 0;
 						const music = '';
 						const musicLength = 60;
 						const displayName = 0;
 
 						notes.push({ nid: 0, title, createDate, editDate: createDate, music });
-						this.setState({ notes });
+						setNotes(notes);
 
 						txn.executeSql(
 							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?, ?)",
@@ -141,7 +140,7 @@ export default class MainScreen extends React.Component {
 					for (let i = 0; i < result.rows.length; i++)
 						notes.push(result.rows.item(i));
 					notes.reverse();
-					this.setState({ notes });
+					setNotes(notes);
 				}
 			);
 		},
@@ -150,7 +149,7 @@ export default class MainScreen extends React.Component {
 	}
 
 	/* Date() 로 받은 값을 YYYY.MM.DD 포멧의 string 으로 변경 */
-	getTodayDate() {
+	function getTodayDate() {
 		const date = new Date();
 		return `${date.getFullYear()}.` +
 					 `${date.getMonth() < 9 ? '0' + (date.getMonth()+1) : date.getMonth()+1}.` +
@@ -159,42 +158,19 @@ export default class MainScreen extends React.Component {
 					 `${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
 	}
 
-	addNote = () => {
-		const { notes, isEditMode } = this.state;
-
-		// if(isEditMode) return;
-		// if(isEditMode) this.setState({ isEditMode: false });
-
-		// const nid = notes.length == 0 ? 0 : notes[notes.length-1].nid + 1;
-		// const title = 'New Note';
-		// const createDate = this.getTodayDate();
-		// const stageRatio = 2;
-		// const music = '';
-		// const musicLength = 60;
-		// const displayName = 0;
-
+	function addNote() {
 		db.transaction(txn => {
 			txn.executeSql(
 				"SELECT * FROM metadata", [],
 				(txn, result) => {
 					const nid = result.rows.item(0).nidMax + 1;
 
-					this.props.navigation.navigate('EditNote', {
+					console.log(TAG, "새로운 NOTE ID = " + nid);
+
+					props.navigation.navigate('EditNote', {
 						nid: nid,
-						getTodayDate: this.getTodayDate,
-						updateMainStateFromDB: this.updateMainStateFromDB });
-
-					// const newNotes = [{ nid, title, createDate, editDate: createDate, music }, ...notes];
-					// this.setState({ notes: newNotes });
-
-					// txn.executeSql(
-					// 	"UPDATE metadata SET nidMax=? WHERE id=0",
-					// 	[nid]
-					// );
-					// txn.executeSql(
-					// 	"INSERT INTO notes VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-					// 	[nid, title, createDate, createDate, stageRatio, music, musicLength, displayName]
-					// );
+						getTodayDate: getTodayDate,
+						updateMainStateFromDB: updateMainStateFromDB });
 				},
 				e => console.log("DB ERROR", e),
 				() => console.log("DB SUCCESS"));
@@ -202,9 +178,7 @@ export default class MainScreen extends React.Component {
 		);
 	}
 
-	updateMainStateFromDB = (nid) => {
-		const { notes } = this.state;
-
+	function updateMainStateFromDB(nid) {
 		db.transaction(txn => {
       txn.executeSql(
 				"SELECT * FROM notes WHERE nid = ?",
@@ -214,7 +188,7 @@ export default class MainScreen extends React.Component {
 					for(let i=0; i<notes.length; i++) {
 						if(notes[i].nid == nid) {
 							const newNotes = [...notes.slice(0, i), noteInfo, ...notes.slice(i+1)];
-							this.setState({ notes: newNotes });
+							setNotes(newNotes);
 						}
 					}
 				}
@@ -224,19 +198,17 @@ export default class MainScreen extends React.Component {
 		() => console.log("DB SUCCESS"));
 	}
 
-
-	onPressHandler = (music, nid) => {
-		if(this.state.isEditMode)
-		this.deleteNote(nid);
+	function onPressHandler(music, nid) {
+		if(isEditMode)
+		deleteNote(nid);
 		else
-		this.props.navigation.navigate('Formation', {
+		props.navigation.navigate('Formation', {
 			nid: nid,
-			getTodayDate: this.getTodayDate,
-			updateMainStateFromDB: this.updateMainStateFromDB });
+			getTodayDate,
+			updateMainStateFromDB });
 	}
 
-	deleteNote = (nid) => {
-		const { notes } = this.state;
+	function deleteNote(nid) {
 		let idx;
 
 		for(let i=0; i<notes.length; i++)
@@ -248,7 +220,7 @@ export default class MainScreen extends React.Component {
 			text: "네, 삭제할게요", style: 'destructive',
 			onPress: () => {
 				const newNotes = [...notes.slice(0, idx), ...notes.slice(idx+1)];
-				this.setState({ notes: newNotes });
+				setNotes(newNotes);
 
 				db.transaction(txn => {
 					txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
@@ -265,68 +237,62 @@ export default class MainScreen extends React.Component {
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
 
-	componentDidMount() {
-		this.getDatabaseData();
-	}
+	useEffect(() => {
+		console.log("useEffect");
+		getDatabaseData();
+	}, [])
 
-	render() {
-		const { notes, isEditMode } = this.state;
-		const { onPressHandler, listViewItemSeparator } = this;
-		const styles = getStyleSheet();
+	console.log(notes);
 
-		console.log(notes);
-
-		return(
-			// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
-			// style of SafeAreaView: 자식들의 flex 적용을 위해 부모도 적용
-			<View style={styles.bg}>
-			<SafeAreaView style={styles.bg}>
-				{/* Tool Bar */}
-				<View style={styles.navigationBar}>
-					<Text numberOfLines={1} style={{...styles.navigationBar__title, paddingLeft: 12}}>Choreo Note</Text>
-					<TouchableOpacity onPress={()=>this.setState({isEditMode: !isEditMode})}>
-						<Text style={styles.navigationBarText}>{isEditMode ? "취소" : "편집"}</Text>
-					</TouchableOpacity>
-				</View>
-
-				{listViewItemSeparator()}
-
-				{/* Note 리스트 */}
-				<FlatList
-				style={styles.noteList}
-				data={[[], ...notes]}
-				keyExtractor={(item, idx) => idx.toString()}
-				// ItemSeparatorComponent={listViewItemSeparator}
-				numColumns={2}
-				renderItem={({ item, index }) =>
-				index  == 0 ?
-				<TouchableOpacity
-				onPress={this.addNote}
-				style={styles.noteEntry}>
-					<View style={{...styles.noteThumbnail, backgroundColor: COLORS.container_20}}>
-						<Add color={COLORS.container_40}/>
-					</View>
+	return(
+		// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
+		// style of SafeAreaView: 자식들의 flex 적용을 위해 부모도 적용
+		<View style={styles.bg}>
+		<SafeAreaView style={styles.bg}>
+			{/* Tool Bar */}
+			<View style={styles.navigationBar}>
+				<Text numberOfLines={1} style={{...styles.navigationBar__title, paddingLeft: 12}}>Choreo Note</Text>
+				<TouchableOpacity onPress={()=>setEditMode(!isEditMode)}>
+					<Text style={styles.navigationBarText}>{isEditMode ? "취소" : "편집"}</Text>
 				</TouchableOpacity>
-				:
-				<NoteItem
-				key={index}
-				item={item}
-				onPressHandler={onPressHandler}
-				isEditMode={isEditMode} />
-				} />
-
-				{listViewItemSeparator()}
-
-				{/* Footer (for debug) */}
-				<View style={[styles.navigationBar, {height: 50}]}>
-
-					<TouchableOpacity
-					onPress={() => this.props.navigation.navigate('Database')}>
-						<Text style={styles.navigationBarText}>DB</Text>
-					</TouchableOpacity>
-				</View>
-			</SafeAreaView>
 			</View>
-		)
-	}
+
+			{listViewItemSeparator()}
+
+			{/* Note 리스트 */}
+			<FlatList
+			style={styles.noteList}
+			data={[[], ...notes]}
+			keyExtractor={(item, idx) => idx.toString()}
+			numColumns={2}
+			renderItem={({ item, index }) =>
+			index  == 0 ?
+			<TouchableOpacity
+			onPress={addNote}
+			style={styles.noteEntry}>
+				<View style={{...styles.noteThumbnail, backgroundColor: COLORS.container_20}}>
+					<Add color={COLORS.container_40}/>
+				</View>
+			</TouchableOpacity>
+			:
+			<NoteItem
+			key={index}
+			item={item}
+			onPressHandler={onPressHandler}
+			isEditMode={isEditMode} />
+			} />
+
+			{listViewItemSeparator()}
+
+			{/* Footer (for debug) */}
+			<View style={[styles.navigationBar, {height: 50}]}>
+
+				<TouchableOpacity
+				onPress={() => props.navigation.navigate('Database')}>
+					<Text style={styles.navigationBarText}>DB</Text>
+				</TouchableOpacity>
+			</View>
+		</SafeAreaView>
+		</View>
+	)
 }
