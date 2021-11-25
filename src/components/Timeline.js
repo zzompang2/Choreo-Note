@@ -7,6 +7,7 @@ import {
 	Animated,
 } from "react-native";
 import { ScrollView, PinchGestureHandler, State } from "react-native-gesture-handler";
+import Add from "../assets/icons/Medium(24)/Add";
 import getStyleSheet, { COLORS } from "../values/styles";
 import FormationBox from './FormationBox';
 import FormationMarker from "./FormationMarker";
@@ -29,26 +30,26 @@ export default function Timeline({
 		this.timebox_mark = [];
 		const boxPerSec = 1000/unitTime;
 
-		this.timebox_mark.push(<View key={-1} style={{height: '100%', width: width/2}} />);
+		this.timebox_mark.push(<View key={-1} style={{width: width/2}} />);
 
 		for(let i=0; i < musicLength * boxPerSec-1; i++) {
 			this.timebox_mark.push(
-				<View key={i} style={{height: '100%', width: unitBoxWidth, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-end'}}>
-					<View style={{width: 1, height: i % boxPerSec == 0 ? 6 : 2, backgroundColor: COLORS.container_white}} />
+				<View key={i} style={{height: 6, width: unitBoxWidth, alignItems: 'flex-start', justifyContent: 'flex-end'}}>
+					<View style={{width: 1, height: i % boxPerSec == 0 ? 6 : 2, borderRadius: 1, backgroundColor: COLORS.container_30}} />
 				</View>
 			)
 		}
-		this.timebox_mark.push(<View key={-2} style={{height: '100%', width: width/2}} />);
+		this.timebox_mark.push(<View key={-2} style={{width: width/2}} />);
 	}
 
 	mySetScrollEnable = (isEnable) => setScrollEnable(isEnable)
 
-	function musicLengthFormat(millisecond) {
-		const second = millisecond / 1000;
-		return `${Math.floor(second / 60)}:` +
-					`${(second % 60 < 10 ? '0' : '') + Math.floor(second % 60)}.` +
-					`${(millisecond % 1000 == 0 ? '00' : '') + millisecond % 1000}`;
-	}
+	// function musicLengthFormat(millisecond) {
+	// 	const second = millisecond / 1000;
+	// 	return `${Math.floor(second / 60)}:` +
+	// 				`${(second % 60 < 10 ? '0' : '') + Math.floor(second % 60)}.` +
+	// 				`${(millisecond % 1000 == 0 ? '00' : '') + millisecond % 1000}`;
+	// }
 
 	// useEffect(() => {
 	// 	createTimeTextViews();
@@ -101,6 +102,7 @@ export default function Timeline({
 				onHandlerStateChange={this._onPinchHandlerStateChange}>
 
 				<ScrollView
+				style={{flex: 1}}
 				horizontal={true}
 				bounces={false} 					// 오버스크롤 막기 (iOS)
 				decelerationRate={0}			// 스크롤 속도 (iOS)
@@ -140,9 +142,6 @@ export default function Timeline({
 			<View
 			pointerEvents='none'	// 터치되지 않도록
 			style={styles.timeMarkerContainer}>
-				<View style={styles.timeMarker}>
-					<Text style={styles.playerBar__time}>{musicLengthFormat(curTime)}</Text>
-				</View>
 				<View style={styles.timeMarkerLine} />
 			</View>
 
@@ -151,7 +150,7 @@ export default function Timeline({
 			onPress={addFormation}
 			style={styles.addFormationBtn}
 			>
-				<Text style={styles.addFormationBtn__text}>+</Text>
+				<Add />
 			</TouchableOpacity>
 			}
 

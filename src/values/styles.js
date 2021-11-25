@@ -13,6 +13,7 @@ export const COLORS = {
 	container_20_80: 'rgba(43, 43, 43, .8)',
 	container_30: '#646464',
   container_40: '#8D8D8D',
+	container_50: '#EDEDED',
 	abnormal: "#EB5757",
 	yellow: '#EF9C1C',
 	yellowLight: '#EF9C1C88',
@@ -132,14 +133,14 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	dancer: {
 		position: 'absolute',
-		width: 25,
-		height: 25,
-		borderRadius: 15,
+		width: 40,
+		height: 40,
+		borderRadius: 20,
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
 	dancer__number: {
-		fontSize: 13,
+		fontSize: 16,
 	},
 	timeline: {
 		width: '100%',
@@ -149,19 +150,24 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	timeboxContainer: {
 		flexDirection: 'row',
-		height: 40,
+		paddingBottom: 2,
 		// width: musicLength*unitBoxWidth,
 		alignItems: 'center',
+		backgroundColor: COLORS.container_10,
 	},
 	formationBox: {
 		height: formationBoxHeight,
-		marginVertical: 10,
-		// borderRadius: 10,
+		marginTop: 6,
+		borderRadius: 8,
 	},
 	formationMarker: {
 		position: 'absolute',
 		height: formationBoxHeight,
-		top: 10,
+		top: 6,
+		borderWidth: 4,
+		borderRadius: 8,
+		// borderBottomLeftRadius: 0,
+		// borderBottomRightRadius: 0,
 	},
 	formationMarker__btn: {
 		position: 'absolute',
@@ -179,35 +185,32 @@ const basicStyleSheet = StyleSheet.create({
 		height: '100%',
 		alignItems: 'center',
 		justifyContent: 'flex-start',
-		paddingVertical: 6,
+		paddingTop: 8,
 		// backgroundColor: 'red'
 	},
-	timeMarker: {
-		width: 80,
-		height: 20,
-		borderRadius: 10,
-		borderWidth: 1,
-		borderColor: COLORS.container_white,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
+	// timeMarker: {
+	// 	width: 80,
+	// 	height: 20,
+	// 	borderRadius: 10,
+	// 	borderWidth: 1,
+	// 	borderColor: COLORS.container_white,
+	// 	alignItems: 'center',
+	// 	justifyContent: 'center',
+	// },
 	timeMarkerLine: {
-		width: 1,
+		width: 2,
 		height: '100%',
-		backgroundColor: COLORS.container_white,
+		backgroundColor: COLORS.yellow,
 	},
 	addFormationBtn: {
 		position: 'absolute',
-		top: 60,
-		width: 40,
-		height: 40,
+		top: 28,
+		width: 32,
+		height: 32,
 		alignItems: 'center',
 		justifyContent: 'center',
-		borderRadius: 20,
-		borderWidth: 1,
-		borderColor: COLORS.container_white,
-		backgroundColor: COLORS.container_black,
-		color: COLORS.container_white,
+		borderRadius: 8,
+		backgroundColor: COLORS.yellow,
 		zIndex: 10,
 	},
 	addFormationBtn__text: {
@@ -215,19 +218,16 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	toolBar: {
 		width: '100%',
-		height: 60,
 		alignItems: 'center',
 		justifyContent: 'space-between',
 		flexDirection: 'row',
+		backgroundColor: COLORS.container_black,
 	},
 	toolBar__tool: {
-		width: 40,
-		height: 40,
-		backgroundColor: COLORS.container_20,
-		borderRadius: 5,
+		flex: 1,
+		// backgroundColor: COLORS.container_20,
 		alignItems: 'center',
-		justifyContent: 'center',
-		// margin: 10,
+		paddingVertical: 8,
 	},
 	itemSeparator: {
 		height: 0.5,
@@ -326,15 +326,14 @@ const basicStyleSheet = StyleSheet.create({
 		fontSize: 20
 	},
 	playerBar__track: {
-		width: width,
-		height: 8,
+		// width: width,
+		height: 6,
 		alignItems: 'center',
 		flexDirection: 'row',
 		// backgroundColor: COLORS.yellow,
 	},
 	playerBar__trackLeft: {
 		height: '100%',
-		// width: 50,
 	},
 	// playerBar__thumb: {
 	// 	position: 'absolute',
@@ -401,7 +400,7 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	editNote__btn: {
 		padding: 5,
-	}
+	},
 });
 
 const darkStyleSheet = StyleSheet.create({
@@ -455,11 +454,11 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	stageAxisVertical: {
 		...basicStyleSheet.stageAxisVertical,
-		backgroundColor: COLORS.container_40,
+		backgroundColor: COLORS.container_50,
 	},
 	stageAxisHorizontal: {
 		...basicStyleSheet.stageAxisHorizontal,
-		backgroundColor: COLORS.container_40,
+		backgroundColor: COLORS.container_50,
 	},
 	dancer: {
 		...basicStyleSheet.dancer,
@@ -497,7 +496,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	formationBox: {
 		...basicStyleSheet.formationBox,
-		backgroundColor: COLORS.container_white,
+		backgroundColor: COLORS.pink,
 	},
 	formationBoxSelected: {
 		...basicStyleSheet.formationBox,
@@ -506,30 +505,24 @@ const darkStyleSheet = StyleSheet.create({
 	formationMarker: {
 		...basicStyleSheet.formationMarker,
 		borderColor: COLORS.container_white,
-		backgroundColor: COLORS.yellow,
+		backgroundColor: COLORS.pink,
 	},
 	formationMarker__leftbtn: {
 		...basicStyleSheet.formationMarker__btn,
 		borderTopRightRadius: 0,
-		backgroundColor: COLORS.yellow,
+		backgroundColor: COLORS.container_white,
 	},
 	formationMarker__rightbtn: {
 		...basicStyleSheet.formationMarker__btn,
 		borderTopLeftRadius: 0,
-		backgroundColor: COLORS.yellow,
+		backgroundColor: COLORS.container_white,
 	},
 	toolBar: {
 		...basicStyleSheet.toolBar,
-		backgroundColor: COLORS.container_10,
+		// backgroundColor: COLORS.container_10,
 	},
 	toolBar__tool: {
 		...basicStyleSheet.toolBar__tool,
-	},
-	toolBar__toolDisabled: {
-		...basicStyleSheet.toolBar__tool,
-		borderWidth: 1,
-		borderColor: COLORS.container_30,
-		backgroundColor: '#fff0'
 	},
 	itemSeparator: {
 		...basicStyleSheet.itemSeparator,
@@ -586,11 +579,11 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	playerBar__track: {
 		...basicStyleSheet.playerBar__track,
-		backgroundColor: COLORS.container_black,
+		backgroundColor: COLORS.container_20,
 	},
 	playerBar__trackLeft: {
 		...basicStyleSheet.playerBar__trackLeft,
-		backgroundColor: COLORS.container_white,
+		backgroundColor: COLORS.pink,
 	},
 	// playerBar__trackBgRight: {
 	// 	...basicStyleSheet.playerBar__trackBg,

@@ -23,22 +23,22 @@ export default function ToolBarForFormation({
 	selectedPosTime,
 }) {
 	useConstructor(() => {
-		this.toolBarBottom = new Animated.Value(-60);
+		this.toolBarHeight = new Animated.Value(0);
 	})
 	
 	useEffect(() => {
 		if(selectedPosTime == undefined)
 		Animated.timing(
-			this.toolBarBottom, {
-				toValue: -60,
+			this.toolBarHeight, {
+				toValue: 0,
 				duration: 200,
 				useNativeDriver: false,
 			}
 		).start();
 		else
 		Animated.timing(
-			this.toolBarBottom, {
-				toValue: 0,
+			this.toolBarHeight, {
+				toValue: 40,
 				duration: 300,
 				useNativeDriver: false,
 			}
@@ -46,40 +46,42 @@ export default function ToolBarForFormation({
 	}, [selectedPosTime]);
 	
 	return (
-		<Animated.View style={[
-			styles.toolBar,
-			{
-				position: 'absolute',
-				bottom: this.toolBarBottom,
-				justifyContent: 'space-around',
-				borderTopWidth: 5, borderLeftWidth: 5, borderEndWidth: 5,
-				borderTopEndRadius: 20, borderTopLeftRadius: 20,
-				borderColor: COLORS.yellow,
-				zIndex: 10,
-			}
-		]}>
+		<Animated.View style={{
+			flexDirection: 'row',
+				height: this.toolBarHeight,
+				// position: 'absolute',
+				// bottom: this.toolBarHeight,
+				alignItems: 'flex-start',
+				justifyContent: 'center',
+				// zIndex: 10,
+			}}>
 			<View />
-			{/* Formation 삭제 */}
-			<TouchableOpacity
-			onPress={deleteFormation}
-			style={[styles.toolBar__toolDisabled, {width: 70}]}>
-				<Text style={{color: COLORS.container_white}}>delete</Text>
-			</TouchableOpacity>
 
 			{/* Formation 복사 */}
 			<TouchableOpacity
 			onPress={copyFormation}
-			style={[styles.toolBar__toolDisabled, {width: 70}]}>
-				<Text style={{color: COLORS.container_white}}>copy</Text>
+			style={{height: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center'}}>
+				<Text style={{color: COLORS.container_30, fontSize: 14,
+			fontFamily: 'GmarketSansTTFMedium'}}>복사하기</Text>
 			</TouchableOpacity>
 
 			{/* Formation 붙여넣기 */}
 			<TouchableOpacity
 			disabled={copiedFormationData == undefined}
 			onPress={pasteFormation}
-			style={[styles.toolBar__toolDisabled, {width: 70}]}>
-				<Text style={{color: copiedFormationData != undefined ? COLORS.container_white : COLORS.container_40}}>paste</Text>
+			style={{height: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center'}}>
+				<Text style={{color: copiedFormationData != undefined ? COLORS.container_30 : COLORS.container_20, fontSize: 14,
+			fontFamily: 'GmarketSansTTFMedium'}}>붙여넣기</Text>
 			</TouchableOpacity>
+
+			{/* Formation 삭제 */}
+			<TouchableOpacity
+			onPress={deleteFormation}
+			style={{height: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center'}}>
+				<Text style={{color: COLORS.container_30, fontSize: 14,
+			fontFamily: 'GmarketSansTTFMedium'}}>삭제</Text>
+			</TouchableOpacity>
+
 			<View />
 		</Animated.View>
 	)

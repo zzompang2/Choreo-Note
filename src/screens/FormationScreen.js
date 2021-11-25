@@ -12,7 +12,6 @@ import Timeline from '../components/Timeline';
 import ToolBar from '../components/ToolBar';
 import PlayerBar from '../components/PlayerBar';
 import DancerScreen from '../components/DancerScreen';
-import ToolBarForFormation from '../components/ToolBarForFormation';
 import Left from '../assets/icons/Large(32)/Arrow/Left';
 
 const { width } = Dimensions.get('window');
@@ -942,8 +941,9 @@ export default function FormationScreen(props) {
 			{/* Tool Bar */}
 			<View style={styles.navigationBar}>
 				<View style={{flexDirection: 'row', alignItems: 'center'}}>
-					<TouchableOpacity onPress={() => props.navigation.navigate('Main')}>
-						{/* <IconIonicons name="chevron-back" size={20} style={styles.navigationBar__button} /> */}
+					<TouchableOpacity
+					style={{ width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }}
+					onPress={() => props.navigation.navigate('Main')}>
 						<Left />
 					</TouchableOpacity>
 					<TextInput
@@ -985,7 +985,8 @@ export default function FormationScreen(props) {
 				<PlayerBar
 				curTime={curTime}
 				musicLength={states.noteInfo.musicLength}
-				unitBoxWidth={unitBoxWidth} />
+				pressPlayButton={pressPlayButton}
+				isPlay={isPlay} />
 
 				{/* Timeline */}
 				<Timeline
@@ -1018,14 +1019,13 @@ export default function FormationScreen(props) {
 				displayName={states.noteInfo.displayName}
 				rotateStage={rotateStage}
 				isRotate={isStageRotate}
-				/>	
-				
-				<ToolBarForFormation
+
 				selectedPosTime={selectedPosTime}
 				deleteFormation={deleteFormation}
 				copyFormation={copyFormation}
 				pasteFormation={pasteFormation}
-				copiedFormationData={copiedFormationData} />
+				copiedFormationData={copiedFormationData} 
+				/>
 
 			</View>
 			}

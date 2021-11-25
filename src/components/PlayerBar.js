@@ -1,8 +1,10 @@
 import React, { useRef } from "react";
 import { 
-	Dimensions, View, Animated
+	Dimensions, View, Animated, Text, TouchableOpacity
 } from "react-native";
-import getStyleSheet from "../values/styles";
+import Pause from "../assets/icons/Large(32)/Pause";
+import Play from "../assets/icons/Large(32)/Play";
+import getStyleSheet, { COLORS } from "../values/styles";
 
 const TAG = "PlayerBar/";
 const { width } = Dimensions.get('window');
@@ -16,7 +18,7 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 }
 
-export default function PlayerBar({ curTime, musicLength }) {
+export default function PlayerBar({ curTime, musicLength, pressPlayButton, isPlay }) {
 	useConstructor(() => {
 		this.musicTimeString = musicLengthFormat(musicLength);
 		this.thumbLeft = new Animated.Value(0);
@@ -26,12 +28,30 @@ export default function PlayerBar({ curTime, musicLength }) {
 		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + Math.floor(time % 60)}`;
 	}
 
+	function curTimeFormat(millisecond) {
+		const second = millisecond / 1000;
+		return `${Math.floor(second / 60)}:` +
+					`${(second % 60 < 10 ? '0' : '') + Math.floor(second % 60)}.` +
+					`${(millisecond % 1000 == 0 ? '00' : '') + millisecond % 1000}`;
+	}
+
 	const trackLeftStyle = { width: Animated.add(width * curTime / (musicLength*1000), this.thumbLeft) };
 	this.thumbLeft.setValue(0);
 
 	return (
-		<View style={styles.playerBar__track}>
-			<Animated.View style={[styles.playerBar__trackLeft, trackLeftStyle]} />
+		<View style={{flexDirection: 'column', height: 50, backgroundColor: COLORS.container_10}}>
+			<View style={styles.playerBar__track}>
+				<Animated.View style={[styles.playerBar__trackLeft, trackLeftStyle]} />
+			</View>
+			<View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12}}>
+				<Text style={{color: COLORS.container_white, flex: 1}}>{curTimeFormat(curTime)}</Text>
+				<TouchableOpacity
+				disabled={false}
+				onPress={pressPlayButton}>
+					{ isPlay ? <Pause /> : <Play /> }
+				</TouchableOpacity>
+				<Text style={{color: COLORS.container_40, flex: 1, textAlign: 'right'}}>{this.musicTimeString}</Text>
+			</View>
 		</View>
 	)
 }
