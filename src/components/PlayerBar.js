@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { 
 	Dimensions, View, Animated
 } from "react-native";
@@ -6,34 +6,32 @@ import getStyleSheet from "../values/styles";
 
 const TAG = "PlayerBar/";
 const { width } = Dimensions.get('window');
+const styles = getStyleSheet();
 
-export default class PlayerBar extends React.Component {
-	constructor(props) {
-		super(props);
+const useConstructor = (callBack = () => {}) => {
+  const hasBeenCalled = useRef(false);
+	console.log(TAG, 'myConstructor:', hasBeenCalled.current);
+  if (hasBeenCalled.current) return;
+  callBack();
+  hasBeenCalled.current = true;
+}
 
-		const { musicLength } = props;
-
-		this.musicTimeString = this.musicLengthFormat(musicLength);
-
+export default function PlayerBar({ curTime, musicLength }) {
+	useConstructor(() => {
+		this.musicTimeString = musicLengthFormat(musicLength);
 		this.thumbLeft = new Animated.Value(0);
-	}
+	});
 
-	musicLengthFormat(time) {
+	function musicLengthFormat(time) {
 		return `${Math.floor(time / 60)}:${(time % 60 < 10 ? '0' : '') + Math.floor(time % 60)}`;
 	}
 
-  render() {
-		const { curTime, musicLength } = this.props;
-		const styles = getStyleSheet();
-		
-		const trackLeftStyle = { width: Animated.add(width * curTime / (musicLength*1000), this.thumbLeft) };
-		this.thumbLeft.setValue(0);
+	const trackLeftStyle = { width: Animated.add(width * curTime / (musicLength*1000), this.thumbLeft) };
+	this.thumbLeft.setValue(0);
 
-		return (
-			<View style={styles.playerBar__track}>
-				<Animated.View style={[styles.playerBar__trackLeft, trackLeftStyle]} />
-			</View>
-
-    )
-  }
+	return (
+		<View style={styles.playerBar__track}>
+			<Animated.View style={[styles.playerBar__trackLeft, trackLeftStyle]} />
+		</View>
+	)
 }

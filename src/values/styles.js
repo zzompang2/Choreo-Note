@@ -198,16 +198,17 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	addFormationBtn: {
 		position: 'absolute',
-		top: 70,
-		width: 20,
-		height: 20,
+		top: 60,
+		width: 40,
+		height: 40,
 		alignItems: 'center',
 		justifyContent: 'center',
-		borderRadius: 15,
+		borderRadius: 20,
 		borderWidth: 1,
 		borderColor: COLORS.container_white,
-		backgroundColor: COLORS.blackMiddle,
+		backgroundColor: COLORS.container_black,
 		color: COLORS.container_white,
+		zIndex: 10,
 	},
 	addFormationBtn__text: {
 		fontSize: 15,
@@ -222,7 +223,7 @@ const basicStyleSheet = StyleSheet.create({
 	toolBar__tool: {
 		width: 40,
 		height: 40,
-		backgroundColor: COLORS.blackMiddle,
+		backgroundColor: COLORS.container_20,
 		borderRadius: 5,
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -276,7 +277,7 @@ const basicStyleSheet = StyleSheet.create({
 		width: 10,
 		height: 10,
 		borderRadius: 5,
-		backgroundColor: COLORS.blackMiddle,
+		backgroundColor: COLORS.container_20,
 	},
 	dancerAddBtnContainer: {
 		position: 'absolute',
@@ -410,7 +411,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	navigationBar: {
 		...basicStyleSheet.navigationBar,
-		// backgroundColor: COLORS.blackMiddle,
+		// backgroundColor: COLORS.container_20,
 	},
 	navigationBar__title: {
 		...basicStyleSheet.navigationBar__title,
@@ -519,7 +520,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	toolBar: {
 		...basicStyleSheet.toolBar,
-		backgroundColor: COLORS.blackLight,
+		backgroundColor: COLORS.container_10,
 	},
 	toolBar__tool: {
 		...basicStyleSheet.toolBar__tool,
@@ -527,7 +528,7 @@ const darkStyleSheet = StyleSheet.create({
 	toolBar__toolDisabled: {
 		...basicStyleSheet.toolBar__tool,
 		borderWidth: 1,
-		borderColor: COLORS.blackMiddle,
+		borderColor: COLORS.container_30,
 		backgroundColor: '#fff0'
 	},
 	itemSeparator: {
@@ -558,7 +559,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	dancerAddBtnContainer: {
 		...basicStyleSheet.dancerAddBtnContainer,
-		backgroundColor: COLORS.blackMiddle
+		backgroundColor: COLORS.container_20
 	},
 	dancerControlBtn: {
 		...basicStyleSheet.dancerControlBtn,
@@ -644,7 +645,7 @@ const dbStyleSheet = StyleSheet.create({
 	},
 	toolbar: {
 		...basicStyleSheet.toolbar,
-		backgroundColor: COLORS.blackLight,
+		backgroundColor: COLORS.container_40,
 	},
 	toolbarTitle: {
 		...basicStyleSheet.toolbarTitle,

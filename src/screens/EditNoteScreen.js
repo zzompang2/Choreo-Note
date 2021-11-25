@@ -64,7 +64,6 @@ export default function EditNoteScreen(props) {
 
 	goToFormationScreen = () => {
 		const { getTodayDate, updateMainStateFromDB } = props.route.params;
-
 		// 노래 길이 계산
 		this.sound = new Sound(encodeURI(selectedMusic), Sound.DOCUMENT, (error) => {
 			// 노래 가져오기 실패
