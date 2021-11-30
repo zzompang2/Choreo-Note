@@ -14,6 +14,7 @@ export default function FormationBox({
 	return (
 		<View style={{position: 'absolute', left: width/2 + unitBoxWidth*(time/unitTime), width: unitBoxWidth*(duration/unitTime)}}>
 			<TouchableOpacity
+			activeOpacity={1}
 			// disabled={isSelected}
 			onPress={() => selectFormationBox(time)}
 			style={isSelected ? styles.formationBoxSelected : styles.formationBox} />

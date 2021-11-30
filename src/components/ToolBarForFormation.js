@@ -59,6 +59,7 @@ export default function ToolBarForFormation({
 
 			{/* Formation 복사 */}
 			<TouchableOpacity
+			activeOpacity={.8}
 			onPress={copyFormation}
 			style={{height: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center'}}>
 				<Text style={{color: COLORS.container_30, fontSize: 14,
@@ -67,6 +68,7 @@ export default function ToolBarForFormation({
 
 			{/* Formation 붙여넣기 */}
 			<TouchableOpacity
+			activeOpacity={.8}
 			disabled={copiedFormationData == undefined}
 			onPress={pasteFormation}
 			style={{height: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center'}}>
@@ -76,6 +78,7 @@ export default function ToolBarForFormation({
 
 			{/* Formation 삭제 */}
 			<TouchableOpacity
+			activeOpacity={.8}
 			onPress={deleteFormation}
 			style={{height: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center'}}>
 				<Text style={{color: COLORS.container_30, fontSize: 14,

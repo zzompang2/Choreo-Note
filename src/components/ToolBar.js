@@ -29,6 +29,8 @@ export default function ToolBar({
 	copyFormation,
 	pasteFormation,
 	copiedFormationData,
+	coordinateOn,
+	setCoordinateOn,
 }) {
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
@@ -47,11 +49,13 @@ export default function ToolBar({
 
 				{/* 격자 보기 */}
 				<TouchableOpacity
+				activeOpacity={1}
 				disabled={isPlay}
+				onPress={setCoordinateOn}
 				style={styles.toolBar__tool}>
-					<Coordinate color={!isPlay ? COLORS.container_30 : COLORS.container_20} />
+					<Coordinate color={!isPlay ? coordinateOn ? COLORS.container_white : COLORS.container_30 : COLORS.container_20} />
 					<Text style={{
-					color: !isPlay ? COLORS.container_30 : COLORS.container_20,
+					color: !isPlay ? coordinateOn ? COLORS.container_white : COLORS.container_30 : COLORS.container_20,
 					fontSize: 12,
 					fontFamily: 'GmarketSansTTFMedium',
 					marginTop: 8}}>격자 보기</Text>
@@ -59,6 +63,7 @@ export default function ToolBar({
 
 				{/* 좌표축에 맞추기 */}
 				<TouchableOpacity
+				activeOpacity={1}
 				disabled={isPlay}
 				onPress={setAlignWithCoordinate}
 				style={styles.toolBar__tool}>
@@ -79,6 +84,7 @@ export default function ToolBar({
 
 				{/* 무대 회전 */}
 				<TouchableOpacity
+				activeOpacity={1}
 				onPress={rotateStage}
 				style={styles.toolBar__tool}>
 					<Rotate color={!isPlay ? isRotate ? COLORS.container_50 : COLORS.container_30 : COLORS.container_20} />
@@ -91,6 +97,7 @@ export default function ToolBar({
 				
 				{/* Dancer 수정 */}
 				<TouchableOpacity
+				activeOpacity={.8}
 				disabled={isPlay}
 				onPress={setDancerScreen}
 				style={styles.toolBar__tool}>
@@ -103,15 +110,16 @@ export default function ToolBar({
 				</TouchableOpacity>
 
 				{/* 설정 */}
-				<TouchableOpacity
-					style={styles.toolBar__tool}>
-						<Setting color={!isPlay ? COLORS.container_30 : COLORS.container_20} />
-						<Text style={{
-						color: !isPlay ? COLORS.container_30 : COLORS.container_20,
-						fontSize: 12,
-						fontFamily: 'GmarketSansTTFMedium',
-						marginTop: 8}}>설정</Text>
-					</TouchableOpacity>
+				{/* <TouchableOpacity
+				activeOpacity={.8}
+				style={styles.toolBar__tool}>
+					<Setting color={!isPlay ? COLORS.container_30 : COLORS.container_20} />
+					<Text style={{
+					color: !isPlay ? COLORS.container_30 : COLORS.container_20,
+					fontSize: 12,
+					fontFamily: 'GmarketSansTTFMedium',
+					marginTop: 8}}>설정</Text>
+				</TouchableOpacity> */}
 			</View>
 		</View>
 	)

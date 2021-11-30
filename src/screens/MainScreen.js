@@ -23,16 +23,16 @@ export default function MainScreen(props) {
 
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
-			txn.executeSql('DROP TABLE IF EXISTS metadata');
-			txn.executeSql('DROP TABLE IF EXISTS notes');
-			txn.executeSql('DROP TABLE IF EXISTS dancers');
-			txn.executeSql('DROP TABLE IF EXISTS times');
-			txn.executeSql('DROP TABLE IF EXISTS positions');
+			// txn.executeSql('DROP TABLE IF EXISTS metadata');
+			// txn.executeSql('DROP TABLE IF EXISTS notes');
+			// txn.executeSql('DROP TABLE IF EXISTS dancers');
+			// txn.executeSql('DROP TABLE IF EXISTS times');
+			// txn.executeSql('DROP TABLE IF EXISTS positions');
 
 			// 노트 개수가 0개이면 디폴트 노트 생성
 			txn.executeSql(
 				'SELECT COUNT(*) FROM sqlite_master WHERE name = ?',
-				["notes"],
+				["metadata"],
 				(txn, result) => {
 					// DB 에 notes 테이블이 없는 경우 (앱 최초 실행),
 					// default note 를 생성
@@ -41,7 +41,7 @@ export default function MainScreen(props) {
 						txn.executeSql(
 							"INSERT INTO metadata VALUES (0, 0)", []);
 
-						const title = 'Welcome to Choreo Note!';
+						const title = '코레오 노트에 오신 걸 환영해요!';
 						const createDate = getTodayDate();
 						const stageRatio = 1;
 						const music = '';
@@ -132,17 +132,17 @@ export default function MainScreen(props) {
 			);
 
 			// DB 에서 note 정보 가져오기
-			txn.executeSql(
-				"SELECT * FROM notes",
-				[],
-        (txn, result) => {
-					// note 정보 가져오기
-					for (let i = 0; i < result.rows.length; i++)
-						notes.push(result.rows.item(i));
-					notes.reverse();
-					setNotes(notes);
-				}
-			);
+			// txn.executeSql(
+			// 	"SELECT * FROM notes",
+			// 	[],
+      //   (txn, result) => {
+			// 		// note 정보 가져오기
+			// 		for (let i = 0; i < result.rows.length; i++)
+			// 			notes.push(result.rows.item(i));
+			// 		notes.reverse();
+			// 		setNotes(notes);
+			// 	}
+			// );
 		},
 		e => console.log("DB ERROR", e),
 		() => console.log("DB SUCCESS"));
@@ -242,7 +242,23 @@ export default function MainScreen(props) {
 		getDatabaseData();
 	}, [])
 
-	console.log(notes);
+	useEffect(() => {
+		// DB 에서 note 정보 가져오기
+		const newNote = [];
+		db.transaction(txn => {
+			txn.executeSql(
+				"SELECT * FROM notes",
+				[],
+				(txn, result) => {
+					// note 정보 가져오기
+					for (let i = 0; i < result.rows.length; i++)
+					newNote.push(result.rows.item(i));
+					newNote.reverse();
+					setNotes(newNote);
+				}
+			);
+		});
+	});
 
 	return(
 		// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
@@ -252,7 +268,9 @@ export default function MainScreen(props) {
 			{/* Tool Bar */}
 			<View style={styles.navigationBar}>
 				<Text numberOfLines={1} style={{...styles.navigationBar__title, paddingLeft: 12}}>Choreo Note</Text>
-				<TouchableOpacity onPress={()=>setEditMode(!isEditMode)}>
+				<TouchableOpacity 
+				activeOpacity={.8}
+				onPress={()=>setEditMode(!isEditMode)}>
 					<Text style={styles.navigationBarText}>{isEditMode ? "취소" : "편집"}</Text>
 				</TouchableOpacity>
 			</View>
@@ -265,9 +283,11 @@ export default function MainScreen(props) {
 			data={[[], ...notes]}
 			keyExtractor={(item, idx) => idx.toString()}
 			numColumns={2}
+			showsVerticalScrollIndicator={false}
 			renderItem={({ item, index }) =>
 			index  == 0 ?
 			<TouchableOpacity
+			activeOpacity={.8}
 			onPress={addNote}
 			style={styles.noteEntry}>
 				<View style={{...styles.noteThumbnail, backgroundColor: COLORS.container_20}}>
@@ -285,13 +305,14 @@ export default function MainScreen(props) {
 			{listViewItemSeparator()}
 
 			{/* Footer (for debug) */}
-			<View style={[styles.navigationBar, {height: 50}]}>
+			{/* <View style={[styles.navigationBar, {height: 50}]}>
 
 				<TouchableOpacity
+				activeOpacity={.8}
 				onPress={() => props.navigation.navigate('Database')}>
 					<Text style={styles.navigationBarText}>DB</Text>
 				</TouchableOpacity>
-			</View>
+			</View> */}
 		</SafeAreaView>
 		</View>
 	)

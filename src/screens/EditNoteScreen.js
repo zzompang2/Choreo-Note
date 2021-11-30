@@ -65,10 +65,9 @@ export default function EditNoteScreen(props) {
 	goToFormationScreen = () => {
 		const { getTodayDate, updateMainStateFromDB } = props.route.params;
 		// 노래 길이 계산
-		this.sound = new Sound(encodeURI(selectedMusic), Sound.DOCUMENT, (error) => {
+		this.sound = new Sound(selectedMusic, Sound.DOCUMENT, (error) => {
 			// 노래 가져오기 실패
 			if (selectedMusic != '' && error) {
-				console.log('MUSIC LOAD FAIL', error);
 				Alert.alert('노래', '노래를 가져오지 못했습니다.');
 				return;
 			}
@@ -162,6 +161,7 @@ export default function EditNoteScreen(props) {
 			<View style={styles.navigationBar}>
 				<View style={{flexDirection: 'row', alignItems: 'center'}}>
 					<TouchableOpacity
+					activeOpacity={.8}
 					onPress={() => props.navigation.goBack()}
 					style={{ width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }}
 					>
@@ -170,12 +170,13 @@ export default function EditNoteScreen(props) {
 					<Text style={styles.navigationBar__title}>노트 세부 설정</Text>
 				</View>
 				<TouchableOpacity
+				activeOpacity={.8}
 				disabled={!isValidTitle}
 				onPress={() => {
 					Keyboard.dismiss();
 					goToFormationScreen();
 					}}>
-					<Text style={{ ...styles.navigationBarText, color: isValidTitle ? COLORS.pink : COLORS.container_30 }}>확인</Text>
+					<Text style={{ ...styles.navigationBarText, color: isValidTitle ? COLORS.key : COLORS.container_30 }}>확인</Text>
 				</TouchableOpacity>
 			</View>
 
@@ -202,6 +203,7 @@ export default function EditNoteScreen(props) {
 
 				<View style={{zIndex: 100, alignItems: 'center'}}>
 					<TouchableOpacity
+					activeOpacity={.8}
 					style={{...styles.editNote__box, paddingRight: 8}}
 					onPress={() => setMusicPopup(!isMusicPopup)}
 					>
@@ -220,12 +222,13 @@ export default function EditNoteScreen(props) {
 					showsVerticalScrollIndicator={false}
 					renderItem={({ item, index }) =>
 						<TouchableOpacity
+						activeOpacity={.8}
 						key={index}
 						style={styles.editNote__musicEntry}
 						onPress={() => selectMusic(item)}>
 							<Text
 							numberOfLines={2}
-							style={{...styles.editNote__input, color: selectedMusic == item ? COLORS.pink : COLORS.container_30}}>
+							style={{...styles.editNote__input, color: selectedMusic == item ? COLORS.key : COLORS.container_30}}>
 								{index == 0 ? '1분 정적(초기값)' : item}
 							</Text>
 						</TouchableOpacity>
@@ -244,10 +247,10 @@ export default function EditNoteScreen(props) {
 				onPress={() => setStageRatioIdx(idx)}
 				style={{
 					width: 45/data.height*data.width, height: 45,
-					borderRadius: 4, backgroundColor: idx == stageRatioIdx ? COLORS.pink : COLORS.container_20,
+					borderRadius: 4, backgroundColor: idx == stageRatioIdx ? COLORS.key : COLORS.container_20,
 					alignItems: 'center', justifyContent: 'center'
 				}}>
-					<Text style={{color: idx == stageRatioIdx ? COLORS.container_white : COLORS.container_40, fontSize: 12}}>{data.width}:{data.height}</Text>
+					<Text style={{color: idx == stageRatioIdx ? COLORS.container_black : COLORS.container_40, fontSize: 12}}>{data.width}:{data.height}</Text>
 				</TouchableOpacity>
 				)}
 				</View>
@@ -255,6 +258,7 @@ export default function EditNoteScreen(props) {
 				<View style={{flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingRight: 4}}>
 					<Text style={styles.editNote__title}>댄서</Text>
 					<TouchableOpacity
+					activeOpacity={.8}
 					style={{width: 32, height: 32, alignItems: 'center', justifyContent: 'center'}}
 					onPress={() => {
 						const newDancers = [...dancers, {name: '', color: 0}];
@@ -274,6 +278,7 @@ export default function EditNoteScreen(props) {
 				renderItem={({ item, index }) =>
 				<View key={index} style={styles.dancerEntry}>
 					<TouchableOpacity
+					activeOpacity={1}
 					style={{...styles.dancerEntry__color, backgroundColor: dancerColors[item.color]}}
 					onPress={() => {
 						const dancer = {...dancers[index]};
@@ -299,6 +304,7 @@ export default function EditNoteScreen(props) {
 						{item.name}
 					</TextInput>
 					<TouchableOpacity
+					activeOpacity={.8}
 					style={{width: 32, height: 32, alignItems: 'center', justifyContent: 'center'}}
 					onPress={() => {
 						if(dancers.length > 1){

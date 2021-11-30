@@ -31,9 +31,14 @@ export default function PlayerBar({ curTime, musicLength, pressPlayButton, isPla
 
 	function curTimeFormat(millisecond) {
 		const second = millisecond / 1000;
-		return `${Math.floor(second / 60)}:` +
-					`${(second % 60 < 10 ? '0' : '') + Math.floor(second % 60)}.` +
-					`${(millisecond % 1000 == 0 ? '00' : '') + millisecond % 1000}`;
+		return (
+			<Text style={{color: COLORS.container_white, flex: 1, fontSize: 14, fontFamily: 'GmarketSansTTFMedium'}}>
+				{Math.floor(second / 60)}:{(second % 60 < 10 ? '0' : '') + Math.floor(second % 60)}.
+				<Text style={{fontSize: 12}}>
+					{(millisecond % 1000 == 0 ? '00' : '') + millisecond % 1000}
+				</Text>
+			</Text>
+		);
 	}
 
 	const trackLeftStyle = { width: Animated.add(width * curTime / (musicLength*1000), this.thumbLeft) };
@@ -45,20 +50,22 @@ export default function PlayerBar({ curTime, musicLength, pressPlayButton, isPla
 				<Animated.View style={[styles.playerBar__trackLeft, trackLeftStyle]} />
 			</View>
 			<View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12}}>
-				<Text style={{color: COLORS.container_white, flex: 1}}>{curTimeFormat(curTime)}</Text>
+			{curTimeFormat(curTime)}
 				<View style={{width: 32}} />
 				<TouchableOpacity
+				activeOpacity={.8}
 				style={{marginHorizontal: 8}}
 				disabled={isPlay}
 				onPress={addFormation}>
 					<Add />
 				</TouchableOpacity>
 				<TouchableOpacity
+				activeOpacity={.8}
 				disabled={false}
 				onPress={pressPlayButton}>
 					{ isPlay ? <Pause /> : <Play /> }
 				</TouchableOpacity>
-				<Text style={{color: COLORS.container_40, flex: 1, textAlign: 'right'}}>{this.musicTimeString}</Text>
+				<Text style={{color: COLORS.container_40, flex: 1, textAlign: 'right', fontSize: 14, fontFamily: 'GmarketSansTTFMedium'}}>{this.musicTimeString}</Text>
 			</View>
 		</View>
 	)

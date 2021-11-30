@@ -8,14 +8,6 @@ const TAG = "Dancer/";
 const styles = getStyleSheet();
 const dancerColors = getDancerColors();
 
-const useConstructor = (callBack = () => {}) => {
-  const hasBeenCalled = useRef(false);
-	console.log(TAG, 'myConstructor:', hasBeenCalled.current);
-  if (hasBeenCalled.current) return;
-  callBack();
-  hasBeenCalled.current = true;
-}
-
 export default function Dancer({
 	dancer,
 	curPosAnimated,

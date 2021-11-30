@@ -11,6 +11,7 @@ const styles = getStyleSheet();
 export default function NoteItem({ item, onPressHandler, isEditMode }) {
 	return (
 		<TouchableOpacity
+		activeOpacity={.8}
 		onPress={() => onPressHandler(item.music, item.nid)}
 		style={styles.noteEntry}>
 			<View style={styles.noteThumbnail}>
@@ -21,7 +22,7 @@ export default function NoteItem({ item, onPressHandler, isEditMode }) {
 				: null }
 			</View>
 			<Text numberOfLines={2} style={styles.noteTitle}>{item.title}</Text>
-			<Text numberOfLines={2} style={styles.noteSubInfo}>{item.music == '' ? '(choose music)' : item.music == '/' ? 'no music(60s silence)' : item.music}</Text>
+			<Text numberOfLines={2} style={styles.noteSubInfo}>{item.music == '' ? '1분 정적' : item.music == '/' ? 'no music(60s silence)' : item.music}</Text>
 			<Text numberOfLines={1} style={styles.noteSubInfo}>{item.createDate}</Text>
 
 		</TouchableOpacity>

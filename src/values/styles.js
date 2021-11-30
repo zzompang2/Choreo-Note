@@ -15,27 +15,18 @@ export const COLORS = {
   container_40: '#8D8D8D',
 	container_50: '#EDEDED',
 	abnormal: "#EB5757",
-	yellow: '#EF9C1C',
-	yellowLight: '#EF9C1C88',
-	red: '#D63F72',
+	key: '#FFCE51',
+
+	pink: '#CB5692',
 	orange: '#ce4102',
   purple: '#8249d3', 
-  blue: '#4469EB',
   green: '#00817a',
-	pink: '#CB5692',
 }
 
 const DANCER_COLORS_DARK = [
 	COLORS.pink,
 	COLORS.orange,
 	COLORS.purple,
-	COLORS.green,
-];
-
-const DANCER_COLORS_LIGHT = [
-	COLORS.red,
-	COLORS.yellow,
-	COLORS.blue,
 	COLORS.green,
 ];
 
@@ -66,14 +57,13 @@ const basicStyleSheet = StyleSheet.create({
 		fontSize: 16,
 		// paddingVertical: 17,
 		paddingHorizontal: 20,
-		color: COLORS.pink,
+		color: COLORS.key,
 		fontFamily: 'GmarketSansTTFMedium',
 	},
 	noteList: {
 		flex: 1,
 		// paddingVertical: 6,
-		padding: 8,
-		// backgroundColor: 'yellow',
+		margin: 8,
 	},
 	noteEntry: {
 		flexDirection: 'column',
@@ -113,7 +103,7 @@ const basicStyleSheet = StyleSheet.create({
 	},
 	stageSelected: {
 		borderWidth: 5,
-		borderColor: COLORS.yellow,
+		borderColor: COLORS.key,
 	},
 	stageAxis: {
 		position: 'absolute',
@@ -165,13 +155,10 @@ const basicStyleSheet = StyleSheet.create({
 		height: formationBoxHeight,
 		top: 6,
 		borderWidth: 4,
-		borderRadius: 8,
-		// borderBottomLeftRadius: 0,
-		// borderBottomRightRadius: 0,
 	},
 	formationMarker__btn: {
 		position: 'absolute',
-		top: formationBoxHeight + 10,
+		top: formationBoxHeight + 6,
 		width: 30,
 		height: 30,
 		borderRadius: 15,
@@ -200,21 +187,7 @@ const basicStyleSheet = StyleSheet.create({
 	timeMarkerLine: {
 		width: 2,
 		height: '100%',
-		backgroundColor: COLORS.yellow,
-	},
-	addFormationBtn: {
-		position: 'absolute',
-		top: 28,
-		width: 32,
-		height: 32,
-		alignItems: 'center',
-		justifyContent: 'center',
-		borderRadius: 8,
-		backgroundColor: COLORS.yellow,
-		zIndex: 10,
-	},
-	addFormationBtn__text: {
-		fontSize: 15,
+		backgroundColor: COLORS.key,
 	},
 	toolBar: {
 		width: '100%',
@@ -330,10 +303,11 @@ const basicStyleSheet = StyleSheet.create({
 		height: 6,
 		alignItems: 'center',
 		flexDirection: 'row',
-		// backgroundColor: COLORS.yellow,
 	},
 	playerBar__trackLeft: {
 		height: '100%',
+		borderTopRightRadius: 3,
+		borderBottomRightRadius: 3,
 	},
 	// playerBar__thumb: {
 	// 	position: 'absolute',
@@ -487,25 +461,18 @@ const darkStyleSheet = StyleSheet.create({
 	timeMarkerLine: {
 		...basicStyleSheet.timeMarkerLine,
 	},
-	addFormationBtn: {
-		...basicStyleSheet.addFormationBtn,
-	},
-	addFormationBtn__text: {
-		...basicStyleSheet.addFormationBtn__text,
-		color: COLORS.container_white,
-	},
 	formationBox: {
 		...basicStyleSheet.formationBox,
-		backgroundColor: COLORS.pink,
+		backgroundColor: COLORS.container_30,
 	},
 	formationBoxSelected: {
 		...basicStyleSheet.formationBox,
-		backgroundColor: COLORS.yellowLight,
+		backgroundColor: COLORS.container_20,
 	},
 	formationMarker: {
 		...basicStyleSheet.formationMarker,
 		borderColor: COLORS.container_white,
-		backgroundColor: COLORS.pink,
+		backgroundColor: COLORS.container_30,
 	},
 	formationMarker__leftbtn: {
 		...basicStyleSheet.formationMarker__btn,
@@ -583,7 +550,7 @@ const darkStyleSheet = StyleSheet.create({
 	},
 	playerBar__trackLeft: {
 		...basicStyleSheet.playerBar__trackLeft,
-		backgroundColor: COLORS.pink,
+		backgroundColor: COLORS.key,
 	},
 	// playerBar__trackBgRight: {
 	// 	...basicStyleSheet.playerBar__trackBg,
@@ -659,7 +626,7 @@ const dbStyleSheet = StyleSheet.create({
 	},
 	dbTable: {
 		fontSize: 10,
-		color: COLORS.yellow,
+		color: COLORS.key,
 	},
 	dbText: {
 		fontSize: 11,
@@ -690,8 +657,6 @@ export function getDancerColors(theme) {
 	switch(theme) {
 		case 'dark':
 			return DANCER_COLORS_DARK;
-		case 'light':
-			return DANCER_COLORS_LIGHT;
 		default:
 			return DANCER_COLORS_DARK;
 	}

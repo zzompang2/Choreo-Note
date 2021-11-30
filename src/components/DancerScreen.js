@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-	View, Text, TouchableOpacity, FlatList, TextInput, Animated, Switch
+	View, Text, TouchableOpacity, FlatList, TextInput, Animated, Switch, Alert
 } from 'react-native';
-import Left from '../assets/icons/Large(32)/Arrow/Left';
+import Cancel from '../assets/icons/Large(32)/Cancel';
+import Minus from '../assets/icons/Medium(24)/Minus';
 import getStyleSheet, { COLORS, getDancerColors } from '../values/styles';
 
 const TAG = "DancerScreen/";
@@ -24,7 +25,6 @@ export default function DancerScreen({
 	useConstructor(() => {
 		this.btnWidth = new Animated.Value(70);
 		this.btnScale = new Animated.Value(0);
-		this.deleteBtnAnim = [];
 		this.screenTop = new Animated.Value(1);
 	});
 
@@ -36,9 +36,6 @@ export default function DancerScreen({
 		inputRange: [0, 1],
 		outputRange: ['0%', '100%']
 	})};
-
-	for(let i=0; i<dancers.length; i++)
-	this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
 
 	controlAddButton = () => {
 		console.log(TAG, 'controlAddButton:', isAddBtnAppear);
@@ -82,59 +79,14 @@ export default function DancerScreen({
 
 	myAddDancer = (colorIdx) => {
 		addDancer(colorIdx);
-		this.deleteBtnAnim.push([ new Animated.Value(10), new Animated.Value(0) ]);
 	}
 
 	myDeleteDancer = (did) => {
-		// 처음으로 클릭 된 경우
-		if(this.deleteEnable != did) {
-			deleteButtonDisable();
-
-			this.deleteEnable = did;
-			Animated.timing(
-				this.deleteBtnAnim[this.deleteEnable][0], {
-					toValue: 40,
-					duration: 600,
-					useNativeDriver: false
-				}
-			).start();
-			Animated.timing(
-				this.deleteBtnAnim[this.deleteEnable][1], {
-					toValue: 1,
-					duration: 600,
-					useNativeDriver: false
-				}
-			).start();
-		}
-		// 두 번째로 클릭 된 경우: delete
-		else {
-			// 버튼 애니메이션 초기화 & Animated 요소 하나 삭제
-			deleteButtonDisable();
-			this.deleteBtnAnim.pop();
-
-			deleteDancer(did);
-		}
-	}
-
-	function deleteButtonDisable() {
-		// 누군가 선택되어 있는 경우
-		if(this.deleteEnable != undefined) {
-			Animated.timing(
-				this.deleteBtnAnim[this.deleteEnable][0], {
-					toValue: 10,
-					duration: 600,
-					useNativeDriver: false
-				}
-			).start();
-			Animated.timing(
-				this.deleteBtnAnim[this.deleteEnable][1], {
-					toValue: 0,
-					duration: 600,
-					useNativeDriver: false
-				}
-			).start();
-			this.deleteEnable = undefined;
-		}
+		Alert.alert("댄서 삭제", (did+1)+"번째 댄서를 정말 삭제하시겠어요?",
+		[{text: "아니요", style: 'cancel'}, {
+			text: "네, 삭제할게요", style: 'destructive',
+			onPress: () => deleteDancer(did)
+		}]);
 	}
 
 	// <FlatList> 구분선
@@ -151,15 +103,15 @@ export default function DancerScreen({
 		).start();
 	}, []);
 
-	// deleteButtonDisable();
-
 	return(
 		<View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'flex-end'}}>
 			<Animated.View style={[screenTopStyle, {flex: 1, backgroundColor: COLORS.container_black}]}>
 				{/* Navigation Bar */}
 				<View style={[styles.navigationBar, {borderTopLeftRadius: 30, borderTopRightRadius: 30}]}>
 					<View style={{flexDirection: 'row', alignItems: 'center'}}>
-						<TouchableOpacity onPress={() =>
+						<TouchableOpacity
+						style={{ width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }}
+						onPress={() =>
 							Animated.timing(
 								this.screenTop, {
 									toValue: 1,
@@ -167,9 +119,9 @@ export default function DancerScreen({
 									useNativeDriver: false,
 								}
 							).start(() => setDancerScreen(false))}>
-								<Left />
+								<Cancel />
 						</TouchableOpacity>
-						<Text style={styles.navigationBar__title}>Dancer</Text>
+						<Text style={styles.navigationBar__title}>댄서 편집</Text>
 					</View>
 				</View>
 
@@ -181,11 +133,12 @@ export default function DancerScreen({
 				style={styles.noteList}
 				data={dancers}
 				keyExtractor={(item, idx) => idx.toString()}
-				ItemSeparatorComponent={listViewItemSeparator}
+				// ItemSeparatorComponent={listViewItemSeparator}
 				renderItem={({ item, index }) =>
 				<View>
 					<View style={styles.dancerEntry}>
 						<TouchableOpacity
+						activeOpacity={1}
 						onPress={() => changeColor(item.did)}
 						style={{...styles.dancerEntry__color, backgroundColor: dancerColors[item.color]}}>
 							<Text style={styles.dancerEntry__text}>
@@ -195,48 +148,17 @@ export default function DancerScreen({
 						<TextInput
 						maxLength={30}
 						style={{...styles.dancerEntry__input}}
-						placeholder="Please input dancer name."
+						maxLength={30}
+						placeholder="이름없는 댄서"
+						placeholderTextColor={COLORS.container_40}
 						onEndEditing={e => changeName(e.nativeEvent.text, item.did)}
 						autoCorrect={false}>
 							{item.name}
 						</TextInput>
 						<TouchableOpacity
 						onPress={() => myDeleteDancer(item.did)}
-						style={styles.dancerEntry__btn}>
-							<Animated.View style={[
-								styles.dancerEntry__btnIcon, 
-								{
-									height: this.deleteBtnAnim[item.did][0],
-									width: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
-									backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
-										inputRange: [0, 1],
-										outputRange: [COLORS.container_black, COLORS.container_white]
-									}),
-									transform: [{
-										rotate: this.deleteBtnAnim[item.did][1].interpolate({
-											inputRange: [0, 1],
-											outputRange: ['0deg', '45deg']
-										})
-									}]
-								}
-							]} />
-							<Animated.View style={[
-								styles.dancerEntry__btnIcon, 
-								{
-									width: this.deleteBtnAnim[item.did][0],
-									height: Animated.add(12, Animated.multiply(-1/5, this.deleteBtnAnim[item.did][0])),
-									backgroundColor: this.deleteBtnAnim[item.did][1].interpolate({
-										inputRange: [0, 1],
-										outputRange: [COLORS.container_black, COLORS.container_white]
-									}),
-									transform: [{
-										rotate: this.deleteBtnAnim[item.did][1].interpolate({
-											inputRange: [0, 1],
-											outputRange: ['0deg', '45deg']
-										})
-									}
-								]}
-							]} />
+						style={{width: 32, height: 32, alignItems: 'center', justifyContent: 'center'}}>
+							<Minus />
 						</TouchableOpacity>
 					</View>
 					{/* 맨 마지막 entry 에만 여백 공간을 둔다. 버튼에 가려지지 않게 하기 위해 */}

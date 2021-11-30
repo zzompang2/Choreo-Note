@@ -22,7 +22,8 @@ export default function Stage({
 	coordinateGapInDevice,
 	changeCoordinateGap,
 	isPlay,
-	isRotate
+	isRotate,
+	coordinateOn,
 }) {
 	this.stageRotate = new Animated.Value(0);
 
@@ -59,10 +60,12 @@ export default function Stage({
 	return (
 		<View style={{height: width, justifyContent: 'center'}}>
 		<Animated.View style={{...stageRotateStyle, ...styles.stage, height: height, ...selectedStageStyle}}>
+			{ coordinateOn ?
 			<Coordinate
 			stageSize={{ width, height }}
 			coordinateGapInDevice={coordinateGapInDevice}
 			changeCoordinateGap={changeCoordinateGap} />
+			: null }
 			{dancers.map((dancer, idx) =>
 				<Dancer
 				key={dancer.key}
@@ -87,9 +90,9 @@ export default function Stage({
 			<View style={{
 				position: 'absolute', bottom: 0,
 				width: '100%', height: 18,
-				backgroundColor: COLORS.yellow,
+				backgroundColor: COLORS.abnormal,
 				alignItems: 'center', justifyContent: 'center'}}>
-				<Text>Cannot edit formations while stage is rotated.</Text>
+				<Text>무대가 회전되어 있을 때는 편집할 수 없습니다.</Text>
 			</View> : null}
 		</View>
 	)

@@ -4,7 +4,6 @@ import {
 } from 'react-native';
 import SQLite from "react-native-sqlite-storage";
 import Sound from 'react-native-sound';
-// import IconIonicons from 'react-native-vector-icons/Ionicons';
 
 import getStyleSheet, { getDancerColors } from '../values/styles';
 import Stage from '../components/Stage';
@@ -42,6 +41,7 @@ export default function FormationScreen(props) {
 	const [ unitBoxWidth, setUnitBoxWidth ] = useState(10);								// 한 단위시간 박스의 가로 길이
 	const [ copiedFormationData, setCopiedFormationData ] = useState(undefined);
 	const [ isStageRotate, setIsStageRotate ] = useState(false);
+	const [ coordinateOn, setCoordinateOn ] = useState(true);
 
 	toastOpacity = new Animated.Value(0);
 	toastMessage = "none";
@@ -57,6 +57,10 @@ export default function FormationScreen(props) {
 		console.log(TAG, 'play');
 		const { musicLength } = states.noteInfo;
 		if(!isPlay) {
+			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
+			if(selectedPosTime !== undefined)
+			setSelectedPosTime(undefined);
+
 			const startTime = new Date().getTime();
 			this.interval = setInterval(() => {
 				const musicTime = curTime + Math.floor((new Date().getTime() - startTime)/unitTime)*unitTime;
@@ -77,7 +81,6 @@ export default function FormationScreen(props) {
 			},
 			100);
 			setIsPlay(true);
-			setSelectedPosTime(undefined);
 			musicPlay();
 		}
 	}
@@ -535,7 +538,7 @@ export default function FormationScreen(props) {
 
 	musicLoad = (name) => {
 		console.log(TAG, 'musicLoad('+name+')');
-		this.sound = new Sound(encodeURI(name), Sound.DOCUMENT, (error) => {
+		this.sound = new Sound(name, Sound.DOCUMENT, (error) => {
 			if (error)
 			console.log('MUSIC LOAD FAIL', error);
 			else
@@ -545,8 +548,10 @@ export default function FormationScreen(props) {
 
 	musicPlay = () => {
 		if(this.sound.isLoaded()) {
+			console.log(TAG, "음악 시작!", this.sound);
 			this.sound.setCurrentTime(curTime/1000);
-			this.sound.play(() => {
+			this.sound.play((success) => {
+				if(success)
 				this.sound.pause();
 				this.sound.setCurrentTime(0);
 			});
@@ -587,6 +592,7 @@ export default function FormationScreen(props) {
 	}
 
 	playDancerMoveStart = () => {
+		console.log(TAG, "playDancerMoveStart");
 		const { times, positions } = states;
 		const animatedList = [];
 		for(let i=0; i<times.length; i++) {
@@ -632,7 +638,7 @@ export default function FormationScreen(props) {
 		console.log(TAG, 'addDancer('+colorIdx+')');
 		const { noteInfo: { nid }, times, positions } = states;
 		const did = states.dancers.length;
-		const name = `Dancer ${did+1}`;
+		const name = "";
 
 		// dancers 업데이트
 		const newKey = states.dancers.length == 0 ? 0 : states.dancers[states.dancers.length-1].key + 1;
@@ -906,26 +912,31 @@ export default function FormationScreen(props) {
 	useEffect(() => {
 		console.log(TAG, "useEffect 2", isPlay);
 		if(isPlay) {
-			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
-			// if(selectedPosTime != undefined)
-			// getCurDancerPositions();
-
 			// play 하는 순간 두 대열 사이에 있는 경우
 			// if(!isPlay)
-			// playDancerMoveStart();
+			playDancerMoveStart();
 
 			// curTime 업데이트 될 때 마다 애니메이션 실행 여부 확인 및 실행
 			playDancerMove();
 		}
+
+		return () => {
+			this.sound.release();
+		}
 	});
 
 	useEffect(() => {
-		console.log(TAG, "useEffect 3");
+		if(isPlay)
+		getCurDancerPositions();
+	}, [isPlay])
+
+	useEffect(() => {
 		// state 가 바뀔 때 마다 Dancer 위치를 업데이트한다
 		if(!isPlay && states.noteInfo !== undefined) {
+			console.log(TAG, "useEffect 3");
 			getCurDancerPositions();
 		}
-	}, [curTime, states.times, states.positions, selectedPosTime, isPlay]);
+	}, [curTime, states.times, states.positions, selectedPosTime]);
 
 	console.log(TAG, "Before RETURN");
 	return(
@@ -937,6 +948,7 @@ export default function FormationScreen(props) {
 			<View style={styles.navigationBar}>
 				<View style={{flexDirection: 'row', alignItems: 'center'}}>
 					<TouchableOpacity
+					activeOpacity={.8}
 					style={{ width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }}
 					onPress={() => props.navigation.navigate('Main')}>
 						<Left />
@@ -951,7 +963,9 @@ export default function FormationScreen(props) {
 						{states.noteInfo == undefined ? '' : states.noteInfo.title}
 					</TextInput>
 					{titleOnFocus ?
-					<TouchableOpacity onPress={() => Keyboard.dismiss()}>
+					<TouchableOpacity
+					activeOpacity={.8}
+					onPress={() => Keyboard.dismiss()}>
 						<Text style={styles.navigationBarText}>확인</Text>
 					</TouchableOpacity>
 					: null}
@@ -974,7 +988,8 @@ export default function FormationScreen(props) {
 				coordinateGapInDevice={transStandardToDevice(coordinateGap)}
 				changeCoordinateGap={changeCoordinateGap}
 				isPlay={isPlay}
-				isRotate={isStageRotate} />
+				isRotate={isStageRotate}
+				coordinateOn={coordinateOn} />
 
 				{/* Music Bar */}
 				<PlayerBar
@@ -1018,7 +1033,9 @@ export default function FormationScreen(props) {
 				deleteFormation={deleteFormation}
 				copyFormation={copyFormation}
 				pasteFormation={pasteFormation}
-				copiedFormationData={copiedFormationData} 
+				copiedFormationData={copiedFormationData}
+				coordinateOn={coordinateOn}
+				setCoordinateOn={() => setCoordinateOn(val => !val)}
 				/>
 
 			</View>
