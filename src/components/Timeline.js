@@ -21,7 +21,6 @@ export default function Timeline({
 	setCurTime, selectedPosTime, selectFormationBox,
 	changeFormationBoxLength, isPlay, unitBoxWidth, unitTime,
 	setTimelineScroll, onTimelineScroll,
-	addFormation, formationAddable,
 	toastOpacity, toastMessage, changeUnitBoxWidth
 }) {
 	const [scrollEnable, setScrollEnable] = useState(true);
@@ -144,15 +143,6 @@ export default function Timeline({
 			style={styles.timeMarkerContainer}>
 				<View style={styles.timeMarkerLine} />
 			</View>
-
-			{!formationAddable || isPlay ? null :
-			<TouchableOpacity
-			onPress={addFormation}
-			style={styles.addFormationBtn}
-			>
-				<Add />
-			</TouchableOpacity>
-			}
 
 			<Animated.View style={[toastOpacityStyle, {
 				position: 'absolute', bottom: 8,

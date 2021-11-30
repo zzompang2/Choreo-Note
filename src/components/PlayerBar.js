@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { 
 	Dimensions, View, Animated, Text, TouchableOpacity
 } from "react-native";
+import Add from "../assets/icons/Large(32)/Add";
 import Pause from "../assets/icons/Large(32)/Pause";
 import Play from "../assets/icons/Large(32)/Play";
 import getStyleSheet, { COLORS } from "../values/styles";
@@ -18,7 +19,7 @@ const useConstructor = (callBack = () => {}) => {
   hasBeenCalled.current = true;
 }
 
-export default function PlayerBar({ curTime, musicLength, pressPlayButton, isPlay }) {
+export default function PlayerBar({ curTime, musicLength, pressPlayButton, isPlay, addFormation }) {
 	useConstructor(() => {
 		this.musicTimeString = musicLengthFormat(musicLength);
 		this.thumbLeft = new Animated.Value(0);
@@ -45,6 +46,13 @@ export default function PlayerBar({ curTime, musicLength, pressPlayButton, isPla
 			</View>
 			<View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12}}>
 				<Text style={{color: COLORS.container_white, flex: 1}}>{curTimeFormat(curTime)}</Text>
+				<View style={{width: 32}} />
+				<TouchableOpacity
+				style={{marginHorizontal: 8}}
+				disabled={isPlay}
+				onPress={addFormation}>
+					<Add />
+				</TouchableOpacity>
 				<TouchableOpacity
 				disabled={false}
 				onPress={pressPlayButton}>

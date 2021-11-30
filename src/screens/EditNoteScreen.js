@@ -15,8 +15,8 @@ import Sound from 'react-native-sound';
 
 import getStyleSheet, { COLORS, getDancerColors } from '../values/styles';
 import Left from '../assets/icons/Large(32)/Arrow/Left';
-import Add from '../assets/icons/Large(32)/Add';
-import Minus from '../assets/icons/Large(32)/Minus';
+import Add from '../assets/icons/Medium(24)/Add';
+import Minus from '../assets/icons/Medium(24)/Minus';
 import Down from '../assets/icons/Medium(24)/Down';
 import Up from '../assets/icons/Medium(24)/Up';
 
@@ -255,6 +255,7 @@ export default function EditNoteScreen(props) {
 				<View style={{flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingRight: 4}}>
 					<Text style={styles.editNote__title}>댄서</Text>
 					<TouchableOpacity
+					style={{width: 32, height: 32, alignItems: 'center', justifyContent: 'center'}}
 					onPress={() => {
 						const newDancers = [...dancers, {name: '', color: 0}];
 						setDancers(newDancers);
@@ -298,6 +299,7 @@ export default function EditNoteScreen(props) {
 						{item.name}
 					</TextInput>
 					<TouchableOpacity
+					style={{width: 32, height: 32, alignItems: 'center', justifyContent: 'center'}}
 					onPress={() => {
 						if(dancers.length > 1){
 							const newDancers = [...dancers.slice(0, index), ...dancers.slice(index+1)];

@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import {
   Dimensions, SafeAreaView, View, Text, TouchableOpacity, Animated, Easing, TextInput, Alert, Keyboard
 } from 'react-native';
@@ -67,7 +67,6 @@ export default function FormationScreen(props) {
 						clearInterval(this.interval);
 						this.timelineScroll.scrollTo({x: 0, animated: true});
 						setCurTime(0);
-						this.formationAddable = true;
 						setIsPlay(false);
 					}
 					else {
@@ -77,7 +76,6 @@ export default function FormationScreen(props) {
 				}
 			},
 			100);
-			this.formationAddable = false;
 			setIsPlay(true);
 			setSelectedPosTime(undefined);
 			musicPlay();
@@ -240,6 +238,7 @@ export default function FormationScreen(props) {
 	 * @param {number} newY 새로운 Y 좌표
 	 */
 	changeDancerPosition = (did, newX, newY) => {
+		console.log(TAG, "changeDancerPosition(", did, newX, newY, ")");
 		const { noteInfo: { nid, stageRatio }, times, positions } = states;
 		if(selectedPosTime === undefined)		// ERROR
 			return;
@@ -370,11 +369,10 @@ export default function FormationScreen(props) {
 	function checkFormationAddable() {
 		console.log(TAG, "checkFormationAddable");
 		const { noteInfo: { musicLength }, times } = states;
-		this.formationAddable = false;
 
 		// curTime 유효성 검사
 		if(curTime < 0 || musicLength * 1000 <= curTime + unitTime)
-		return;
+		return false;
 
 		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
 		let i = 0;
@@ -384,9 +382,9 @@ export default function FormationScreen(props) {
 
 		// duration 은 최소 1 unitTime 이어야 하므로 curTime+unitTime	까지 공간이 있어야 한다
 		if(i != times.length && times[i].time <= curTime + unitTime)
-		return;
+		return false;
 
-		this.formationAddable = true;
+		return true;
 	}
 
 	/**
@@ -395,7 +393,7 @@ export default function FormationScreen(props) {
 	addFormation = () => {
 		console.log(TAG, "addFormation");
 		const { noteInfo: { nid, musicLength }, times, positions } = states;
-		if(!this.formationAddable)
+		if(!checkFormationAddable())
 		return;
 
 		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
@@ -622,6 +620,7 @@ export default function FormationScreen(props) {
 
 	onTimelineScroll = (event) => {
 		if(!isPlay) {
+			console.log(TAG, "onTimelineScroll");
 			const scrollX = event.nativeEvent.contentOffset.x;
 			const centerTime = Math.floor(scrollX / unitBoxWidth) * unitTime;
 			
@@ -907,9 +906,6 @@ export default function FormationScreen(props) {
 	useEffect(() => {
 		console.log(TAG, "useEffect 2", isPlay);
 		if(isPlay) {
-			// play 중일 때 formation 추가 금지
-			// this.formationAddable = false;
-			
 			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
 			// if(selectedPosTime != undefined)
 			// getCurDancerPositions();
@@ -925,9 +921,8 @@ export default function FormationScreen(props) {
 
 	useEffect(() => {
 		console.log(TAG, "useEffect 3");
-		// state 가 바뀔 때 마다 Dancer 위치, formationAddable 을 업데이트한다
+		// state 가 바뀔 때 마다 Dancer 위치를 업데이트한다
 		if(!isPlay && states.noteInfo !== undefined) {
-			checkFormationAddable();
 			getCurDancerPositions();
 		}
 	}, [curTime, states.times, states.positions, selectedPosTime, isPlay]);
@@ -986,7 +981,8 @@ export default function FormationScreen(props) {
 				curTime={curTime}
 				musicLength={states.noteInfo.musicLength}
 				pressPlayButton={pressPlayButton}
-				isPlay={isPlay} />
+				isPlay={isPlay}
+				addFormation={addFormation} />
 
 				{/* Timeline */}
 				<Timeline
@@ -1002,8 +998,6 @@ export default function FormationScreen(props) {
 				unitTime={unitTime}
 				setTimelineScroll={setTimelineScroll}
 				onTimelineScroll={onTimelineScroll}
-				addFormation={addFormation}
-				formationAddable={this.formationAddable}
 				changeUnitBoxWidth={changeUnitBoxWidth}
 				toastOpacity={this.toastOpacity}
 				toastMessage={this.toastMessage} />

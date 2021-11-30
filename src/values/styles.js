@@ -132,7 +132,7 @@ const basicStyleSheet = StyleSheet.create({
 		// height: 1,
 	},
 	dancer: {
-		position: 'absolute',
+		// position: 'absolute',
 		width: 40,
 		height: 40,
 		borderRadius: 20,
