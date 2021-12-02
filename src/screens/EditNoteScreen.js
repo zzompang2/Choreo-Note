@@ -42,6 +42,7 @@ export default function EditNoteScreen(props) {
 	const [ isMusicPopup, setMusicPopup ] = useState(false);
 
 	musicLoad = () => {
+		console.log(RNFS.DocumentDirectoryPath);
 		RNFS.readDir(RNFS.DocumentDirectoryPath).then(files => {
 			const musicList = [];
 			files.forEach(file => {
@@ -63,7 +64,7 @@ export default function EditNoteScreen(props) {
 	}
 
 	goToFormationScreen = () => {
-		const { getTodayDate, updateMainStateFromDB } = props.route.params;
+		const { getTodayDate, getDatabaseData } = props.route.params;
 		// 노래 길이 계산
 		this.sound = new Sound(selectedMusic, Sound.DOCUMENT, (error) => {
 			// 노래 가져오기 실패
@@ -89,6 +90,7 @@ export default function EditNoteScreen(props) {
 						[nid, title, createDate, createDate, stageRatio, selectedMusic, musicLength, 0],
 						txn => {
 							for(let did=0; did<dancers.length; did++) {
+								// 무대 가로를 1000 으로 기준
 								const posx = dancers.length == 1 ? 0 : did * (600 / (dancers.length-1)) - 300;
 								txn.executeSql(
 									"INSERT INTO dancers VALUES (?, ?, ?, 0)",
@@ -116,7 +118,7 @@ export default function EditNoteScreen(props) {
 					props.navigation.navigate('Formation', { 
 						nid: nid,
 						getTodayDate: getTodayDate,
-						updateMainStateFromDB: updateMainStateFromDB,
+						getDatabaseData: getDatabaseData,
 					});
 				},
 				e => console.log("DB ERROR", e),
@@ -170,6 +172,7 @@ export default function EditNoteScreen(props) {
 					<Text style={styles.navigationBar__title}>노트 세부 설정</Text>
 				</View>
 				<TouchableOpacity
+				style={{height: '100%', justifyContent: 'center'}}
 				activeOpacity={.8}
 				disabled={!isValidTitle}
 				onPress={() => {

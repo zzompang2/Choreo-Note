@@ -905,7 +905,7 @@ export default function FormationScreen(props) {
 			if(isPlay)
 			pause();
 
-			props.route.params.updateMainStateFromDB(nid);
+			props.route.params.getDatabaseData();
 		}
 	}, []);
 
@@ -964,6 +964,7 @@ export default function FormationScreen(props) {
 					</TextInput>
 					{titleOnFocus ?
 					<TouchableOpacity
+					style={{height: 50, justifyContent: 'center'}}
 					activeOpacity={.8}
 					onPress={() => Keyboard.dismiss()}>
 						<Text style={styles.navigationBarText}>확인</Text>

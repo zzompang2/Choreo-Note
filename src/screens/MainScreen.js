@@ -16,11 +16,11 @@ const styles = getStyleSheet();
 
 export default function MainScreen(props) {
 	const [ notes, setNotes ] = useState([]);
+	const [ positionsForEachNote, setPositionsForEachNote ] = useState([]);
+	const [ dancersForEachNote, setDancersForEachNote ] = useState([]);
 	const [ isEditMode, setEditMode ] = useState(false);
 
 	function getDatabaseData() {
-		const notes = [];
-
 		db.transaction(txn => {
 			/*=== 기존 TABLE 초기화(for debug) ===*/
 			// txn.executeSql('DROP TABLE IF EXISTS metadata');
@@ -29,60 +29,6 @@ export default function MainScreen(props) {
 			// txn.executeSql('DROP TABLE IF EXISTS times');
 			// txn.executeSql('DROP TABLE IF EXISTS positions');
 
-			// 노트 개수가 0개이면 디폴트 노트 생성
-			txn.executeSql(
-				'SELECT COUNT(*) FROM sqlite_master WHERE name = ?',
-				["metadata"],
-				(txn, result) => {
-					// DB 에 notes 테이블이 없는 경우 (앱 최초 실행),
-					// default note 를 생성
-					const countResult = result.rows.item(0)["COUNT(*)"];
-					if(countResult == 0) {
-						txn.executeSql(
-							"INSERT INTO metadata VALUES (0, 0)", []);
-
-						const title = '코레오 노트에 오신 걸 환영해요!';
-						const createDate = getTodayDate();
-						const stageRatio = 1;
-						const music = '';
-						const musicLength = 60;
-						const displayName = 0;
-
-						notes.push({ nid: 0, title, createDate, editDate: createDate, music });
-						setNotes(notes);
-
-						txn.executeSql(
-							"INSERT INTO notes VALUES (0, ?, ?, ?, ?, ?, ?, ?)",
-							[title, createDate, createDate, stageRatio, music, musicLength, displayName]);
-						txn.executeSql(
-							"INSERT INTO dancers VALUES (0, 0, 'Ham', 0)", []);
-			
-						txn.executeSql(
-							"INSERT INTO dancers VALUES (0, 1, 'Changsu', 1)", []);
-			
-						txn.executeSql(
-							"INSERT INTO times VALUES (0, 0, 2000)", []);
-
-						txn.executeSql(
-							"INSERT INTO times VALUES (0, 5000, 3000)", []);
-			
-						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 0, 0, -500, 0)", []);
-			
-						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 0, 1, 500, 0)", []);
-
-						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 5000, 0, 0, 100)", []);
-			
-						txn.executeSql(
-							"INSERT INTO positions VALUES (0, 5000, 1, 0, -100)", []);
-					}
-				},
-				e => console.log("DB ERROR", e),
-				(e) => console.log("DB SUCCESS", e)
-			);
-
 			/*=== TABLE 생성 ===*/
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS metadata(' +
@@ -90,6 +36,15 @@ export default function MainScreen(props) {
 				'nidMax INTEGER NOT NULL, ' +
 				'PRIMARY KEY(id))'
 			);
+
+			txn.executeSql(
+				"SELECT * FROM metadata WHERE id=0", [],
+				(txn, result) => {				
+					if(result.rows.length == 0)
+					txn.executeSql("INSERT INTO metadata VALUES (0, 0)", []);
+				}
+			);
+
 
 			txn.executeSql(
 				'CREATE TABLE IF NOT EXISTS notes(' +
@@ -131,21 +86,71 @@ export default function MainScreen(props) {
 					'PRIMARY KEY(nid, time, did))'
 			);
 
-			// DB 에서 note 정보 가져오기
-			// txn.executeSql(
-			// 	"SELECT * FROM notes",
-			// 	[],
-      //   (txn, result) => {
-			// 		// note 정보 가져오기
-			// 		for (let i = 0; i < result.rows.length; i++)
-			// 			notes.push(result.rows.item(i));
-			// 		notes.reverse();
-			// 		setNotes(notes);
-			// 	}
-			// );
+			txn.executeSql(
+				"SELECT * FROM notes",
+				[],
+				(txn, result) => {
+					// note 정보 가져오기
+					const newNote = [];
+					for (let i = 0; i < result.rows.length; i++)
+					newNote.push(result.rows.item(i));
+
+					if(newNote.length !== 0)
+					txn.executeSql(
+						"SELECT * FROM positions",
+						[],
+						(txn, result) => {
+							const positionsForEachNote = [];
+							const positions = [];
+							for (let i = 0; i < result.rows.length; i++)
+							positions.push(result.rows.item(i));
+
+							for(let noteIdx = 0; noteIdx < newNote.length; noteIdx++) {
+								const nid = newNote[noteIdx].nid;
+								const positionOfFirstFormation = [];
+								let i = 0;
+								// nid 노트의 맨 앞 position 요소 찾기
+								while(positions[i].nid !== nid)
+								i++;
+
+								const firstTime = positions[i].time;
+
+								for(; i < positions.length && positions[i].nid == nid; i++) {
+									if(positions[i].time == firstTime)
+									positionOfFirstFormation.push(positions[i]);
+								}
+								positionsForEachNote.push(positionOfFirstFormation);
+							}
+							txn.executeSql(
+								"SELECT * FROM dancers",
+								[],
+								(txn, result) => {
+									const dancersForEachNote = [];
+									let dancersOfOneNote = [result.rows.item(0)];
+									for (let i = 1; i < result.rows.length; i++) {
+										if(result.rows.item(i).nid !== result.rows.item(i-1).nid) {
+											dancersForEachNote.push(dancersOfOneNote);
+											dancersOfOneNote = [];
+										}
+										dancersOfOneNote.push(result.rows.item(i));
+									}
+									dancersForEachNote.push(dancersOfOneNote);
+
+									dancersForEachNote.reverse();
+									setDancersForEachNote(dancersForEachNote);
+									positionsForEachNote.reverse();
+									setPositionsForEachNote(positionsForEachNote);
+									newNote.reverse();
+									setNotes(newNote);
+								}
+							);
+						}
+					)
+				}
+			);
 		},
 		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
+		() => console.log("getDatabaseData/ DB SUCCESS"));
 	}
 
 	/* Date() 로 받은 값을 YYYY.MM.DD 포멧의 string 으로 변경 */
@@ -159,53 +164,56 @@ export default function MainScreen(props) {
 	}
 
 	function addNote() {
+		console.log(TAG, 'addNote');
 		db.transaction(txn => {
 			txn.executeSql(
 				"SELECT * FROM metadata", [],
 				(txn, result) => {
-					const nid = result.rows.item(0).nidMax + 1;
+					const nid = result.rows.item(0).nidMax;
 
 					console.log(TAG, "새로운 NOTE ID = " + nid);
 
 					props.navigation.navigate('EditNote', {
 						nid: nid,
 						getTodayDate: getTodayDate,
-						updateMainStateFromDB: updateMainStateFromDB });
+						getDatabaseData: getDatabaseData });
 				},
 				e => console.log("DB ERROR", e),
-				() => console.log("DB SUCCESS"));
-			}
+				() => console.log("addNote/ DB SUCCESS"));
+			},
+			e => console.log("DB ERROR", e),
+		() => console.log("addNote/ DB SUCCESS")
 		);
 	}
 
-	function updateMainStateFromDB(nid) {
-		db.transaction(txn => {
-      txn.executeSql(
-				"SELECT * FROM notes WHERE nid = ?",
-				[nid],
-        (txn, result) => {
-					const noteInfo = result.rows.item(0);
-					for(let i=0; i<notes.length; i++) {
-						if(notes[i].nid == nid) {
-							const newNotes = [...notes.slice(0, i), noteInfo, ...notes.slice(i+1)];
-							setNotes(newNotes);
-						}
-					}
-				}
-			);
-		},
-		e => console.log("DB ERROR", e),
-		() => console.log("DB SUCCESS"));
-	}
+	// function updateMainStateFromDB(nid) {
+	// 	db.transaction(txn => {
+  //     txn.executeSql(
+	// 			"SELECT * FROM notes WHERE nid = ?",
+	// 			[nid],
+  //       (txn, result) => {
+	// 				const noteInfo = result.rows.item(0);
+	// 				for(let i=0; i<notes.length; i++) {
+	// 					if(notes[i].nid == nid) {
+	// 						const newNotes = [...notes.slice(0, i), noteInfo, ...notes.slice(i+1)];
+	// 						setNotes(newNotes);
+	// 					}
+	// 				}
+	// 			}
+	// 		);
+	// 	},
+	// 	e => console.log("DB ERROR", e),
+	// 	() => console.log("updateMainStateFromDB/ DB SUCCESS"));
+	// }
 
-	function onPressHandler(music, nid) {
+	function onPressHandler(nid) {
 		if(isEditMode)
 		deleteNote(nid);
 		else
 		props.navigation.navigate('Formation', {
 			nid: nid,
 			getTodayDate,
-			updateMainStateFromDB });
+			getDatabaseData: getDatabaseData });
 	}
 
 	function deleteNote(nid) {
@@ -221,6 +229,8 @@ export default function MainScreen(props) {
 			onPress: () => {
 				const newNotes = [...notes.slice(0, idx), ...notes.slice(idx+1)];
 				setNotes(newNotes);
+				const newPositionsForEachNote = [...positionsForEachNote.slice(0, idx), ...positionsForEachNote.slice(idx+1)];
+				setPositionsForEachNote(newPositionsForEachNote);
 
 				db.transaction(txn => {
 					txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
@@ -229,7 +239,7 @@ export default function MainScreen(props) {
 					txn.executeSql("DELETE FROM positions WHERE nid=?", [nid]);
 				},
 				e => console.log("DB ERROR", e),
-				() => console.log("DB SUCCESS"));
+				() => console.log("deleteNote/ DB SUCCESS"));
 			},
 		}]);
 	}
@@ -242,23 +252,48 @@ export default function MainScreen(props) {
 		getDatabaseData();
 	}, [])
 
-	useEffect(() => {
-		// DB 에서 note 정보 가져오기
-		const newNote = [];
+	// DB 에서 note 정보 가져오기
+	function updateNoteList() {
 		db.transaction(txn => {
 			txn.executeSql(
 				"SELECT * FROM notes",
 				[],
 				(txn, result) => {
 					// note 정보 가져오기
+					const newNote = [];
 					for (let i = 0; i < result.rows.length; i++)
 					newNote.push(result.rows.item(i));
-					newNote.reverse();
-					setNotes(newNote);
+
+					if(newNote.length !== 0)
+					txn.executeSql(
+						"SELECT * FROM positions",
+						[],
+						(txn, result) => {
+							const newPositions = [];
+							for(let noteIdx = 0; noteIdx < newNote.length; noteIdx++) {
+								const position = [];
+								let i = 0;
+								while(result.rows.item(i).nid !== newNote[noteIdx].nid)
+								i++;
+								const firstTime = result.rows.item(i).time;
+
+								for(; i < result.rows.length; i++) {
+									if(result.rows.item(i).nid == newNote[noteIdx].nid && result.rows.item(i).time == firstTime)
+									position.push(result.rows.item(i));
+									else break;
+								}
+								newPositions.push(position);
+							}
+							console.log(newPositions);
+							setPositions(newPositions);
+							newNote.reverse();
+							setNotes(newNote);
+						}
+					)
 				}
 			);
 		});
-	});
+	}
 
 	return(
 		// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
@@ -269,6 +304,7 @@ export default function MainScreen(props) {
 			<View style={styles.navigationBar}>
 				<Text numberOfLines={1} style={{...styles.navigationBar__title, paddingLeft: 12}}>Choreo Note</Text>
 				<TouchableOpacity 
+				style={{height: '100%', justifyContent: 'center'}}
 				activeOpacity={.8}
 				onPress={()=>setEditMode(!isEditMode)}>
 					<Text style={styles.navigationBarText}>{isEditMode ? "취소" : "편집"}</Text>
@@ -297,7 +333,9 @@ export default function MainScreen(props) {
 			:
 			<NoteItem
 			key={index}
-			item={item}
+			noteInfo={item}
+			position={positionsForEachNote[index-1]}
+			dancer={dancersForEachNote[index-1]}
 			onPressHandler={onPressHandler}
 			isEditMode={isEditMode} />
 			} />

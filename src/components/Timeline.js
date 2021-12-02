@@ -55,6 +55,7 @@ export default function Timeline({
 	// }, [musicLength, unitBoxWidth, unitTime]);
 
 	_changeUnitBoxWidth = (scale) => {
+		if(isPlay) return;
 		const newWidth = this.baseUnitBoxWidth * scale;
 		changeUnitBoxWidth(newWidth);
 	}
@@ -62,10 +63,10 @@ export default function Timeline({
 	_onPinchHandlerStateChange = (event) => {
 		if (event.nativeEvent.oldState === State.BEGAN) {
 			this.baseUnitBoxWidth = unitBoxWidth;
-			this.setState({ scrollEnable: false });
+			setScrollEnable(false);
 		}
 		else if (event.nativeEvent.oldState === State.ACTIVE)
-		this.setState({ scrollEnable: true });
+		setScrollEnable(true);
   };
 
 	const boxPerSec = 1000 / unitTime;
@@ -95,7 +96,7 @@ export default function Timeline({
 	createTimeTextViews();
 
 	return (
-		<View style={[styles.bg, {alignItems: 'center'}]}>
+		<View style={{flex: 1, alignItems: 'center'}}>
 			<PinchGestureHandler
 				onGestureEvent={event => this._changeUnitBoxWidth(event.nativeEvent.scale)}
 				onHandlerStateChange={this._onPinchHandlerStateChange}>

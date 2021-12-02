@@ -11,6 +11,7 @@ import Rotate from "../assets/icons/Large(32)/Rotate";
 import Dancer from "../assets/icons/Large(32)/Dancer";
 import Setting from "../assets/icons/Large(32)/Setting";
 import ToolBarForFormation from './ToolBarForFormation';
+import DancerName from "../assets/icons/Large(32)/DancerName";
 const TAG = "ToolBar/";
 const styles = getStyleSheet();
 
@@ -76,11 +77,16 @@ export default function ToolBar({
 				</TouchableOpacity>
 
 				{/* id / name 표시 */}
-				{/* <TouchableOpacity
+				<TouchableOpacity
+				activeOpacity={1}
 				onPress={changeDisplayType}
 				style={styles.toolBar__tool}>
-					<Text style={{color: displayName ? COLORS.container_white : COLORS.container_40}}>name</Text>
-				</TouchableOpacity> */}
+					<DancerName color={!isPlay ? displayName ? COLORS.container_50 : COLORS.container_30 : COLORS.container_20} />
+					<Text style={{color: !isPlay ? displayName ? COLORS.container_50 : COLORS.container_30 : COLORS.container_20,
+					fontSize: 12,
+					fontFamily: 'GmarketSansTTFMedium',
+					marginTop: 8}}>이름 보기</Text>
+				</TouchableOpacity>
 
 				{/* 무대 회전 */}
 				<TouchableOpacity
