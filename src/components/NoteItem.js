@@ -10,7 +10,6 @@ const styles = getStyleSheet();
 const dancerColors = getDancerColors();
 
 export default function NoteItem({ noteInfo, position, dancer, onPressHandler, isEditMode }) {
-	console.log(dancer);
 	return (
 		<TouchableOpacity
 		activeOpacity={.8}

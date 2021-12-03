@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef, useState } from 'react';
+import React from 'react';
 import {
   Dimensions, SafeAreaView, View, Text, TouchableOpacity, Animated, Easing, TextInput, Alert, Keyboard
 } from 'react-native';
@@ -20,75 +20,71 @@ const TAG = 'FormationScreen/';
 const unitTime = 250;			// 최소 시간단위 (millisecond)
 const styles = getStyleSheet();
 
-export default function FormationScreen(props) {
-	const [states, setStates] = useReducer(
-		(state, newState) => ({...state, ...newState}),
-		{
-			noteInfo: undefined,	// musicLength 단위 sec
-			// { title, createDate, editDate, stageRatio, music, musicLength, displayName }
-			dancers: [],
-			times: [],						// 단위 msec
-			positions: [],
-		});
-
-	const [ curTime, setCurTime ] = useState(0);													// 단위 msec
-	const [ selectedPosTime, setSelectedPosTime ] = useState(undefined);	// 단위 msec
-	const [ isPlay, setIsPlay ] = useState(false);
-	const [ titleOnFocus, setTitleOnFocus ] = useState(false);
-	const [ dancerScreenPop, setDancerScreenPop ] = useState(false);
-	const [ coordinateGap, setCoordinateGap ] = useState(40);
-	const [ alignWithCoordinate, setAlignWithCoordinate ] = useState(false);
-	const [ unitBoxWidth, setUnitBoxWidth ] = useState(10);								// 한 단위시간 박스의 가로 길이
-	const [ copiedFormationData, setCopiedFormationData ] = useState(undefined);
-	const [ isStageRotate, setIsStageRotate ] = useState(false);
-	const [ coordinateOn, setCoordinateOn ] = useState(true);
+export default class FormationScreen extends React.Component {
+	state = {
+		noteInfo: undefined,				// musicLength 단위 sec
+		// { title, createDate, editDate, stageRatio, music, musicLength, displayName }
+		dancers: [],
+		times: [],									// 단위 msec
+		positions: [],
+		curTime: 0,									// 단위 msec
+		selectedPosTime: undefined,	// 단위 msec
+		isPlay: false,
+		titleOnFocus: false,
+		dancerScreenPop: false,
+		coordinateGap: 40,
+		alignWithCoordinate: false,
+		unitBoxWidth: 10,						// 한 단위시간 박스의 가로 길이
+		copiedFormationDataData: undefined,
+		isStageRotate: false,
+		coordinateOn: true,
+	}
 
 	toastOpacity = new Animated.Value(0);
 	toastMessage = "none";
-	
+
 	pressPlayButton = () => {
-		if(!isPlay)
-		play();
+		if(!this.state.isPlay)
+		this.play();
 		else
-		pause();
+		this.pause();
 	}
 
 	play = () => {
 		console.log(TAG, 'play');
-		const { musicLength } = states.noteInfo;
+		const { isPlay, curTime, noteInfo: { musicLength }, unitBoxWidth } = this.state;
 		if(!isPlay) {
 			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
-			if(selectedPosTime !== undefined)
-			setSelectedPosTime(undefined);
+			// if(selectedPosTime !== undefined)
+			// setSelectedPosTime(undefined);
 
 			const startTime = new Date().getTime();
 			this.interval = setInterval(() => {
 				const musicTime = curTime + Math.floor((new Date().getTime() - startTime)/unitTime)*unitTime;
-				
-				if(curTime != musicTime) {
+
+				if(this.state.curTime != musicTime) {
 					console.log(TAG, "play/", `${musicTime}/${musicLength*1000}`);
 					if(musicTime >= musicLength * 1000) {
 						clearInterval(this.interval);
 						this.timelineScroll.scrollTo({x: 0, animated: true});
-						setCurTime(0);
-						setIsPlay(false);
+						this.setState({ curTime: 0, isPlay: false });
 					}
 					else {
 						this.timelineScroll.scrollTo({x: musicTime / unitTime * unitBoxWidth, animated: true});
-						setCurTime(musicTime);
+						this.setState({ curTime: musicTime });
 					}
 				}
 			},
 			100);
-			setIsPlay(true);
-			musicPlay();
+			this.setState({ isPlay: true, selectedPosTime: undefined });
+			this.musicPlay();
 		}
 	}
 
 	pause = () => {
 		clearInterval(this.interval);
-		this.timelineScroll.scrollTo({x: curTime / unitTime * unitBoxWidth, animated: false});
-		setIsPlay(false);
+		this.timelineScroll.scrollTo({x: this.state.curTime / unitTime * this.state.unitBoxWidth, animated: false});
+		this.setState({ isPlay: false });
 		this.sound.pause();
 	}
 
@@ -96,27 +92,26 @@ export default function FormationScreen(props) {
 	 * 현재 시간을 변경한다.
 	 * @param {number} msec 단위 millisecond
 	 */
-	settingCurTime = (msec) => {
-		const { noteInfo } = states;
-		if(isPlay)
+	setCurTime = (msec) => {
+		if(this.state.isPlay)
 		return;
 
 		if(msec < 0)
 		msec = 0;
-		else if(noteInfo.musicLength*1000 <= msec)
-		msec = noteInfo.musicLength*1000 - unitTime;
+		else if(this.state.noteInfo.musicLength*1000 <= msec)
+		msec = this.state.noteInfo.musicLength*1000 - unitTime;
 
-		setCurTime(msec);
+		this.setState({ curTime: msec });
 	}
-	
+
 	/**
 	 * Formation box 를 선택한 상태로 만든다.
 	 * @param {number} msec 선택된 box 의 time 값
 	 */
 	selectFormationBox = (msec) => {
-		console.log(TAG, "selectFormationBox("+msec+")", isPlay, isStageRotate);
-		if(!isPlay && !isStageRotate)
-		setSelectedPosTime(msec);
+		console.log(TAG, "selectFormationBox("+msec+")", this.state.isPlay, this.state.isStageRotate);
+		if(!this.state.isPlay && !this.state.isStageRotate)
+		this.setState({ selectedPosTime: msec });
 	}
 
 	/**
@@ -124,29 +119,25 @@ export default function FormationScreen(props) {
 	 * @param {*} event 
 	 */
 	changeTitle = (event) => {
-		const { noteInfo } = states;
+		const { noteInfo: { nid } } = this.state;
 		const title = event.nativeEvent.text.trim();
 
 		console.log(TAG, "changeTitle/ 새로운 제목: \"" + title + "\"");
 		if(title == '') {
-			// Alert.alert('노트 제목', '제목은 공백일 수 없어요.', [
-			// 	{text: '네', onPress: () => this.titleInput.focus()}
-			// ]);
 			this.titleInput.setNativeProps({ text: '' });
-			setTitleOnFocus(false);
+			this.setState({ titleOnFocus: false });
 		}
 
 		else {
-			const newNoteInfo = {...noteInfo, title};
-			setStates({ noteInfo: newNoteInfo });
-			setTitleOnFocus(false);
+			const noteInfo = {...this.state.noteInfo, title};
+			this.setState({ noteInfo, titleOnFocus: false });
 
 			db.transaction(txn => {
 				txn.executeSql(
 					"UPDATE notes " +
 					"SET title=? " +
 					"WHERE nid=?",
-					[title, noteInfo.nid]);
+					[title, nid]);
 			},
 			e => console.log(TAG, "changeTitle/ DB ERROR", e),
 			() => console.log(TAG, "changeTitle/ DB SUCCESS"));
@@ -160,8 +151,8 @@ export default function FormationScreen(props) {
 	 * @param {number} newDuration 변경된 새로운 duration 값
 	 */
 	changeFormationBoxLength = (newTime, newDuration) => {
-		const { noteInfo: { nid, musicLength }, times, positions } = states;
-		console.log(TAG, "changeFormationBoxLength(", newTime, newDuration, ")");
+		console.log(TAG, "changeFormationBoxLength/", newTime, newDuration);
+		const { noteInfo: { nid, musicLength }, times, positions, selectedPosTime } = this.state;
 
 		// 노래 밖을 나가는 경우
 		if(newTime < 0 || musicLength * 1000 <= newTime + newDuration)
@@ -212,8 +203,7 @@ export default function FormationScreen(props) {
 			];
 		}
 
-		setStates({ times: newTimes, positions: newPositions });
-		setSelectedPosTime(newTime);
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: newTime });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -230,7 +220,7 @@ export default function FormationScreen(props) {
 					[newTime, nid, selectedPosTime]);
 			}
 		});
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	/**
@@ -242,7 +232,9 @@ export default function FormationScreen(props) {
 	 */
 	changeDancerPosition = (did, newX, newY) => {
 		console.log(TAG, "changeDancerPosition(", did, newX, newY, ")");
-		const { noteInfo: { nid, stageRatio }, times, positions } = states;
+		const { noteInfo: { nid, stageRatio }, times, positions, selectedPosTime, coordinateGap, alignWithCoordinate } = this.state;
+		const { transDeviceToStandardXY } = this;
+
 		if(selectedPosTime === undefined)		// ERROR
 			return;
 
@@ -275,7 +267,7 @@ export default function FormationScreen(props) {
 		];
 		const newPositions = [...positions.slice(0, i), newPositionsEntry, ...positions.slice(i+1)];
 
-		setStates({ positions: newPositions });
+		this.setState({ positions: newPositions });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -286,36 +278,37 @@ export default function FormationScreen(props) {
 				() => console.log(TAG, "changeDancerPosition/ DB SUCCESS"),
 				e => console.log(TAG, "changeDancerPosition/ DB ERROR", e));
 		});
-		updateEditDate();
+		this.updateEditDate();
 	}
 
-	function transDeviceToStandardXY({ x, y }) {
+	transDeviceToStandardXY({ x, y }) {
 		const standX = x * 1000 / width;
 		const standY = y * 1000 / width;
 		return { x: standX, y: standY };
 	}
 
-	function transStandardToDeviceXY({ x, y }) {
+	transStandardToDeviceXY({ x, y }) {
 		const deviceX = x / 1000 * width;
 		const deviceY = y / 1000 * width;
 		return { x: deviceX, y: deviceY };
 	}
 
-	function transStandardToDevice(x) {
+	transStandardToDevice(x) {
 		const deviceX = x / 1000 * width;
 		return deviceX;
 	}
 
-	function transDeviceToStandard(x) {
+	transDeviceToStandard(x) {
 		const standX = x * 1000 / width;
 		return standX;
 	}
 	/**
 	 * state 상태에서 각 Dancer 의 위치를 계산한다
 	 */
-	function getCurDancerPositions() {
+	getCurDancerPositions = (state) => {
 		console.log(TAG, "getCurDancerPositions");
-		const { times, positions } = states;
+		const { times, positions, curTime, selectedPosTime } = state;
+		const { transStandardToDeviceXY } = this;
 
 		if(times.length == 0)
 		return;
@@ -367,11 +360,10 @@ export default function FormationScreen(props) {
 
 	/**
 	 * state 상태에서 새로운 formation 을 추가할 수 있는지 여부를 체크한다.
-	 * @param {object} state 기준 state
 	 */
-	function checkFormationAddable() {
+	checkFormationAddable = () => {
 		console.log(TAG, "checkFormationAddable");
-		const { noteInfo: { musicLength }, times } = states;
+		const { noteInfo: { musicLength }, times, curTime } = this.state;
 
 		// curTime 유효성 검사
 		if(curTime < 0 || musicLength * 1000 <= curTime + unitTime)
@@ -395,8 +387,9 @@ export default function FormationScreen(props) {
 	 */
 	addFormation = () => {
 		console.log(TAG, "addFormation");
-		const { noteInfo: { nid, musicLength }, times, positions } = states;
-		if(!checkFormationAddable())
+		const { noteInfo: { nid, musicLength }, dancers, times, positions, curTime } = this.state;
+
+		if(!this.checkFormationAddable())
 		return;
 
 		// times 에서 curTime 을 포함하거나 바로 오른쪽에 있는 블록을 찾는다
@@ -418,19 +411,19 @@ export default function FormationScreen(props) {
 		// position 계산하기
 		// case 0: 기존에 블록이 하나도 없던 경우
 		if(times.length == 0)
-		for(let did=0; did<states.dancers.length; did++)
+		for(let did=0; did<dancers.length; did++)
 		newPositionEntry.push({nid, time: curTime, did, x: 0, y: 0});
 		// case 1: 모든 블록보다 왼쪽에 있는 경우
 		else if(i == 0)
-		for(let did=0; did<states.dancers.length; did++)
+		for(let did=0; did<dancers.length; did++)
 		newPositionEntry.push({...positions[0][did]});
 		// case 2: 모든 블록보다 오른쪽에 있는 경우
 		else if(i == times.length)
-		for(let did=0; did<states.dancers.length; did++)
+		for(let did=0; did<dancers.length; did++)
 		newPositionEntry.push({...positions[i-1][did]});
 		// case 3: 두 블록 사이에 있는 경우
 		else {
-			for(let did=0; did<states.dancers.length; did++) {
+			for(let did=0; did<dancers.length; did++) {
 				const prevDuration = times[i-1].duration;
 				const prev = positions[i-1][did];
 				const post = positions[i][did];
@@ -442,28 +435,28 @@ export default function FormationScreen(props) {
 
 		const newTimes = [...times.slice(0, i), newTimeEntry, ...times.slice(i)];
 		const newPositions = [...positions.slice(0, i), newPositionEntry, ...positions.slice(i)];
-		setStates({ times: newTimes, positions: newPositions });
-		setSelectedPosTime(undefined);
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: undefined });
 
 		db.transaction(txn => {
 			txn.executeSql(
 				"INSERT INTO times VALUES (?, ?, ?)",
 				[nid, curTime, duration]);
 
-			for(let did=0; did<states.dancers.length; did++)
+			for(let did=0; did<dancers.length; did++)
 			txn.executeSql(
 				"INSERT INTO positions VALUES (?, ?, ?, ?, ?)",
 				[nid, curTime, did, newPositionEntry[did].x, newPositionEntry[did].y]);
 		});
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	/**
 	 * 선택된 formation 을 삭제한다.
 	 */
 	deleteFormation = () => {
+		const { noteInfo: { nid }, dancers, times, positions, selectedPosTime } = this.state;
 		console.log(TAG, "deleteFormation:", selectedPosTime);
-		const { times, positions } = states;
+
 		// 유효성 검사
 		if(selectedPosTime == undefined)
 		return;
@@ -481,39 +474,41 @@ export default function FormationScreen(props) {
 		const newTimes = [...times.slice(0, i), ...times.slice(i+1)];
 		const newPositions = [...positions.slice(0, i), ...positions.slice(i+1)];
 		console.log(newTimes);
-		setStates({ times: newTimes, positions: newPositions });
-		setSelectedPosTime(undefined);
+		this.setState({ times: newTimes, positions: newPositions, selectedPosTime: undefined });
 
 		db.transaction(txn => {
 			txn.executeSql(
 				"DELETE FROM times WHERE nid=? AND time=?",
 				[nid, selectedPosTime]);
 
-			for(let did=0; did<states.dancers.length; did++)
+			for(let did=0; did<dancers.length; did++)
 			txn.executeSql(
 				"DELETE FROM positions WHERE nid=? AND time=?",
 				[nid, selectedPosTime]);
 		});
-		updateEditDate();
+		this.updateEditDate();
 	}
 
-	setDancerScreen = (isOpen) => setDancerScreenPop(isOpen)
+	setDancerScreen = (isOpen) => this.setState({ dancerScreenPop: isOpen })
 
-	settingAlignWithCoordinate = () => {
-		setAlignWithCoordinate(!alignWithCoordinate);
+	setAlignWithCoordinate = () => {
+		const { alignWithCoordinate } = this.state;
+		this.setState({ alignWithCoordinate: !alignWithCoordinate });
 	}
 
 	changeCoordinateGap = (gapInDevice) => {
-		const gap = Math.round(transDeviceToStandard(gapInDevice) / 20) * 20;
+		const { coordinateGap } = this.state;
+		const gap = Math.round(this.transDeviceToStandard(gapInDevice) / 20) * 20;
 		if(coordinateGap != gap && gap <= 100 && gap >= 40)
-		setCoordinateGap(gap);
+		this.setState({ coordinateGap: gap });
 	}
 
 	changeUnitBoxWidth = (width) => {
+		const { unitBoxWidth, curTime } = this.state;
 		const newWidth = Math.round(width / 3) * 3;
 		if(unitBoxWidth != newWidth && newWidth <= 20 && newWidth >= 5) {
 			this.timelineScroll.scrollTo({x: curTime / unitTime * newWidth, animated: false});		// 너비 조절 후 현재 시간 위치로 이동
-			setUnitBoxWidth(newWidth);
+			this.setState({ unitBoxWidth: newWidth });
 		}
 	}
 
@@ -522,7 +517,8 @@ export default function FormationScreen(props) {
 	 * state 의 정보는 업데이트 하지 않으니 조심하자.
 	 */
 	updateEditDate = () => {
-		const { getTodayDate } = props.route.params;
+		const { noteInfo: { nid } } = this.state;
+		const { getTodayDate } = this.props.route.params;
 		const newDate = getTodayDate();
 
 		db.transaction(txn => {
@@ -530,10 +526,10 @@ export default function FormationScreen(props) {
 				"UPDATE notes " +
 				"SET editDate=? " +
 				"WHERE nid=?",
-				[newDate, states.noteInfo.nid]);
+				[newDate, nid]);
 		},
-		e => console.log(TAG, "updateEditDate/ DB ERROR", e),
-		() => console.log(TAG, "updateEditDate/ DB SUCCESS"));
+		e => console.log("DB ERROR", e),
+		() => console.log("DB SUCCESS"));
 	}
 
 	musicLoad = (name) => {
@@ -547,11 +543,12 @@ export default function FormationScreen(props) {
 	}
 
 	musicPlay = () => {
+		const { curTime } = this.state;
+
 		if(this.sound.isLoaded()) {
 			console.log(TAG, "음악 시작!", this.sound);
 			this.sound.setCurrentTime(curTime/1000);
-			this.sound.play((success) => {
-				if(success)
+			this.sound.play(() => {
 				this.sound.pause();
 				this.sound.setCurrentTime(0);
 			});
@@ -561,10 +558,10 @@ export default function FormationScreen(props) {
 	/**
 	 * curTime 이 formation box 를 벗어나는 순간이라면 다음 formation 위치로
 	 * 이동하는 애니메이션을 실행한다.
+	 * @param {object} state 
 	 */
-	function playDancerMove() {
-		console.log(TAG, 'playDancerMove');
-		const { times, positions } = states;
+	playDancerMove = (state) => {
+		const { times, positions, curTime } = state;
 		const animatedList = [];
 		for(let i=0; i<times.length-1; i++) {
 			const rightEnd = times[i].time + times[i].duration;		// formation box 의 오른쪽 끝
@@ -577,7 +574,7 @@ export default function FormationScreen(props) {
 					animatedList.push(
 						Animated.timing(
 							this.positionsAtCurTime[did], {
-								toValue: transStandardToDeviceXY({x: position[did].x, y: position[did].y}),
+								toValue: this.transStandardToDeviceXY({x: position[did].x, y: position[did].y}),
 								duration: times[i+1].time - rightEnd,
 								easing: Easing.linear,
 								useNativeDriver: true,	// false 로 하면 1초 간격으로 끊기는 느낌 있음
@@ -591,9 +588,9 @@ export default function FormationScreen(props) {
 		}
 	}
 
-	playDancerMoveStart = () => {
+	playDancerMoveStart = (state) => {
 		console.log(TAG, "playDancerMoveStart");
-		const { times, positions } = states;
+		const { times, positions, curTime } = state;
 		const animatedList = [];
 		for(let i=0; i<times.length; i++) {
 			const rightEnd = times[i].time + times[i].duration;		// formation box 의 오른쪽 끝
@@ -606,7 +603,7 @@ export default function FormationScreen(props) {
 					animatedList.push(
 						Animated.timing(
 							this.positionsAtCurTime[did], {
-								toValue: transStandardToDeviceXY({x: position[did].x, y: position[did].y}),
+								toValue: this.transStandardToDeviceXY({x: position[did].x, y: position[did].y}),
 								duration: times[i].time - curTime,
 								easing: Easing.linear,
 								useNativeDriver: true,
@@ -625,25 +622,24 @@ export default function FormationScreen(props) {
 	}
 
 	onTimelineScroll = (event) => {
-		if(!isPlay) {
-			console.log(TAG, "onTimelineScroll");
+		if(!this.state.isPlay) {
 			const scrollX = event.nativeEvent.contentOffset.x;
-			const centerTime = Math.floor(scrollX / unitBoxWidth) * unitTime;
-			
-			setCurTime(centerTime);
+			const centerTime = Math.floor(scrollX / this.state.unitBoxWidth) * unitTime;
+
+			this.setState({ curTime: centerTime });
 		}
 	}
 
 	addDancer = (colorIdx) => {
 		console.log(TAG, 'addDancer('+colorIdx+')');
-		const { noteInfo: { nid }, times, positions } = states;
-		const did = states.dancers.length;
-		const name = "";
+		const { noteInfo: { nid }, dancers, times, positions } = this.state;
+		const did = dancers.length;
+		const name = `Dancer ${did+1}`;
 
 		// dancers 업데이트
-		const newKey = states.dancers.length == 0 ? 0 : states.dancers[states.dancers.length-1].key + 1;
+		const newKey = dancers.length == 0 ? 0 : dancers[dancers.length-1].key + 1;
 		const newDancer = { nid, did, name, color: colorIdx, key: newKey };
-		const newDancers = states.dancers.concat(newDancer);
+		const newDancers = dancers.concat(newDancer);
 
 		// 새로운 dancer 의 위치 지정을 위한 Animated 객체 추가
 		this.positionsAtCurTime.push(new Animated.ValueXY());
@@ -655,7 +651,7 @@ export default function FormationScreen(props) {
 			newPositions.push(newPosition);
 		}
 
-		setStates({ dancers: newDancers, positions: newPositions });
+		this.setState({ dancers: newDancers, positions: newPositions });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -671,14 +667,14 @@ export default function FormationScreen(props) {
 		},
 		e => console.log(TAG, "addDancer/ DB ERROR", e),
 		() => console.log(TAG, "addDancer/ DB SUCCESS"));
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	deleteDancer = (did) => {
-		const { noteInfo: { nid }, positions } = states;
-		const afterDeletedEntry = [...states.dancers.slice(did+1)];
+		const { noteInfo: { nid }, dancers, positions } = this.state;
+		const afterDeletedEntry = [...dancers.slice(did+1)];
 		afterDeletedEntry.forEach(dancer => dancer.did -= 1);
-		const newDancers = [...states.dancers.slice(0, did), ...afterDeletedEntry];
+		const newDancers = [...dancers.slice(0, did), ...afterDeletedEntry];
 
 		// positions 업데이트
 		const newPositions = [];
@@ -691,7 +687,7 @@ export default function FormationScreen(props) {
 		// 사용했던 Animated 객체 삭제
 		this.positionsAtCurTime.splice(did, 1);
 
-		setStates({ dancers: newDancers, positions: newPositions });
+		this.setState({ dancers: newDancers, positions: newPositions });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -702,7 +698,7 @@ export default function FormationScreen(props) {
 				"DELETE FROM positions WHERE nid=? AND did=?",
 				[nid, did]);
 
-			for(;did < states.dancers.length; did++) {
+			for(;did < dancers.length; did++) {
 				txn.executeSql(
 					"UPDATE dancers SET did=? WHERE nid=? AND did=?",
 					[did-1, nid, did]);
@@ -715,13 +711,13 @@ export default function FormationScreen(props) {
 		() => {
 			console.log(TAG, "deleteDancer/ DB SUCCESS!!");
 		});
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	changeDisplayType = () => {
-		const { noteInfo } = states;
+		const { noteInfo } = this.state;
 		const newNoteInfo = { ...noteInfo, displayName: !noteInfo.displayName };
-		setStates({ noteInfo: newNoteInfo });
+		this.setState({ noteInfo: newNoteInfo });
 
 		db.transaction(txn => {
 			txn.executeSql(
@@ -730,57 +726,60 @@ export default function FormationScreen(props) {
 		},
 		e => console.log("DB ERROR", e),
 		() => console.log("DB SUCCESS"));
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	changeName = (text, did) => {
-		const dancer = {...states.dancers[did]};
-		dancer.name = text;
-		const newDancers = [...states.dancers.slice(0, did), dancer, ...states.dancers.slice(did+1)];
+		const { noteInfo: { nid }, dancers } = this.state;
 
-		setStates({ dancers: newDancers });
+		const dancer = {...dancers[did]};
+		dancer.name = text;
+		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
+
+		this.setState({ dancers: newDancers });
 
 		db.transaction(txn => {
 			txn.executeSql(
 				"UPDATE dancers SET name=? WHERE nid=? AND did=?",
-				[text, states.noteInfo.nid, did]);
+				[text, nid, did]);
 		},
 		e => console.log(TAG, "changeName/ DB ERROR", e),
 		() => console.log(TAG, "changeName/ DB SUCCESS"));
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	changeColor = (did) => {
 		const dancerColors = getDancerColors();
+		const { noteInfo: { nid }, dancers } = this.state;
 
-		const dancer = {...states.dancers[did]};
+		const dancer = {...dancers[did]};
 		dancer.color = dancer.color+1 >= dancerColors.length ? 0 : dancer.color+1;
-		const newDancers = [...states.dancers.slice(0, did), dancer, ...states.dancers.slice(did+1)];
+		const newDancers = [...dancers.slice(0, did), dancer, ...dancers.slice(did+1)];
 
-		setStates({ dancers: newDancers });
+		this.setState({ dancers: newDancers });
 
 		db.transaction(txn => {
 			txn.executeSql(
 				"UPDATE dancers SET color=? WHERE nid=? AND did=?",
-				[dancer.color, states.noteInfo.nid, did]);
+				[dancer.color, nid, did]);
 		},
 		e => console.log(TAG, "changeColor/ DB ERROR", e),
 		() => console.log(TAG, "changeColor/ DB SUCCESS"));
-		updateEditDate();
+		this.updateEditDate();
 	}
 
 	listViewItemSeparator = () => 
 	<View style={getStyleSheet().itemSeparator} />
 
 	copyFormation = () => {
+		const { selectedPosTime, times, positions } = this.state;
 		console.log(TAG, "copyFormation:", selectedPosTime);
-		const { times, positions } = states;
 		if(selectedPosTime !== undefined) {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
 				const copiedFormationData = [...positions[i]];
 				this.toastMessage = "Copy!";
-				setCopiedFormationData(copiedFormationData);
+				this.setState({ copiedFormationData });
 
 				Animated.timing(
 					this.toastOpacity, {
@@ -802,14 +801,14 @@ export default function FormationScreen(props) {
 	}
 
 	pasteFormation = () => {
+		const { noteInfo: { nid }, selectedPosTime, times, positions, copiedFormationData } = this.state;
 		console.log(TAG, "pasteFormation:", copiedFormationData);
-		const { noteInfo: { nid }, times, positions } = states;
 		if(selectedPosTime !== undefined && copiedFormationData != undefined) {
 			for(let i=0; i<times.length; i++)
 			if(times[i].time == selectedPosTime) {
 				const newPositions = [...positions.slice(0, i), [...copiedFormationData], ...positions.slice(i+1)];
 				this.toastMessage = "Paste!";
-				setStates({ positions: newPositions });
+				this.setState({ positions: newPositions });
 
 				Animated.timing(
 					this.toastOpacity, {
@@ -835,20 +834,19 @@ export default function FormationScreen(props) {
 				},
 				e => console.log("DB ERROR", e),
 				() => console.log("DB SUCCESS"));
-				updateEditDate();
+				this.updateEditDate();
 				break;
 			}
 		}
 	}
 
 	rotateStage = () => {
-		setIsStageRotate(!isStageRotate);
-		setSelectedPosTime(undefined);
+		const { isStageRotate } = this.state;
+		this.setState({ isStageRotate: !isStageRotate, selectedPosTime: undefined });
 	}
 
-	useEffect(() => {
-		console.log(TAG, "useEffect");
-		const { nid } = props.route.params;
+	componentDidMount() {
+		const { nid } = this.props.route.params;
 
 		db.transaction(txn => {
       txn.executeSql(
@@ -887,8 +885,8 @@ export default function FormationScreen(props) {
 												}
 												positions.push(positionsAtSameTime);
 											}
-											setStates({...states, noteInfo, dancers, times, positions});
-											musicLoad(noteInfo.music);
+											this.setState({ noteInfo, dancers, times, positions });
+											this.musicLoad(noteInfo.music);
 										}
 									);
 								}
@@ -898,161 +896,191 @@ export default function FormationScreen(props) {
 				}
 			);
 		},
-		e => console.log(TAG, "useEffect 1/ DB ERROR", e),
-		() => console.log(TAG, "useEffect 1/ DB SUCCESS"));
+		e => console.log(TAG, "DB ERROR", e),
+		() => console.log(TAG, "DB SUCCESS"));
+	}
 
-		return () => {
-			if(isPlay)
-			pause();
+	shouldComponentUpdate(nextProps, nextState) {
+		if(nextState.isPlay) {
+			// play 중일 때 formation 추가 금지
+			this.formationAddable = false;
 
-			props.route.params.getDatabaseData();
-		}
-	}, []);
+			// box 가 선택되어 있었다면 일단 curTime 위치로 돌아간다
+			if(this.state.selectedPosTime != undefined)
+			this.getCurDancerPositions(nextState);
 
-	useEffect(() => {
-		console.log(TAG, "useEffect 2", isPlay);
-		if(isPlay) {
 			// play 하는 순간 두 대열 사이에 있는 경우
-			// if(!isPlay)
-			playDancerMoveStart();
+			if(!this.state.isPlay)
+			this.playDancerMoveStart(nextState);
 
 			// curTime 업데이트 될 때 마다 애니메이션 실행 여부 확인 및 실행
-			playDancerMove();
+			this.playDancerMove(nextState);
 		}
 
-		return () => {
-			this.sound.release();
-		}
-	});
+		// state 가 바뀔 때 마다 Dancer 위치, formationAddable 을 업데이트한다
+		else if(this.state.curTime != nextState.curTime ||
+			this.state.times != nextState.times ||
+			this.state.positions != nextState.positions ||
+			this.state.selectedPosTime != nextState.selectedPosTime ||
+			this.state.isPlay != nextState.isPlay)
+			this.getCurDancerPositions(nextState);
+		return true;
+	}
 
-	useEffect(() => {
-		if(isPlay)
-		getCurDancerPositions();
-	}, [isPlay])
+	componentWillUnmount() {
+		if(this.state.isPlay)
+		this.pause();
 
-	useEffect(() => {
-		// state 가 바뀔 때 마다 Dancer 위치를 업데이트한다
-		if(!isPlay && states.noteInfo !== undefined) {
-			console.log(TAG, "useEffect 3");
-			getCurDancerPositions();
-		}
-	}, [curTime, states.times, states.positions, selectedPosTime]);
+		this.props.route.params.getDatabaseData();
+	}
 
-	console.log(TAG, "Before RETURN");
-	return(
-		<View style={styles.bg}>
-		<SafeAreaView style={styles.bg}>
-		{/* Dancer Screen 을 SafeAreaView 에 넣기 위한 View */}
-		<View style={{flex: 1}}>
-			{/* Tool Bar */}
-			<View style={styles.navigationBar}>
-				<View style={{flexDirection: 'row', alignItems: 'center'}}>
+	render() {
+		const { noteInfo, dancers, times, positions, curTime,
+						selectedPosTime, isPlay, titleOnFocus, dancerScreenPop,
+						coordinateGap, alignWithCoordinate, unitBoxWidth,
+						copiedFormationData, isStageRotate, coordinateOn } = this.state;
+		const styles = getStyleSheet();
+		const { 
+			changeTitle,
+			changeDancerPosition,
+			setCurTime,
+			selectFormationBox,
+			changeFormationBoxLength,
+			addFormation,
+			deleteFormation,
+			setDancerScreen,
+			pressPlayButton,
+			setTimelineScroll,
+			onTimelineScroll,
+			addDancer,
+			deleteDancer,
+			changeDisplayType,
+			changeName,
+			changeColor,
+			setAlignWithCoordinate,
+			changeCoordinateGap,
+			changeUnitBoxWidth,
+			listViewItemSeparator,
+			copyFormation,
+			pasteFormation,
+			rotateStage,
+		} = this;
+
+		return(
+			<View style={styles.bg}>
+			<SafeAreaView style={styles.bg}>
+			{/* Dancer Screen 을 SafeAreaView 에 넣기 위한 View */}
+			<View style={{flex: 1}}>
+				{/* Tool Bar */}
+				<View style={styles.navigationBar}>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
 					<TouchableOpacity
 					activeOpacity={.8}
 					style={{ width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }}
-					onPress={() => props.navigation.navigate('Main')}>
+					onPress={() => this.props.navigation.navigate('Main')}>
 						<Left />
 					</TouchableOpacity>
-					<TextInput
-					numberOfLines={1} 
-					style={[styles.navigationBar__title, {flex: 1}]}
-					ref={ref => (this.titleInput = ref)}
-					placeholder={states.noteInfo == undefined ? '' : states.noteInfo.title}
-					onFocus={() => setTitleOnFocus(true)}
-					onEndEditing={event => changeTitle(event)}>
-						{states.noteInfo == undefined ? '' : states.noteInfo.title}
-					</TextInput>
-					{titleOnFocus ?
-					<TouchableOpacity
-					style={{height: 50, justifyContent: 'center'}}
-					activeOpacity={.8}
-					onPress={() => Keyboard.dismiss()}>
-						<Text style={styles.navigationBarText}>확인</Text>
-					</TouchableOpacity>
-					: null}
+						<TextInput
+						numberOfLines={1} 
+						style={[styles.navigationBar__title, {flex: 1}]}
+						ref={ref => (this.titleInput = ref)}
+						placeholder={noteInfo == undefined ? '' : noteInfo.title}
+						onFocus={() => this.setState({ titleOnFocus: true })}
+						onEndEditing={event => changeTitle(event)}>
+							{noteInfo == undefined ? '' : noteInfo.title}
+						</TextInput>
+						{titleOnFocus ?
+						<TouchableOpacity
+						style={{height: 50, justifyContent: 'center'}}
+						activeOpacity={.8}
+						onPress={() => Keyboard.dismiss()}>
+							<Text style={styles.navigationBarText}>확인</Text>
+						</TouchableOpacity>
+						: null}
+					</View>
 				</View>
-			</View>
 
-			{listViewItemSeparator()}
+				{listViewItemSeparator()}
 
-			{states.noteInfo === undefined ? null :
-			<View style={{flex: 1}}>
+				{noteInfo === undefined ? null :
+				<View style={{flex: 1}}>
 
-				{/* Stage: Coordinate & Dancer */}
-				<Stage
-				stageRatio={states.noteInfo.stageRatio}
-				positionsAtCurTime={this.positionsAtCurTime}
-				changeDancerPosition={changeDancerPosition}
-				selectedPosTime={selectedPosTime}
-				dancers={states.dancers}
-				displayName={states.noteInfo.displayName}
-				coordinateGapInDevice={transStandardToDevice(coordinateGap)}
-				changeCoordinateGap={changeCoordinateGap}
-				isPlay={isPlay}
-				isRotate={isStageRotate}
-				coordinateOn={coordinateOn} />
+					{/* Stage: Coordinate & Dancer */}
+					<Stage
+					stageRatio={noteInfo.stageRatio}
+					positionsAtCurTime={this.positionsAtCurTime}
+					changeDancerPosition={changeDancerPosition}
+					selectedPosTime={selectedPosTime}
+					dancers={dancers}
+					displayName={noteInfo.displayName}
+					coordinateGapInDevice={this.transStandardToDevice(coordinateGap)}
+					changeCoordinateGap={changeCoordinateGap}
+					isPlay={isPlay}
+					isRotate={isStageRotate}
+					coordinateOn={coordinateOn} />
 
-				{/* Music Bar */}
-				<PlayerBar
-				curTime={curTime}
-				musicLength={states.noteInfo.musicLength}
-				pressPlayButton={pressPlayButton}
-				isPlay={isPlay}
-				addFormation={addFormation} />
+					{/* Music Bar */}
+					<PlayerBar
+					curTime={curTime}
+					musicLength={noteInfo.musicLength}
+					pressPlayButton={pressPlayButton}
+					isPlay={isPlay}
+					addFormation={addFormation} />
 
-				{/* Timeline */}
-				<Timeline
-				musicLength={states.noteInfo.musicLength}
-				times={states.times}
-				curTime={curTime}
-				setCurTime={settingCurTime}
-				selectedPosTime={selectedPosTime}
-				selectFormationBox={selectFormationBox}
-				changeFormationBoxLength={changeFormationBoxLength}
-				isPlay={isPlay}
-				unitBoxWidth={unitBoxWidth}
-				unitTime={unitTime}
-				setTimelineScroll={setTimelineScroll}
-				onTimelineScroll={onTimelineScroll}
-				changeUnitBoxWidth={changeUnitBoxWidth}
-				toastOpacity={this.toastOpacity}
-				toastMessage={this.toastMessage} />
+					{/* Timeline */}
+					<Timeline
+					musicLength={noteInfo.musicLength}
+					times={times}
+					curTime={curTime}
+					setCurTime={setCurTime}
+					selectedPosTime={selectedPosTime}
+					selectFormationBox={selectFormationBox}
+					changeFormationBoxLength={changeFormationBoxLength}
+					isPlay={isPlay}
+					unitBoxWidth={unitBoxWidth}
+					unitTime={unitTime}
+					setTimelineScroll={setTimelineScroll}
+					onTimelineScroll={onTimelineScroll}
+					changeUnitBoxWidth={changeUnitBoxWidth}
+					toastOpacity={this.toastOpacity}
+					toastMessage={this.toastMessage} />
 
-				{/* Tool bar */}
-				<ToolBar
+					{/* Tool bar */}
+					<ToolBar
+					setDancerScreen={setDancerScreen}
+					isPlay={isPlay}
+					alignWithCoordinate={alignWithCoordinate}
+					setAlignWithCoordinate={setAlignWithCoordinate}
+					pressPlayButton={pressPlayButton}
+					changeDisplayType={changeDisplayType}
+					displayName={noteInfo.displayName}
+					rotateStage={rotateStage}
+					isRotate={isStageRotate}
+
+					selectedPosTime={selectedPosTime}
+					deleteFormation={deleteFormation}
+					copyFormation={copyFormation}
+					pasteFormation={pasteFormation}
+					copiedFormationData={copiedFormationData}
+					coordinateOn={coordinateOn}
+					setCoordinateOn={() => this.setState({ coordinateOn: !this.state.coordinateOn })}
+					/>
+
+				</View>
+				}
+
+				{dancerScreenPop ?
+				<DancerScreen
+				dancers={dancers}
+				displayName={noteInfo.displayName}
 				setDancerScreen={setDancerScreen}
-				isPlay={isPlay}
-				alignWithCoordinate={alignWithCoordinate}
-				setAlignWithCoordinate={settingAlignWithCoordinate}
-				pressPlayButton={pressPlayButton}
-				changeDisplayType={changeDisplayType}
-				displayName={states.noteInfo.displayName}
-				rotateStage={rotateStage}
-				isRotate={isStageRotate}
-
-				selectedPosTime={selectedPosTime}
-				deleteFormation={deleteFormation}
-				copyFormation={copyFormation}
-				pasteFormation={pasteFormation}
-				copiedFormationData={copiedFormationData}
-				coordinateOn={coordinateOn}
-				setCoordinateOn={() => setCoordinateOn(val => !val)}
-				/>
-
+				addDancer={addDancer}
+				deleteDancer={deleteDancer}
+				changeName={changeName}
+				changeColor={changeColor} /> : null}
 			</View>
-			}
-
-			{dancerScreenPop ?
-			<DancerScreen
-			dancers={states.dancers}
-			displayName={states.noteInfo.displayName}
-			setDancerScreen={setDancerScreen}
-			addDancer={addDancer}
-			deleteDancer={deleteDancer}
-			changeName={changeName}
-			changeColor={changeColor} /> : null}
-		</View>
-		</SafeAreaView>
-		</View>
-	)
-}
+			</SafeAreaView>
+			</View>
+		)
+	}
+} 

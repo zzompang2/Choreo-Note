@@ -93,8 +93,8 @@ export default function EditNoteScreen(props) {
 								// 무대 가로를 1000 으로 기준
 								const posx = dancers.length == 1 ? 0 : did * (600 / (dancers.length-1)) - 300;
 								txn.executeSql(
-									"INSERT INTO dancers VALUES (?, ?, ?, 0)",
-									[nid, did, dancers[did].name]);
+									"INSERT INTO dancers VALUES (?, ?, ?, ?)",
+									[nid, did, dancers[did].name, dancers[did].color]);
 	
 								txn.executeSql(
 									"INSERT INTO positions VALUES (?, 0, ?, ?, 0)",

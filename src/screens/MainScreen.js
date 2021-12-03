@@ -15,9 +15,11 @@ const db = SQLite.openDatabase({ name: 'ChoreoNote.db' });
 const styles = getStyleSheet();
 
 export default function MainScreen(props) {
-	const [ notes, setNotes ] = useState([]);
-	const [ positionsForEachNote, setPositionsForEachNote ] = useState([]);
-	const [ dancersForEachNote, setDancersForEachNote ] = useState([]);
+	const [ states, setStates ] = useState({
+		notes: [],
+		positionsForEachNote: [],
+		dancersForEachNote: [],
+	})
 	const [ isEditMode, setEditMode ] = useState(false);
 
 	function getDatabaseData() {
@@ -41,7 +43,7 @@ export default function MainScreen(props) {
 				"SELECT * FROM metadata WHERE id=0", [],
 				(txn, result) => {				
 					if(result.rows.length == 0)
-					txn.executeSql("INSERT INTO metadata VALUES (0, 0)", []);
+					txn.executeSql("INSERT INTO metadata VALUES (0, -1)", []);
 				}
 			);
 
@@ -87,7 +89,7 @@ export default function MainScreen(props) {
 			);
 
 			txn.executeSql(
-				"SELECT * FROM notes",
+				"SELECT * FROM notes ORDER BY nid",
 				[],
 				(txn, result) => {
 					// note 정보 가져오기
@@ -97,7 +99,7 @@ export default function MainScreen(props) {
 
 					if(newNote.length !== 0)
 					txn.executeSql(
-						"SELECT * FROM positions",
+						"SELECT * FROM positions ORDER BY nid, time, did",
 						[],
 						(txn, result) => {
 							const positionsForEachNote = [];
@@ -122,7 +124,7 @@ export default function MainScreen(props) {
 								positionsForEachNote.push(positionOfFirstFormation);
 							}
 							txn.executeSql(
-								"SELECT * FROM dancers",
+								"SELECT * FROM dancers ORDER BY nid, did",
 								[],
 								(txn, result) => {
 									const dancersForEachNote = [];
@@ -137,11 +139,9 @@ export default function MainScreen(props) {
 									dancersForEachNote.push(dancersOfOneNote);
 
 									dancersForEachNote.reverse();
-									setDancersForEachNote(dancersForEachNote);
 									positionsForEachNote.reverse();
-									setPositionsForEachNote(positionsForEachNote);
 									newNote.reverse();
-									setNotes(newNote);
+									setStates({notes: newNote, positionsForEachNote: positionsForEachNote, dancersForEachNote: dancersForEachNote});
 								}
 							);
 						}
@@ -169,7 +169,7 @@ export default function MainScreen(props) {
 			txn.executeSql(
 				"SELECT * FROM metadata", [],
 				(txn, result) => {
-					const nid = result.rows.item(0).nidMax;
+					const nid = result.rows.item(0).nidMax+1;
 
 					console.log(TAG, "새로운 NOTE ID = " + nid);
 
@@ -186,26 +186,6 @@ export default function MainScreen(props) {
 		);
 	}
 
-	// function updateMainStateFromDB(nid) {
-	// 	db.transaction(txn => {
-  //     txn.executeSql(
-	// 			"SELECT * FROM notes WHERE nid = ?",
-	// 			[nid],
-  //       (txn, result) => {
-	// 				const noteInfo = result.rows.item(0);
-	// 				for(let i=0; i<notes.length; i++) {
-	// 					if(notes[i].nid == nid) {
-	// 						const newNotes = [...notes.slice(0, i), noteInfo, ...notes.slice(i+1)];
-	// 						setNotes(newNotes);
-	// 					}
-	// 				}
-	// 			}
-	// 		);
-	// 	},
-	// 	e => console.log("DB ERROR", e),
-	// 	() => console.log("updateMainStateFromDB/ DB SUCCESS"));
-	// }
-
 	function onPressHandler(nid) {
 		if(isEditMode)
 		deleteNote(nid);
@@ -217,6 +197,7 @@ export default function MainScreen(props) {
 	}
 
 	function deleteNote(nid) {
+		const { notes, positionsForEachNote, dancersForEachNote } = states;
 		let idx;
 
 		for(let i=0; i<notes.length; i++)
@@ -228,9 +209,9 @@ export default function MainScreen(props) {
 			text: "네, 삭제할게요", style: 'destructive',
 			onPress: () => {
 				const newNotes = [...notes.slice(0, idx), ...notes.slice(idx+1)];
-				setNotes(newNotes);
 				const newPositionsForEachNote = [...positionsForEachNote.slice(0, idx), ...positionsForEachNote.slice(idx+1)];
-				setPositionsForEachNote(newPositionsForEachNote);
+				const newDancersForEachNote = [...dancersForEachNote.slice(0, idx), ...dancersForEachNote.slice(idx+1)];
+				setStates({ notes: newNotes, positionsForEachNote: newPositionsForEachNote, dancersForEachNote: newDancersForEachNote});
 
 				db.transaction(txn => {
 					txn.executeSql("DELETE FROM notes WHERE nid=?", [nid]);
@@ -251,49 +232,6 @@ export default function MainScreen(props) {
 		console.log("useEffect");
 		getDatabaseData();
 	}, [])
-
-	// DB 에서 note 정보 가져오기
-	function updateNoteList() {
-		db.transaction(txn => {
-			txn.executeSql(
-				"SELECT * FROM notes",
-				[],
-				(txn, result) => {
-					// note 정보 가져오기
-					const newNote = [];
-					for (let i = 0; i < result.rows.length; i++)
-					newNote.push(result.rows.item(i));
-
-					if(newNote.length !== 0)
-					txn.executeSql(
-						"SELECT * FROM positions",
-						[],
-						(txn, result) => {
-							const newPositions = [];
-							for(let noteIdx = 0; noteIdx < newNote.length; noteIdx++) {
-								const position = [];
-								let i = 0;
-								while(result.rows.item(i).nid !== newNote[noteIdx].nid)
-								i++;
-								const firstTime = result.rows.item(i).time;
-
-								for(; i < result.rows.length; i++) {
-									if(result.rows.item(i).nid == newNote[noteIdx].nid && result.rows.item(i).time == firstTime)
-									position.push(result.rows.item(i));
-									else break;
-								}
-								newPositions.push(position);
-							}
-							console.log(newPositions);
-							setPositions(newPositions);
-							newNote.reverse();
-							setNotes(newNote);
-						}
-					)
-				}
-			);
-		});
-	}
 
 	return(
 		// style of View: SafeArea 바깥 부분에도 배경색을 칠하기 위함
@@ -316,7 +254,7 @@ export default function MainScreen(props) {
 			{/* Note 리스트 */}
 			<FlatList
 			style={styles.noteList}
-			data={[[], ...notes]}
+			data={[[], ...states.notes]}
 			keyExtractor={(item, idx) => idx.toString()}
 			numColumns={2}
 			showsVerticalScrollIndicator={false}
@@ -332,10 +270,10 @@ export default function MainScreen(props) {
 			</TouchableOpacity>
 			:
 			<NoteItem
-			key={index}
+			key={item.nid}
 			noteInfo={item}
-			position={positionsForEachNote[index-1]}
-			dancer={dancersForEachNote[index-1]}
+			position={states.positionsForEachNote[index-1]}
+			dancer={states.dancersForEachNote[index-1]}
 			onPressHandler={onPressHandler}
 			isEditMode={isEditMode} />
 			} />
